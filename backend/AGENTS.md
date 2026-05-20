@@ -1,0 +1,482 @@
+# Objetivo
+
+Você é responsável pela implementação e manutenção do backend da aplicação.
+
+Você deve priorizar:
+
+- simplicidade
+- previsibilidade
+- modularidade
+- baixo acoplamento
+- clareza
+- evolução incremental
+- segurança de regras de negócio
+- consistência arquitetural
+
+O agente NÃO deve introduzir complexidade desnecessária.
+
+---
+
+# Stack Tecnológica
+
+## Backend
+
+- ASP.NET Core Web API
+- Entity Framework Core
+- PostgreSQL
+- JWT Authentication
+
+## Infraestrutura
+
+- Docker
+- Docker Compose
+
+## Testes
+
+- xUnit
+- FluentAssertions
+- NSubstitute
+
+---
+
+# Filosofia Arquitetural
+
+A arquitetura do projeto é modular e pragmática.
+
+O projeto NÃO utiliza:
+
+- Clean Architecture completa
+- CQRS complexo
+- MediatR
+- Event Sourcing
+- Microservices
+- DDD excessivo
+- abstrações genéricas desnecessárias
+
+A prioridade é:
+
+- organização
+- produtividade
+- testabilidade
+- manutenção
+- simplicidade operacional
+
+---
+
+# Estrutura do Projeto
+
+```text
+src/
+ ├── Controllers/
+ ├── Handlers/
+ ├── Repositories/
+ ├── Entities/
+ │    └── Base/
+ ├── Data/
+ │    ├── Configurations/
+ │    ├── Migrations/
+ │    └── Seed/
+ ├── Services/
+ ├── Middleware/
+ ├── Extensions/
+ ├── Common/
+ └── Program.cs
+```
+
+---
+
+# Estrutura de Testes
+
+```text
+tests/
+ ├── Rules/
+ ├── Handlers/
+ ├── Services/
+ ├── Fixtures/
+ ├── Builders/
+ └── Mocks/
+```
+
+---
+
+# Organização das Features
+
+Handlers devem ser organizados por feature.
+
+Exemplo:
+
+```text
+Handlers/
+ ├── Auth/
+ ├── Events/
+ ├── Groups/
+ └── Rankings/
+```
+
+Cada arquivo de handler deve conter:
+
+- Request
+- Response
+- Interface
+- Implementação
+- Validações relacionadas
+
+Não criar DTOs separados.
+
+---
+
+# Regras Arquiteturais
+
+## Controllers
+
+Controllers devem:
+
+- receber requests HTTP
+- validar autenticação/autorização
+- chamar handlers
+- retornar responses HTTP
+
+Controllers NÃO devem:
+
+- conter regra de negócio
+- acessar DbContext
+- acessar EF diretamente
+- executar queries
+- conter validações complexas
+
+Controllers devem ser finos.
+
+---
+
+## Handlers
+
+Handlers são responsáveis por:
+
+- regras de negócio
+- validações
+- orquestração
+- persistência via repositories
+- controle transacional
+
+Handlers devem:
+
+- trabalhar apenas no contexto da feature
+- validar entradas
+- manter lógica coesa
+- chamar SaveChangesAsync()
+
+Handlers NÃO devem:
+
+- conter SQL
+- conter lógica HTTP
+- acessar infraestrutura externa diretamente sem necessidade
+
+---
+
+## Repositories
+
+Repositories são responsáveis por:
+
+- acesso ao banco
+- queries
+- includes
+- paginação
+- persistência EF Core
+
+Repositories NÃO devem:
+
+- conter regra de negócio
+- conter validação de domínio
+- executar SaveChangesAsync()
+
+---
+
+## Services
+
+Services devem ser usados apenas para:
+
+- regras compartilhadas
+- JWT
+- hashing
+- autenticação
+- regras puras reutilizáveis
+
+Evitar services artificiais.
+
+---
+
+# Comunicação Entre Camadas
+
+Fluxo obrigatório:
+
+```text
+Controller
+   ↓
+Handler
+   ↓
+Repository
+   ↓
+DbContext
+```
+
+Controllers nunca acessam repositories diretamente.
+
+Repositories nunca chamam handlers.
+
+---
+
+# Entidades
+
+Todas entidades devem herdar de:
+
+```csharp
+Entity
+```
+
+Estrutura obrigatória:
+
+```csharp
+Id
+CreatedAt
+UpdatedAt
+```
+
+---
+
+# Regras do Banco
+
+## Obrigatório
+
+- PostgreSQL
+- EF Core
+- migrations
+- snake_case
+- timestamps automáticos
+- configurações separadas por entidade
+
+---
+
+# AppDbContext
+
+Local obrigatório:
+
+```text
+Data/AppDbContext.cs
+```
+
+Configurações devem ficar em:
+
+```text
+Data/Configurations/
+```
+
+Não concentrar configurações no AppDbContext.
+
+---
+
+# BaseRepository
+
+O BaseRepository deve conter apenas:
+
+- GetById
+- Add
+- Update
+- Remove
+
+Não implementar Generic Repository complexo.
+
+Repositories específicos devem possuir queries específicas.
+
+---
+
+# SaveChanges
+
+Repositories NÃO devem executar:
+
+```csharp
+SaveChangesAsync()
+```
+
+O controle transacional pertence ao handler.
+
+---
+
+# Estratégia de Testes
+
+## Regra Obrigatória
+
+Toda regra de negócio deve possuir testes antes da implementação funcional.
+
+Os testes são a especificação comportamental do sistema.
+
+---
+
+# Prioridade dos Testes
+
+Prioridade máxima:
+
+- regras de negócio
+- regras de aprovação
+- regras de ranking
+- permissões
+- restrições
+- segurança comportamental
+
+Baixa prioridade:
+
+- controllers
+- EF Core
+- código trivial
+
+---
+
+# Regras Obrigatórias de Teste
+
+As seguintes regras devem possuir testes desde o início:
+
+- usuário afetado não pode mexer no evento relacionado a ele
+- criador não aprova sozinho evento de votação sozinho
+- evento negativo inicia pendente
+- score não altera antes da aprovação
+- usuário fora do grupo não pode interagir
+- não permitir múltiplos votos
+- não permitir score zero
+- impedir manipulação de ranking
+
+---
+
+# Estratégia de Implementação
+
+Implementação deve ocorrer em pequenas etapas.
+
+Fluxo obrigatório:
+
+1. regra
+2. teste
+3. handler
+4. repository
+5. endpoint
+6. integração
+
+Não implementar múltiplos domínios simultaneamente.
+
+---
+
+# Regras de Implementação
+
+## Obrigatório
+
+- evitar over-engineering
+- seguir arquitetura definida
+- modularidade
+- responsabilidade única
+- baixo acoplamento
+- separação correta de camadas
+- métodos pequenos
+- código explícito
+- nomes claros
+- evitar abstrações prematuras
+
+---
+
+# Proibições
+
+Não implementar:
+
+- abstrações genéricas excessivas
+- factories desnecessárias
+- patterns sem necessidade real
+- services artificiais
+- interfaces inúteis
+- arquitetura enterprise desnecessária
+- complexidade sem benefício real
+
+---
+
+# Regras de Contexto
+
+O agente deve:
+
+- trabalhar apenas no escopo da feature atual
+- evitar modificar domínios não relacionados
+- respeitar contexto hierárquico do projeto
+- evitar refactors desnecessários
+- evitar alterar contratos existentes sem necessidade
+
+---
+
+# Regras de Segurança
+
+Obrigatório:
+
+- JWT Authentication
+- validação de permissões
+- validação de pertencimento ao grupo
+- proteção contra múltiplos votos
+- proteção contra auto aprovação
+- proteção contra manipulação de ranking
+
+Nunca confiar em validações do frontend.
+
+---
+
+# Regras de Código
+
+## Obrigatório
+
+- código legível
+- previsibilidade
+- simplicidade
+- baixo acoplamento
+- responsabilidade única
+
+---
+
+# Regras de Output do Agente
+
+O agente deve:
+
+- responder incrementalmente
+- indicar claramente arquivos alterados
+- justificar decisões técnicas importantes
+- evitar reescrever arquivos inteiros sem necessidade
+- evitar alterações fora do escopo
+
+---
+
+# Regras de Comunicação
+
+As respostas devem:
+
+- ser objetivas
+- focar implementação
+- evitar explicações excessivas
+- evitar redundância
+- evitar conteúdo educacional desnecessário
+
+---
+
+# Limites do Agente
+
+O agente NÃO deve:
+
+- alterar arquitetura sem justificativa
+- introduzir tecnologias não aprovadas
+- modificar padrões definidos
+- implementar over-engineering
+- fugir do escopo atual
+- adicionar complexidade desnecessária
+
+---
+
+# Estratégia Geral do Projeto
+
+A prioridade do projeto é:
+
+1. regras corretas
+2. segurança comportamental
+3. simplicidade
+4. manutenção
+5. evolução incremental
+6. performance saudável
+7. previsibilidade
