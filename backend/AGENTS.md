@@ -69,9 +69,14 @@ A prioridade é:
 src/
  ├── Controllers/
  ├── Handlers/
+ │    ├── Auth/
+ │    ├── Events/
+ │    ├── Groups/
+ │    └── Rankings/
  ├── Repositories/
  ├── Entities/
- │    └── Base/
+ │    ├── Base/
+ │    └── Enums/
  ├── Data/
  │    ├── Configurations/
  │    ├── Migrations/
@@ -79,7 +84,11 @@ src/
  ├── Services/
  ├── Middleware/
  ├── Extensions/
+ │    └── ConnectionStringBuilder.cs
  ├── Common/
+ │    ├── Exceptions/
+ │    ├── Models/
+ │    └── Rules/
  └── Program.cs
 ```
 
@@ -89,7 +98,7 @@ src/
 
 ```text
 tests/
- ├── Rules/
+ ├── Rules/                    # Prioridade máxima
  ├── Handlers/
  ├── Services/
  ├── Fixtures/
@@ -342,6 +351,11 @@ As seguintes regras devem possuir testes desde o início:
 - não permitir múltiplos votos
 - não permitir score zero
 - impedir manipulação de ranking
+- nome do grupo não pode ser vazio
+- invite code deve ser único e gerado automaticamente
+- usuário já membro não pode entrar novamente
+- owner pode sair com transferência de ownership
+- deleção em cascata do grupo (eventos, membros, aprovações)
 
 ---
 
@@ -429,6 +443,35 @@ Nunca confiar em validações do frontend.
 - simplicidade
 - baixo acoplamento
 - responsabilidade única
+
+---
+
+# Padrões de Código
+
+## Namespaces
+- Enums ficam em `src/Entities/Enums/`
+- namespace: `backend.src.Entities.Enums`
+
+## Interfaces
+- Interfaces são declaradas no mesmo arquivo da implementação
+- Exemplo: `IPasswordHasher` dentro de `BcryptPasswordHasher.cs`
+- Não criar arquivos separados para interfaces
+
+## Dependency Injection
+- Registrado diretamente em `Program.cs`
+- Não usar `ServiceCollectionExtensions.cs`
+- Única exceção: utilitários como `ConnectionStringBuilder`
+
+## Regras de Negócio
+- Classes estáticas puras em `src/Common/Rules/`
+- Lançam `BusinessRuleException` com código + mensagem
+- Testadas unitariamente antes dos handlers
+
+## Handlers
+- Arquivo único contendo: Request, Response, Interface, Implementação, Validator
+- Não criar DTOs separados
+- Validator chamado dentro do HandleAsync
+- SaveChangesAsync chamado no handler (nunca no repository)
 
 ---
 

@@ -347,6 +347,38 @@ Toda implementação deve considerar:
 - integridade histórica
 - simplicidade operacional
 
+# Regras de Negócio Implementadas
+
+## Grupos
+
+### Criação de Grupo
+- nome do grupo não pode ser vazio
+- invite code gerado automaticamente (8 caracteres alfanumérico maiúsculo)
+- criador se torna owner automaticamente
+
+### Entrada no Grupo
+- invite code normalizado para UPPERCASE no input
+- usuário já membro não pode entrar novamente
+- invite code deve existir
+
+### Permissões
+- apenas membros do grupo podem interagir
+- usuário fora do grupo não pode acessar detalhes, ranking, eventos
+
+### Saída do Grupo
+- owner pode sair se transferir ownership para outro membro
+- se owner é único membro e sai → grupo deletado com todos os relacionados (cascata)
+- se não existe outro admin/owner → erro: "Transfira ownership antes de sair"
+
+## Eventos
+
+### Validações
+- não permitir score zero (aplicado a todos os eventos)
+- eventos aprovados não podem ser editados
+- criador não pode ser o mesmo que usuário afetado
+
+---
+
 # Eventos Compartilhados
 
 O sistema permite criação de eventos compartilhados do grupo.
