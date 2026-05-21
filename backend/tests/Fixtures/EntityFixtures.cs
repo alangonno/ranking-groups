@@ -1,5 +1,5 @@
-using backend.src.Common.Enums;
 using backend.src.Entities;
+using backend.src.Entities.Enums;
 using backend.tests.Builders;
 
 namespace backend.tests.Fixtures;

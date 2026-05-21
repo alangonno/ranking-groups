@@ -1,6 +1,6 @@
-using backend.src.Common.Enums;
-using backend.src.Common.Exceptions;
 using backend.src.Entities;
+using backend.src.Entities.Enums;
+using backend.src.Common.Exceptions;
 
 namespace backend.src.Common.Rules;
 

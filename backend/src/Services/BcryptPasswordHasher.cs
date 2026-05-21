@@ -1,5 +1,11 @@
 namespace backend.src.Services;
 
+public interface IPasswordHasher
+{
+    string Hash(string password);
+    bool Verify(string password, string passwordHash);
+}
+
 public class BcryptPasswordHasher : IPasswordHasher
 {
     public string Hash(string password)

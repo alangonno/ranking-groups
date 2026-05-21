@@ -1,4 +1,3 @@
-using backend.src.Common.Enums;
 using backend.src.Entities.Base;
 
 namespace backend.src.Entities;

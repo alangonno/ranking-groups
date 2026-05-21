@@ -4,6 +4,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace backend.src.Repositories;
 
+public interface IRefreshTokenRepository
+{
+    Task<RefreshToken?> GetByTokenAsync(string token);
+    Task<RefreshToken?> GetActiveByUserIdAsync(Guid userId);
+    void Add(RefreshToken refreshToken);
+    void Update(RefreshToken refreshToken);
+}
+
 public class RefreshTokenRepository : BaseRepository<RefreshToken>, IRefreshTokenRepository
 {
     public RefreshTokenRepository(AppDbContext context) : base(context) { }

@@ -1,4 +1,4 @@
-namespace backend.src.Common.Enums;
+namespace backend.src.Entities.Enums;
 
 public enum GroupRole
 {

@@ -2,6 +2,12 @@ using System.Security.Claims;
 
 namespace backend.src.Services;
 
+public interface ICurrentUserService
+{
+    Guid? UserId { get; }
+    bool IsAuthenticated { get; }
+}
+
 public class CurrentUserService : ICurrentUserService
 {
     private readonly IHttpContextAccessor _httpContextAccessor;

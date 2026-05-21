@@ -5,6 +5,11 @@ using System.Text;
 
 namespace backend.src.Services;
 
+public interface IJwtService
+{
+    string GenerateToken(Guid userId);
+}
+
 public class JwtService : IJwtService
 {
     private readonly string _secret;

@@ -1,7 +1,7 @@
-using backend.src.Common.Enums;
+using backend.src.Entities;
+using backend.src.Entities.Enums;
 using backend.src.Common.Exceptions;
 using backend.src.Common.Rules;
-using backend.src.Entities;
 using backend.tests.Builders;
 using backend.tests.Fixtures;
 using FluentAssertions;
