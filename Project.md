@@ -372,10 +372,27 @@ Toda implementação deve considerar:
 
 ## Eventos
 
+### Pontuação
+- a pontuação do evento é sempre um valor positivo absoluto
+- o tipo do evento (Positive/Negative) define o sinal aplicado no ranking
+- no cálculo do ranking: soma dos pontos de eventos positivos menos a soma dos pontos de eventos negativos
+
 ### Validações
-- não permitir score zero (aplicado a todos os eventos)
+- não permitir pontuação menor ou igual a zero (aplicado a todos os eventos)
 - eventos aprovados não podem ser editados
+- eventos aprovados não podem ser deletados (hard delete)
 - criador não pode ser o mesmo que usuário afetado
+
+### Aprovação de Eventos Negativos
+- eventos negativos iniciam com status Pending
+- quorum mínimo de aprovação: 1/3 dos membros do grupo, arredondado para cima
+- criador não pode aprovar seu próprio evento
+- usuário afetado não pode votar na aprovação do evento
+- múltiplos votos do mesmo usuário são proibidos
+
+### Permissões
+- usuário afetado não pode editar ou excluir eventos negativos relacionados a ele
+- score só altera após aprovação mínima
 
 ---
 

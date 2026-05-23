@@ -385,6 +385,7 @@ Representa votos de aprovação/rejeição.
 - pontos negativos iniciam Pending
 - pontos positivos podem iniciar Approved
 - eventos aprovados não devem ser editados
+- pontuação (Points) é sempre um valor positivo absoluto; o tipo (Type) define o impacto no ranking
 
 ---
 
@@ -399,6 +400,9 @@ Representa votos de aprovação/rejeição.
 ## GroupMember
 
 - unique(group_id, user_id)
+- current_score é um cache da pontuação atual do membro no grupo
+- recalculado em runtime como: soma dos pontos de eventos positivos aprovados menos soma dos pontos de eventos negativos aprovados
+- serve para leitura rápida do ranking sem recalcular em todas as consultas
 
 ---
 

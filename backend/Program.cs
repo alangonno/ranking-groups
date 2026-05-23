@@ -1,7 +1,9 @@
 using backend.src.Data;
 using backend.src.Extensions;
 using backend.src.Handlers.Auth;
+using backend.src.Handlers.Events;
 using backend.src.Handlers.Groups;
+using backend.src.Handlers.SharedEvents;
 using backend.src.Middleware;
 using backend.src.Repositories;
 using backend.src.Services;
@@ -30,6 +32,10 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<IGroupRepository, GroupRepository>();
 builder.Services.AddScoped<IGroupMemberRepository, GroupMemberRepository>();
+builder.Services.AddScoped<IEventRepository, EventRepository>();
+builder.Services.AddScoped<IEventApprovalRepository, EventApprovalRepository>();
+builder.Services.AddScoped<ISharedEventRepository, SharedEventRepository>();
+builder.Services.AddScoped<ISharedEventParticipantRepository, SharedEventParticipantRepository>();
 
 // Handlers
 builder.Services.AddScoped<IRegisterHandler, RegisterHandler>();
@@ -40,6 +46,23 @@ builder.Services.AddScoped<IJoinGroupHandler, JoinGroupHandler>();
 builder.Services.AddScoped<IListUserGroupsHandler, ListUserGroupsHandler>();
 builder.Services.AddScoped<IGetGroupDetailsHandler, GetGroupDetailsHandler>();
 builder.Services.AddScoped<ILeaveGroupHandler, LeaveGroupHandler>();
+
+// Event Handlers
+builder.Services.AddScoped<ICreateEventHandler, CreateEventHandler>();
+builder.Services.AddScoped<IGetEventHandler, GetEventHandler>();
+builder.Services.AddScoped<IListGroupEventsHandler, ListGroupEventsHandler>();
+builder.Services.AddScoped<IUpdateEventHandler, UpdateEventHandler>();
+builder.Services.AddScoped<IDeleteEventHandler, DeleteEventHandler>();
+builder.Services.AddScoped<IVoteEventHandler, VoteEventHandler>();
+
+// Shared Event Handlers
+builder.Services.AddScoped<ICreateSharedEventHandler, CreateSharedEventHandler>();
+builder.Services.AddScoped<IGetSharedEventHandler, GetSharedEventHandler>();
+builder.Services.AddScoped<IListGroupSharedEventsHandler, ListGroupSharedEventsHandler>();
+builder.Services.AddScoped<IJoinSharedEventHandler, JoinSharedEventHandler>();
+builder.Services.AddScoped<ILeaveSharedEventHandler, LeaveSharedEventHandler>();
+builder.Services.AddScoped<IUpdateSharedEventHandler, UpdateSharedEventHandler>();
+builder.Services.AddScoped<ICloseSharedEventHandler, CloseSharedEventHandler>();
 
 // Database
 var connectionString = ConnectionStringBuilder.BuildFromEnvironment();

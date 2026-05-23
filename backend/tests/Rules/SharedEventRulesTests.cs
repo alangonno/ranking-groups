@@ -115,4 +115,148 @@ public class SharedEventRulesTests
         var act = () => SharedEventRules.ValidateNoDuplicateParticipation(userId, sharedEventId, existingParticipants);
         act.Should().Throw<BusinessRuleException>();
     }
+
+    [Fact]
+    public void ValidateCanClose_OpenEvent_ShouldNotThrow()
+    {
+        var act = () => SharedEventRules.ValidateCanClose(false);
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void ValidateCanClose_AlreadyClosed_ShouldThrowBusinessRuleException()
+    {
+        var act = () => SharedEventRules.ValidateCanClose(true);
+        act.Should().Throw<BusinessRuleException>();
+    }
+
+    [Fact]
+    public void ValidateCanRemoveParticipation_OpenEvent_ShouldNotThrow()
+    {
+        var act = () => SharedEventRules.ValidateCanRemoveParticipation(false);
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void ValidateCanRemoveParticipation_ClosedEvent_ShouldThrowBusinessRuleException()
+    {
+        var act = () => SharedEventRules.ValidateCanRemoveParticipation(true);
+        act.Should().Throw<BusinessRuleException>();
+    }
+
+    [Fact]
+    public void ValidateUserCanEditSharedEvent_Creator_ShouldNotThrow()
+    {
+        var creatorId = Guid.NewGuid();
+        var groupMembers = new List<GroupMember>();
+
+        var act = () => SharedEventRules.ValidateUserCanEditSharedEvent(creatorId, creatorId, groupMembers);
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void ValidateUserCanEditSharedEvent_Admin_ShouldNotThrow()
+    {
+        var adminId = Guid.NewGuid();
+        var group = EntityFixtures.CreateGroup();
+        var admin = EntityFixtures.CreateUser("Admin");
+        typeof(User).GetProperty("Id")?.SetValue(admin, adminId);
+        var groupMembers = new List<GroupMember>
+        {
+            EntityFixtures.CreateGroupMember(group, admin, GroupRole.Admin)
+        };
+
+        var act = () => SharedEventRules.ValidateUserCanEditSharedEvent(adminId, Guid.NewGuid(), groupMembers);
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void ValidateUserCanEditSharedEvent_Owner_ShouldNotThrow()
+    {
+        var ownerId = Guid.NewGuid();
+        var group = EntityFixtures.CreateGroup();
+        var owner = EntityFixtures.CreateUser("Owner");
+        typeof(User).GetProperty("Id")?.SetValue(owner, ownerId);
+        var groupMembers = new List<GroupMember>
+        {
+            EntityFixtures.CreateGroupMember(group, owner, GroupRole.Owner)
+        };
+
+        var act = () => SharedEventRules.ValidateUserCanEditSharedEvent(ownerId, Guid.NewGuid(), groupMembers);
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void ValidateUserCanEditSharedEvent_RegularMember_ShouldThrowBusinessRuleException()
+    {
+        var memberId = Guid.NewGuid();
+        var group = EntityFixtures.CreateGroup();
+        var member = EntityFixtures.CreateUser("Member");
+        typeof(User).GetProperty("Id")?.SetValue(member, memberId);
+        var groupMembers = new List<GroupMember>
+        {
+            EntityFixtures.CreateGroupMember(group, member, GroupRole.Member)
+        };
+
+        var act = () => SharedEventRules.ValidateUserCanEditSharedEvent(memberId, Guid.NewGuid(), groupMembers);
+        act.Should().Throw<BusinessRuleException>();
+    }
+
+    [Fact]
+    public void ValidateUserCanCloseSharedEvent_Creator_ShouldNotThrow()
+    {
+        var creatorId = Guid.NewGuid();
+        var groupMembers = new List<GroupMember>();
+
+        var act = () => SharedEventRules.ValidateUserCanCloseSharedEvent(creatorId, creatorId, groupMembers);
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void ValidateUserCanCloseSharedEvent_Admin_ShouldNotThrow()
+    {
+        var adminId = Guid.NewGuid();
+        var group = EntityFixtures.CreateGroup();
+        var admin = EntityFixtures.CreateUser("Admin");
+        typeof(User).GetProperty("Id")?.SetValue(admin, adminId);
+        var groupMembers = new List<GroupMember>
+        {
+            EntityFixtures.CreateGroupMember(group, admin, GroupRole.Admin)
+        };
+
+        var act = () => SharedEventRules.ValidateUserCanCloseSharedEvent(adminId, Guid.NewGuid(), groupMembers);
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void ValidateUserCanCloseSharedEvent_Owner_ShouldNotThrow()
+    {
+        var ownerId = Guid.NewGuid();
+        var group = EntityFixtures.CreateGroup();
+        var owner = EntityFixtures.CreateUser("Owner");
+        typeof(User).GetProperty("Id")?.SetValue(owner, ownerId);
+        var groupMembers = new List<GroupMember>
+        {
+            EntityFixtures.CreateGroupMember(group, owner, GroupRole.Owner)
+        };
+
+        var act = () => SharedEventRules.ValidateUserCanCloseSharedEvent(ownerId, Guid.NewGuid(), groupMembers);
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void ValidateUserCanCloseSharedEvent_RegularMember_ShouldThrowBusinessRuleException()
+    {
+        var memberId = Guid.NewGuid();
+        var group = EntityFixtures.CreateGroup();
+        var member = EntityFixtures.CreateUser("Member");
+        typeof(User).GetProperty("Id")?.SetValue(member, memberId);
+        var groupMembers = new List<GroupMember>
+        {
+            EntityFixtures.CreateGroupMember(group, member, GroupRole.Member)
+        };
+
+        var act = () => SharedEventRules.ValidateUserCanCloseSharedEvent(memberId, Guid.NewGuid(), groupMembers);
+        act.Should().Throw<BusinessRuleException>();
+    }
 }

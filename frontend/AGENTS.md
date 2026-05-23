@@ -7,7 +7,7 @@
 - TypeScript
 - React Router
 - TanStack Query
-- shadcn/ui
+- Flowbite React
 - TailwindCSS
 
 ---
@@ -561,3 +561,6 @@ Prioridades do frontend:
 5. reutilização saudável
 6. performance saudável
 7. manutenção
+
+
+---

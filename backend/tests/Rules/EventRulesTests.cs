@@ -39,10 +39,10 @@ public class EventRulesTests
     }
 
     [Fact]
-    public void ValidatePoints_WithNegativePoints_ShouldNotThrow()
+    public void ValidatePoints_WithNegativePoints_ShouldThrowBusinessRuleException()
     {
         var act = () => EventRules.ValidatePoints(-10);
-        act.Should().NotThrow();
+        act.Should().Throw<BusinessRuleException>();
     }
 
     [Fact]
@@ -86,5 +86,33 @@ public class EventRulesTests
 
         var act = () => EventRules.ValidateAffectedUserIsNotCreator(userId, userId);
         act.Should().Throw<BusinessRuleException>();
+    }
+
+    [Fact]
+    public void ValidateAffectedUserCannotModify_NegativeEvent_AffectedUser_ShouldThrowBusinessRuleException()
+    {
+        var affectedUserId = Guid.NewGuid();
+
+        var act = () => EventRules.ValidateAffectedUserCannotModify(affectedUserId, affectedUserId, EventType.Negative);
+        act.Should().Throw<BusinessRuleException>();
+    }
+
+    [Fact]
+    public void ValidateAffectedUserCannotModify_NegativeEvent_DifferentUser_ShouldNotThrow()
+    {
+        var affectedUserId = Guid.NewGuid();
+        var modifierUserId = Guid.NewGuid();
+
+        var act = () => EventRules.ValidateAffectedUserCannotModify(affectedUserId, modifierUserId, EventType.Negative);
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void ValidateAffectedUserCannotModify_PositiveEvent_AffectedUser_ShouldNotThrow()
+    {
+        var affectedUserId = Guid.NewGuid();
+
+        var act = () => EventRules.ValidateAffectedUserCannotModify(affectedUserId, affectedUserId, EventType.Positive);
+        act.Should().NotThrow();
     }
 }

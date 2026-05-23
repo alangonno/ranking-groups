@@ -62,4 +62,64 @@ public static class SharedEventRules
             );
         }
     }
+
+    public static void ValidateCanClose(bool isClosed)
+    {
+        if (isClosed)
+        {
+            throw new BusinessRuleException(
+                "event_already_closed",
+                "O evento compartilhado já está fechado."
+            );
+        }
+    }
+
+    public static void ValidateCanRemoveParticipation(bool isClosed)
+    {
+        if (isClosed)
+        {
+            throw new BusinessRuleException(
+                "cannot_leave_closed_event",
+                "Não é possível remover participação de um evento compartilhado fechado."
+            );
+        }
+    }
+
+    public static void ValidateUserCanEditSharedEvent(Guid userId, Guid creatorId, IEnumerable<GroupMember> groupMembers)
+    {
+        if (userId == creatorId)
+        {
+            return;
+        }
+
+        var userRole = groupMembers.FirstOrDefault(gm => gm.UserId == userId)?.Role;
+        if (userRole == GroupRole.Admin || userRole == GroupRole.Owner)
+        {
+            return;
+        }
+
+        throw new BusinessRuleException(
+            "not_authorized_to_edit_shared_event",
+            "Apenas o criador, admin ou owner pode editar este evento compartilhado."
+        );
+    }
+
+    public static void ValidateUserCanCloseSharedEvent(Guid userId, Guid creatorId, IEnumerable<GroupMember> groupMembers)
+    {
+        if (userId == creatorId)
+        {
+            return;
+        }
+
+        var userRole = groupMembers.FirstOrDefault(gm => gm.UserId == userId)?.Role;
+        if (userRole == GroupRole.Admin || userRole == GroupRole.Owner)
+        {
+            return;
+        }
+
+        throw new BusinessRuleException(
+            "not_authorized_to_close_shared_event",
+            "Apenas o criador, admin ou owner pode fechar este evento compartilhado."
+        );
+    }
 }

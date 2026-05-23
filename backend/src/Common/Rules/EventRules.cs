@@ -21,11 +21,22 @@ public static class EventRules
 
     public static void ValidatePoints(int points)
     {
-        if (points == 0)
+        if (points <= 0)
         {
             throw new BusinessRuleException(
-                "score_zero_not_allowed",
-                "A pontuação do evento não pode ser zero."
+                "score_must_be_positive",
+                "A pontuação do evento deve ser maior que zero."
+            );
+        }
+    }
+
+    public static void ValidateAffectedUserCannotModify(Guid affectedUserId, Guid modifierUserId, EventType type)
+    {
+        if (type == EventType.Negative && affectedUserId == modifierUserId)
+        {
+            throw new BusinessRuleException(
+                "affected_user_cannot_modify_negative_event",
+                "O usuário afetado não pode editar ou excluir um evento negativo relacionado a ele."
             );
         }
     }

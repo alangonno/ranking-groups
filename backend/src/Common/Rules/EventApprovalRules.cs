@@ -56,4 +56,17 @@ public static class EventApprovalRules
             );
         }
     }
+
+    public static void ValidateApprovalQuorum(int approvalCount, int totalMembers)
+    {
+        var required = (int)Math.Ceiling(totalMembers / 3.0);
+
+        if (approvalCount < required)
+        {
+            throw new BusinessRuleException(
+                "insufficient_approval_quorum",
+                $"É necessário pelo menos {required} aprovação(ões). Atual: {approvalCount}."
+            );
+        }
+    }
 }

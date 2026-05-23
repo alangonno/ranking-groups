@@ -141,4 +141,53 @@ public class EventApprovalRulesTests
         var act = () => EventApprovalRules.ValidateEventIsPending(status);
         act.Should().Throw<BusinessRuleException>();
     }
+
+    [Fact]
+    public void ValidateApprovalQuorum_3Members_1Approval_ShouldNotThrow()
+    {
+        var act = () => EventApprovalRules.ValidateApprovalQuorum(approvalCount: 1, totalMembers: 3);
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void ValidateApprovalQuorum_3Members_0Approvals_ShouldThrowBusinessRuleException()
+    {
+        var act = () => EventApprovalRules.ValidateApprovalQuorum(approvalCount: 0, totalMembers: 3);
+        act.Should().Throw<BusinessRuleException>();
+    }
+
+    [Fact]
+    public void ValidateApprovalQuorum_5Members_2Approvals_ShouldNotThrow()
+    {
+        var act = () => EventApprovalRules.ValidateApprovalQuorum(approvalCount: 2, totalMembers: 5);
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void ValidateApprovalQuorum_5Members_1Approval_ShouldThrowBusinessRuleException()
+    {
+        var act = () => EventApprovalRules.ValidateApprovalQuorum(approvalCount: 1, totalMembers: 5);
+        act.Should().Throw<BusinessRuleException>();
+    }
+
+    [Fact]
+    public void ValidateApprovalQuorum_2Members_1Approval_ShouldNotThrow()
+    {
+        var act = () => EventApprovalRules.ValidateApprovalQuorum(approvalCount: 1, totalMembers: 2);
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void ValidateApprovalQuorum_4Members_2Approvals_ShouldNotThrow()
+    {
+        var act = () => EventApprovalRules.ValidateApprovalQuorum(approvalCount: 2, totalMembers: 4);
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void ValidateApprovalQuorum_4Members_1Approval_ShouldThrowBusinessRuleException()
+    {
+        var act = () => EventApprovalRules.ValidateApprovalQuorum(approvalCount: 1, totalMembers: 4);
+        act.Should().Throw<BusinessRuleException>();
+    }
 }
