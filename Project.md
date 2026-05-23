@@ -155,11 +155,38 @@ O ranking representa a reputação do membro dentro do grupo.
 
 # Estratégia do Ranking
 
-O ranking  deve ser recalculado em runtime fazendo a busca baseado em periodo especifico
+O ranking deve ser recalculado em runtime fazendo a busca baseado em periodo especifico
 mas para o ranking padrao range de 1 ano.
 
 A pontuação deve ser a soma de todos eventos do usuario. porem campo no usuario para 
-visualização mais rapida da pontuação atual
+visualização mais rapida da pontuação atual (CurrentScore).
+
+CurrentScore é atualizado automaticamente em:
+- criação de evento positivo
+- aprovação de evento negativo por quorum
+- participação em shared event
+- saída de shared event
+- deleção de evento aprovado
+- edição de pontos de evento aprovado
+
+# ScoreBalance
+
+Ao listar eventos de um usuário específico em um grupo, o sistema retorna `ScoreBalance`
+acumulado até cada evento. Esse valor é calculado em runtime e não é persistido.
+
+ScoreBalance = soma progressiva de eventos anteriores e aprovados apenas.
+Eventos pendentes aparecem na lista mas não entram no cálculo do acumulado.
+
+# Feed
+
+Feed básico mistura Events e SharedEvents do grupo em uma única timeline.
+Ordenado por CreatedAt descendente, com limite configurável (default 20, máx 100).
+
+# Ranking em Runtime
+
+Endpoint dedicado recalcula score de cada membro em runtime via RankingRules.
+Busca eventos aprovados do grupo no período, agrupa por AffectedUserId, calcula score.
+Não atualiza CurrentScore — é apenas leitura.
 
 ---
 
@@ -376,16 +403,22 @@ Toda implementação deve considerar:
 - a pontuação do evento é sempre um valor positivo absoluto
 - o tipo do evento (Positive/Negative) define o sinal aplicado no ranking
 - no cálculo do ranking: soma dos pontos de eventos positivos menos a soma dos pontos de eventos negativos
+- eventos positivos são aprovados automaticamente
+- eventos negativos iniciam como Pending e só impactam o ranking após aprovação
 
 ### Validações
 - não permitir pontuação menor ou igual a zero (aplicado a todos os eventos)
 - eventos aprovados não podem ser editados
 - eventos aprovados não podem ser deletados (hard delete)
 - criador não pode ser o mesmo que usuário afetado
+- ao deletar evento aprovado, o impacto no CurrentScore do afetado é revertido
+- ao editar pontos de evento aprovado, o CurrentScore do afetado é ajustado pelo delta
 
 ### Aprovação de Eventos Negativos
 - eventos negativos iniciam com status Pending
 - quorum mínimo de aprovação: 1/3 dos membros do grupo, arredondado para cima
+- quorum mínimo de rejeição: 1/3 dos membros do grupo, arredondado para cima
+- quando quorum de rejeição é atingido, o evento é **deletado** (hard delete), não altera status
 - criador não pode aprovar seu próprio evento
 - usuário afetado não pode votar na aprovação do evento
 - múltiplos votos do mesmo usuário são proibidos
@@ -393,6 +426,7 @@ Toda implementação deve considerar:
 ### Permissões
 - usuário afetado não pode editar ou excluir eventos negativos relacionados a ele
 - score só altera após aprovação mínima
+- evento rejeitado por quorum é deletado e não impacta o ranking
 
 ---
 
@@ -450,6 +484,9 @@ Após criado, membros do grupo podem marcar participação nesse evento.
 - eventos compartilhados pertencem a um grupo
 - criador não precisa obrigatoriamente participar
 - participação pode ser removida antes do fechamento do evento
+- apenas criador, admin ou owner pode editar ou deletar
+- ao deletar shared event, os pontos de todos os participantes são revertidos
+- pontos são aplicados imediatamente ao participar, mesmo sem fechar o evento
 
 ---
 
@@ -483,6 +520,56 @@ Participações devem permanecer registradas para:
 - auditoria
 
 ---
+
+# Auditoria
+
+Todo evento de criação, edição, deleção, votação, participação e saída de grupo é registrado em AuditLog.
+
+Ações auditadas:
+- event_created, event_updated, event_deleted
+- event_approved, event_rejected_deleted
+- shared_event_created, shared_event_updated, shared_event_deleted
+- shared_event_joined, shared_event_left, shared_event_closed
+- group_joined, group_left
+
+Cada log contém: action, entityName, entityId, performedByUserId, newValues (JSON estrutura A)
+
+# API Endpoints
+
+## Auth
+- POST /api/auth/register
+- POST /api/auth/login
+- POST /api/auth/refresh-token
+
+## Groups
+- POST /api/groups
+- POST /api/groups/join
+- GET /api/groups
+- GET /api/groups/{groupId}
+- POST /api/groups/{groupId}/leave
+
+## Events
+- POST /api/events
+- GET /api/events/{eventId}
+- GET /api/events/group/{groupId}
+- GET /api/events/group/{groupId}/user/{userId}
+- PUT /api/events/{eventId}
+- DELETE /api/events/{eventId}
+- POST /api/events/{eventId}/vote
+
+## Shared Events
+- POST /api/shared-events
+- GET /api/shared-events/{sharedEventId}
+- GET /api/shared-events/group/{groupId}
+- PUT /api/shared-events/{sharedEventId}
+- DELETE /api/shared-events/{sharedEventId}
+- POST /api/shared-events/{sharedEventId}/join
+- POST /api/shared-events/{sharedEventId}/leave
+- POST /api/shared-events/{sharedEventId}/close
+
+## Rankings
+- GET /api/rankings/group/{groupId}?fromDate=...&toDate=...
+- GET /api/rankings/group/{groupId}/feed?limit=...
 
 # Anti-Abuso
 
