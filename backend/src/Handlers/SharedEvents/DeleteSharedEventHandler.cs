@@ -1,3 +1,4 @@
+using backend.src.Common;
 using backend.src.Common.Exceptions;
 using backend.src.Common.Rules;
 using backend.src.Data;
@@ -29,6 +30,7 @@ public class DeleteSharedEventHandler : IDeleteSharedEventHandler
     private readonly ISharedEventParticipantRepository _participantRepository;
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IAuditLogRepository _auditLogRepository;
     private readonly AppDbContext _context;
 
     public DeleteSharedEventHandler(
@@ -36,12 +38,14 @@ public class DeleteSharedEventHandler : IDeleteSharedEventHandler
         ISharedEventParticipantRepository participantRepository,
         IGroupMemberRepository groupMemberRepository,
         ICurrentUserService currentUserService,
+        IAuditLogRepository auditLogRepository,
         AppDbContext context)
     {
         _sharedEventRepository = sharedEventRepository;
         _participantRepository = participantRepository;
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
+        _auditLogRepository = auditLogRepository;
         _context = context;
     }
 
@@ -72,7 +76,13 @@ public class DeleteSharedEventHandler : IDeleteSharedEventHandler
             }
         }
 
+        var participantsCount = participants.Count();
+
         _sharedEventRepository.Remove(sharedEvent);
+        await _context.SaveChangesAsync(ct);
+
+        var auditLog = AuditLogBuilder.SharedEventDeleted(sharedEvent, participantsCount, userId);
+        _auditLogRepository.Add(auditLog);
         await _context.SaveChangesAsync(ct);
 
         return new DeleteSharedEventResponse { Success = true };

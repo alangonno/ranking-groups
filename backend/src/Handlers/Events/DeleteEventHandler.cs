@@ -1,3 +1,4 @@
+using backend.src.Common;
 using backend.src.Common.Exceptions;
 using backend.src.Common.Rules;
 using backend.src.Data;
@@ -28,17 +29,20 @@ public class DeleteEventHandler : IDeleteEventHandler
     private readonly IEventRepository _eventRepository;
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IAuditLogRepository _auditLogRepository;
     private readonly AppDbContext _context;
 
     public DeleteEventHandler(
         IEventRepository eventRepository,
         IGroupMemberRepository groupMemberRepository,
         ICurrentUserService currentUserService,
+        IAuditLogRepository auditLogRepository,
         AppDbContext context)
     {
         _eventRepository = eventRepository;
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
+        _auditLogRepository = auditLogRepository;
         _context = context;
     }
 
@@ -74,7 +78,15 @@ public class DeleteEventHandler : IDeleteEventHandler
             }
         }
 
+        var revertedPoints = @event.Status == EventStatus.Approved
+            ? (@event.Type == EventType.Negative ? -@event.Points : @event.Points)
+            : 0;
+
         _eventRepository.Remove(@event);
+        await _context.SaveChangesAsync(ct);
+
+        var auditLog = AuditLogBuilder.EventDeleted(@event, userId, revertedPoints);
+        _auditLogRepository.Add(auditLog);
         await _context.SaveChangesAsync(ct);
 
         return new DeleteEventResponse { Success = true };

@@ -1,3 +1,4 @@
+using backend.src.Common;
 using backend.src.Common.Exceptions;
 using backend.src.Common.Rules;
 using backend.src.Data;
@@ -30,17 +31,20 @@ public class LeaveGroupHandler : ILeaveGroupHandler
     private readonly IGroupRepository _groupRepository;
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IAuditLogRepository _auditLogRepository;
     private readonly AppDbContext _context;
 
     public LeaveGroupHandler(
         IGroupRepository groupRepository,
         IGroupMemberRepository groupMemberRepository,
         ICurrentUserService currentUserService,
+        IAuditLogRepository auditLogRepository,
         AppDbContext context)
     {
         _groupRepository = groupRepository;
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
+        _auditLogRepository = auditLogRepository;
         _context = context;
     }
 
@@ -66,9 +70,10 @@ public class LeaveGroupHandler : ILeaveGroupHandler
             _groupMemberRepository.Update(newOwner);
         }
 
+        var group = await _groupRepository.GetByIdAsync(request.GroupId);
+
         if (isOwner && memberCount == 1)
         {
-            var group = await _groupRepository.GetByIdAsync(request.GroupId);
             if (group != null)
             {
                 _groupRepository.Remove(group);
@@ -82,6 +87,11 @@ public class LeaveGroupHandler : ILeaveGroupHandler
             }
         }
 
+        await _context.SaveChangesAsync(ct);
+
+        var deletedGroup = isOwner && memberCount == 1;
+        var auditLog = AuditLogBuilder.GroupLeft(group!, userId, leavingMember?.User?.Name ?? string.Empty, deletedGroup);
+        _auditLogRepository.Add(auditLog);
         await _context.SaveChangesAsync(ct);
 
         var message = isOwner && memberCount == 1

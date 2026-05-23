@@ -1,3 +1,4 @@
+using backend.src.Common;
 using backend.src.Common.Exceptions;
 using backend.src.Common.Rules;
 using backend.src.Data;
@@ -40,6 +41,7 @@ public class CreateEventHandler : ICreateEventHandler
     private readonly IGroupRepository _groupRepository;
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IAuditLogRepository _auditLogRepository;
     private readonly AppDbContext _context;
 
     public CreateEventHandler(
@@ -47,12 +49,14 @@ public class CreateEventHandler : ICreateEventHandler
         IGroupRepository groupRepository,
         IGroupMemberRepository groupMemberRepository,
         ICurrentUserService currentUserService,
+        IAuditLogRepository auditLogRepository,
         AppDbContext context)
     {
         _eventRepository = eventRepository;
         _groupRepository = groupRepository;
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
+        _auditLogRepository = auditLogRepository;
         _context = context;
     }
 
@@ -104,6 +108,10 @@ public class CreateEventHandler : ICreateEventHandler
             await UpdateAffectedUserScoreAsync(request.GroupId, request.AffectedUserId, request.Type, request.Points);
             await _context.SaveChangesAsync(ct);
         }
+
+        var auditLog = AuditLogBuilder.EventCreated(@event, userId);
+        _auditLogRepository.Add(auditLog);
+        await _context.SaveChangesAsync(ct);
 
         return new CreateEventResponse
         {

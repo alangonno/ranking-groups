@@ -1,3 +1,4 @@
+using backend.src.Common;
 using backend.src.Common.Exceptions;
 using backend.src.Common.Rules;
 using backend.src.Data;
@@ -31,6 +32,7 @@ public class CloseSharedEventHandler : ICloseSharedEventHandler
     private readonly ISharedEventParticipantRepository _participantRepository;
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IAuditLogRepository _auditLogRepository;
     private readonly AppDbContext _context;
 
     public CloseSharedEventHandler(
@@ -38,12 +40,14 @@ public class CloseSharedEventHandler : ICloseSharedEventHandler
         ISharedEventParticipantRepository participantRepository,
         IGroupMemberRepository groupMemberRepository,
         ICurrentUserService currentUserService,
+        IAuditLogRepository auditLogRepository,
         AppDbContext context)
     {
         _sharedEventRepository = sharedEventRepository;
         _participantRepository = participantRepository;
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
+        _auditLogRepository = auditLogRepository;
         _context = context;
     }
 
@@ -69,6 +73,9 @@ public class CloseSharedEventHandler : ICloseSharedEventHandler
         await _context.SaveChangesAsync(ct);
 
         var participants = await _participantRepository.GetBySharedEventAsync(request.SharedEventId);
+        var auditLog = AuditLogBuilder.SharedEventClosed(sharedEvent, participants.Count(), userId);
+        _auditLogRepository.Add(auditLog);
+        await _context.SaveChangesAsync(ct);
 
         return new CloseSharedEventResponse
         {

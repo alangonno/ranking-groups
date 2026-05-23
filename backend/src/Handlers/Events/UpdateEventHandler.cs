@@ -1,3 +1,4 @@
+using backend.src.Common;
 using backend.src.Common.Exceptions;
 using backend.src.Common.Rules;
 using backend.src.Data;
@@ -36,17 +37,20 @@ public class UpdateEventHandler : IUpdateEventHandler
     private readonly IEventRepository _eventRepository;
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IAuditLogRepository _auditLogRepository;
     private readonly AppDbContext _context;
 
     public UpdateEventHandler(
         IEventRepository eventRepository,
         IGroupMemberRepository groupMemberRepository,
         ICurrentUserService currentUserService,
+        IAuditLogRepository auditLogRepository,
         AppDbContext context)
     {
         _eventRepository = eventRepository;
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
+        _auditLogRepository = auditLogRepository;
         _context = context;
     }
 
@@ -97,7 +101,13 @@ public class UpdateEventHandler : IUpdateEventHandler
         @event.Description = request.Description;
         @event.Points = request.Points;
 
+        var oldPoints = @event.Points;
+
         _eventRepository.Update(@event);
+        await _context.SaveChangesAsync(ct);
+
+        var auditLog = AuditLogBuilder.EventUpdated(@event, oldPoints, userId);
+        _auditLogRepository.Add(auditLog);
         await _context.SaveChangesAsync(ct);
 
         return new UpdateEventResponse

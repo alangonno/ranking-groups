@@ -1,3 +1,4 @@
+using backend.src.Common;
 using backend.src.Common.Exceptions;
 using backend.src.Common.Rules;
 using backend.src.Data;
@@ -30,17 +31,20 @@ public class JoinGroupHandler : IJoinGroupHandler
     private readonly IGroupRepository _groupRepository;
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IAuditLogRepository _auditLogRepository;
     private readonly AppDbContext _context;
 
     public JoinGroupHandler(
         IGroupRepository groupRepository,
         IGroupMemberRepository groupMemberRepository,
         ICurrentUserService currentUserService,
+        IAuditLogRepository auditLogRepository,
         AppDbContext context)
     {
         _groupRepository = groupRepository;
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
+        _auditLogRepository = auditLogRepository;
         _context = context;
     }
 
@@ -68,6 +72,10 @@ public class JoinGroupHandler : IJoinGroupHandler
         };
 
         _groupMemberRepository.Add(member);
+        await _context.SaveChangesAsync(ct);
+
+        var auditLog = AuditLogBuilder.GroupJoined(group, userId, member.User?.Name ?? string.Empty);
+        _auditLogRepository.Add(auditLog);
         await _context.SaveChangesAsync(ct);
 
         return new JoinGroupResponse

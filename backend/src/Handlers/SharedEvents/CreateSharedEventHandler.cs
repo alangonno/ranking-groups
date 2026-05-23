@@ -1,3 +1,4 @@
+using backend.src.Common;
 using backend.src.Common.Exceptions;
 using backend.src.Common.Rules;
 using backend.src.Data;
@@ -36,6 +37,7 @@ public class CreateSharedEventHandler : ICreateSharedEventHandler
     private readonly IGroupRepository _groupRepository;
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IAuditLogRepository _auditLogRepository;
     private readonly AppDbContext _context;
 
     public CreateSharedEventHandler(
@@ -43,12 +45,14 @@ public class CreateSharedEventHandler : ICreateSharedEventHandler
         IGroupRepository groupRepository,
         IGroupMemberRepository groupMemberRepository,
         ICurrentUserService currentUserService,
+        IAuditLogRepository auditLogRepository,
         AppDbContext context)
     {
         _sharedEventRepository = sharedEventRepository;
         _groupRepository = groupRepository;
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
+        _auditLogRepository = auditLogRepository;
         _context = context;
     }
 
@@ -81,6 +85,10 @@ public class CreateSharedEventHandler : ICreateSharedEventHandler
         };
 
         _sharedEventRepository.Add(sharedEvent);
+        await _context.SaveChangesAsync(ct);
+
+        var auditLog = AuditLogBuilder.SharedEventCreated(sharedEvent, userId);
+        _auditLogRepository.Add(auditLog);
         await _context.SaveChangesAsync(ct);
 
         return new CreateSharedEventResponse

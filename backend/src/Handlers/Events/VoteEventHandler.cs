@@ -1,3 +1,4 @@
+using backend.src.Common;
 using backend.src.Common.Exceptions;
 using backend.src.Common.Rules;
 using backend.src.Data;
@@ -33,6 +34,7 @@ public class VoteEventHandler : IVoteEventHandler
     private readonly IEventApprovalRepository _eventApprovalRepository;
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IAuditLogRepository _auditLogRepository;
     private readonly AppDbContext _context;
 
     public VoteEventHandler(
@@ -40,12 +42,14 @@ public class VoteEventHandler : IVoteEventHandler
         IEventApprovalRepository eventApprovalRepository,
         IGroupMemberRepository groupMemberRepository,
         ICurrentUserService currentUserService,
+        IAuditLogRepository auditLogRepository,
         AppDbContext context)
     {
         _eventRepository = eventRepository;
         _eventApprovalRepository = eventApprovalRepository;
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
+        _auditLogRepository = auditLogRepository;
         _context = context;
     }
 
@@ -101,6 +105,11 @@ public class VoteEventHandler : IVoteEventHandler
                 eventApproved = true;
 
                 await _context.SaveChangesAsync(ct);
+
+                var appliedPoints = @event.Type == EventType.Negative ? -@event.Points : @event.Points;
+                var approvedLog = AuditLogBuilder.EventApproved(@event, userId, appliedPoints);
+                _auditLogRepository.Add(approvedLog);
+                await _context.SaveChangesAsync(ct);
             }
             catch (BusinessRuleException)
             {
@@ -117,6 +126,10 @@ public class VoteEventHandler : IVoteEventHandler
 
                 // Quorum de rejeição atingido — deletar o evento
                 _eventRepository.Remove(@event);
+                await _context.SaveChangesAsync(ct);
+
+                var rejectedLog = AuditLogBuilder.EventRejectedDeleted(@event, userId);
+                _auditLogRepository.Add(rejectedLog);
                 await _context.SaveChangesAsync(ct);
 
                 return new VoteEventResponse

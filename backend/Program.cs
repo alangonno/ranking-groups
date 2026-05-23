@@ -37,6 +37,7 @@ builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IEventApprovalRepository, EventApprovalRepository>();
 builder.Services.AddScoped<ISharedEventRepository, SharedEventRepository>();
 builder.Services.AddScoped<ISharedEventParticipantRepository, SharedEventParticipantRepository>();
+builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 
 // Handlers
 builder.Services.AddScoped<IRegisterHandler, RegisterHandler>();
