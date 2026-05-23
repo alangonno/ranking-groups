@@ -3,6 +3,7 @@ using backend.src.Extensions;
 using backend.src.Handlers.Auth;
 using backend.src.Handlers.Events;
 using backend.src.Handlers.Groups;
+using backend.src.Handlers.Rankings;
 using backend.src.Handlers.SharedEvents;
 using backend.src.Middleware;
 using backend.src.Repositories;
@@ -54,6 +55,7 @@ builder.Services.AddScoped<IListGroupEventsHandler, ListGroupEventsHandler>();
 builder.Services.AddScoped<IUpdateEventHandler, UpdateEventHandler>();
 builder.Services.AddScoped<IDeleteEventHandler, DeleteEventHandler>();
 builder.Services.AddScoped<IVoteEventHandler, VoteEventHandler>();
+builder.Services.AddScoped<IListUserGroupEventsHandler, ListUserGroupEventsHandler>();
 
 // Shared Event Handlers
 builder.Services.AddScoped<ICreateSharedEventHandler, CreateSharedEventHandler>();
@@ -63,6 +65,11 @@ builder.Services.AddScoped<IJoinSharedEventHandler, JoinSharedEventHandler>();
 builder.Services.AddScoped<ILeaveSharedEventHandler, LeaveSharedEventHandler>();
 builder.Services.AddScoped<IUpdateSharedEventHandler, UpdateSharedEventHandler>();
 builder.Services.AddScoped<ICloseSharedEventHandler, CloseSharedEventHandler>();
+builder.Services.AddScoped<IDeleteSharedEventHandler, DeleteSharedEventHandler>();
+
+// Ranking and Feed Handlers
+builder.Services.AddScoped<IGetGroupRankingHandler, GetGroupRankingHandler>();
+builder.Services.AddScoped<IGetGroupFeedHandler, GetGroupFeedHandler>();
 
 // Database
 var connectionString = ConnectionStringBuilder.BuildFromEnvironment();

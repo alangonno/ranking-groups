@@ -104,7 +104,32 @@ public class VoteEventHandler : IVoteEventHandler
             }
             catch (BusinessRuleException)
             {
-                // Quorum ainda não atingido, evento permanece pendente
+                // Quorum de aprovação ainda não atingido, evento permanece pendente
+            }
+        }
+
+        if (request.VoteType == EventVoteType.Reject)
+        {
+            var rejectionCount = updatedApprovals.Count(a => a.VoteType == EventVoteType.Reject);
+            try
+            {
+                EventApprovalRules.ValidateApprovalQuorum(rejectionCount, totalMembers);
+
+                // Quorum de rejeição atingido — deletar o evento
+                _eventRepository.Remove(@event);
+                await _context.SaveChangesAsync(ct);
+
+                return new VoteEventResponse
+                {
+                    EventId = @event.Id,
+                    Status = "Deleted",
+                    ApprovalCount = approvalCount,
+                    EventApproved = false
+                };
+            }
+            catch (BusinessRuleException)
+            {
+                // Quorum de rejeição ainda não atingido, evento permanece pendente
             }
         }
 

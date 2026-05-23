@@ -64,6 +64,16 @@ public class DeleteEventHandler : IDeleteEventHandler
             throw new BusinessRuleException("not_event_creator", "Apenas o criador do evento pode excluí-lo.");
         }
 
+        if (@event.Status == EventStatus.Approved)
+        {
+            var member = await _groupMemberRepository.GetByGroupAndUserAsync(@event.GroupId, @event.AffectedUserId);
+            if (member != null)
+            {
+                member.CurrentScore -= @event.Type == EventType.Negative ? -@event.Points : @event.Points;
+                _groupMemberRepository.Update(member);
+            }
+        }
+
         _eventRepository.Remove(@event);
         await _context.SaveChangesAsync(ct);
 

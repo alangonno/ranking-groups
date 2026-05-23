@@ -76,6 +76,23 @@ public class UpdateEventHandler : IUpdateEventHandler
 
         EventRules.ValidatePoints(request.Points);
 
+        if (@event.Status == EventStatus.Approved)
+        {
+            var oldImpact = @event.Type == EventType.Negative ? -@event.Points : @event.Points;
+            var newImpact = @event.Type == EventType.Negative ? -request.Points : request.Points;
+            var delta = newImpact - oldImpact;
+
+            if (delta != 0)
+            {
+                var member = await _groupMemberRepository.GetByGroupAndUserAsync(@event.GroupId, @event.AffectedUserId);
+                if (member != null)
+                {
+                    member.CurrentScore += delta;
+                    _groupMemberRepository.Update(member);
+                }
+            }
+        }
+
         @event.Title = request.Title;
         @event.Description = request.Description;
         @event.Points = request.Points;
