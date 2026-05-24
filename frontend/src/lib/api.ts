@@ -3,16 +3,22 @@ import axios from "axios";
 export class ApiError extends Error {
   statusCode: number;
   data: unknown;
+  type?: string;
+  rule?: string;
 
   constructor(
     message: string,
     statusCode: number,
-    data: unknown
+    data: unknown,
+    type?: string,
+    rule?: string
   ) {
     super(message);
     this.name = "ApiError";
     this.statusCode = statusCode;
     this.data = data;
+    this.type = type;
+    this.rule = rule;
   }
 }
 
@@ -35,13 +41,15 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (axios.isAxiosError(error)) {
+      const data = error.response?.data as Record<string, unknown> | undefined;
       const message =
-        error.response?.data?.message ||
+        (data?.Message as string) ||
         error.message ||
         "Erro na requisição";
       const statusCode = error.response?.status || 500;
-      const data = error.response?.data || null;
-      return Promise.reject(new ApiError(message, statusCode, data));
+      const type = data?.Type as string | undefined;
+      const rule = data?.Rule as string | undefined;
+      return Promise.reject(new ApiError(message, statusCode, data, type, rule));
     }
     return Promise.reject(error);
   }
