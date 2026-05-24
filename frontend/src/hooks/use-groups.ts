@@ -1,10 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { deleteJson, getJson, postJson } from "../lib/api";
-import {
+import { getJson, postJson } from "../lib/api";
+import type {
   CreateGroupRequest,
   CreateGroupResponse,
   Group,
-  GroupMember,
   JoinGroupRequest,
   JoinGroupResponse,
 } from "../types/group/group";

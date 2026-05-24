@@ -9,7 +9,7 @@ namespace backend.src.Handlers.Auth;
 // 1. Request
 public class LoginRequest
 {
-    public string Login { get; set; } = string.Empty; // Email ou Username
+    public string Email { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
 }
 
@@ -17,8 +17,12 @@ public class LoginRequest
 public class LoginResponse
 {
     public Guid UserId { get; set; }
-    public string Token { get; set; } = string.Empty;
+    public string AccessToken { get; set; } = string.Empty;
     public string RefreshToken { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string Username { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string? AvatarUrl { get; set; }
 }
 
 // 3. Interface
@@ -54,21 +58,21 @@ public class LoginHandler : ILoginHandler
     {
         LoginRequestValidator.Validate(request);
 
-        User? user = await _userRepository.GetByEmailAsync(request.Login);
+        User? user = await _userRepository.GetByEmailAsync(request.Email);
         if (user == null)
         {
-            user = await _userRepository.GetByUsernameAsync(request.Login);
+            user = await _userRepository.GetByUsernameAsync(request.Email);
         }
 
         if (user == null)
         {
-            throw new BusinessRuleException("invalid_credentials", "Credenciais inválidas.");
+            throw new BusinessRuleException("invalid_credentials", "Email ou senha incorretos.");
         }
 
         var passwordValid = _passwordHasher.Verify(request.Password, user.PasswordHash);
         if (!passwordValid)
         {
-            throw new BusinessRuleException("invalid_credentials", "Credenciais inválidas.");
+            throw new BusinessRuleException("invalid_credentials", "Email ou senha incorretos.");
         }
 
         var token = _jwtService.GenerateToken(user.Id);
@@ -88,8 +92,12 @@ public class LoginHandler : ILoginHandler
         return new LoginResponse
         {
             UserId = user.Id,
-            Token = token,
-            RefreshToken = refreshTokenValue
+            AccessToken = token,
+            RefreshToken = refreshTokenValue,
+            Name = user.Name,
+            Username = user.Username,
+            Email = user.Email,
+            AvatarUrl = user.AvatarUrl
         };
     }
 }
@@ -99,8 +107,8 @@ public static class LoginRequestValidator
 {
     public static void Validate(LoginRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.Login))
-            throw new BusinessRuleException("login_required", "Email ou username é obrigatório.");
+        if (string.IsNullOrWhiteSpace(request.Email))
+            throw new BusinessRuleException("email_required", "Email é obrigatório.");
 
         if (string.IsNullOrWhiteSpace(request.Password))
             throw new BusinessRuleException("password_required", "Senha é obrigatória.");

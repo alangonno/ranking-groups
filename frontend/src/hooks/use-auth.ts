@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { postJson } from "../lib/api";
 import {
   getAccessToken,
@@ -7,11 +7,23 @@ import {
   setAccessToken,
 } from "../lib/auth-token";
 import { queryClient } from "../lib/query-client";
-import { LoginRequest, LoginResponse } from "../types/auth/user";
-import { RegisterRequest, RegisterResponse } from "../types/auth/user";
-import { User } from "../types/auth/user";
+import type { LoginRequest, LoginResponse } from "../types/auth/user";
+import type { RegisterRequest, RegisterResponse } from "../types/auth/user";
+import type { User } from "../types/auth/user";
 
 const AUTH_KEY = ["auth", "me"];
+
+function mapToUser(data: { userId: string; name: string; username: string; email: string; avatarUrl?: string }): User {
+  return {
+    id: data.userId,
+    name: data.name,
+    username: data.username,
+    email: data.email,
+    avatarUrl: data.avatarUrl,
+    createdAt: "",
+    updatedAt: "",
+  };
+}
 
 export function useLogin() {
   return useMutation({
@@ -19,7 +31,7 @@ export function useLogin() {
       postJson<LoginResponse>("/api/auth/login", payload),
     onSuccess: (data) => {
       setAccessToken(data.accessToken);
-      queryClient.setQueryData(AUTH_KEY, data.user);
+      queryClient.setQueryData(AUTH_KEY, mapToUser(data));
     },
   });
 }
@@ -28,6 +40,10 @@ export function useRegister() {
   return useMutation({
     mutationFn: (payload: RegisterRequest) =>
       postJson<RegisterResponse>("/api/auth/register", payload),
+    onSuccess: (data) => {
+      setAccessToken(data.accessToken);
+      queryClient.setQueryData(AUTH_KEY, mapToUser(data));
+    },
   });
 }
 

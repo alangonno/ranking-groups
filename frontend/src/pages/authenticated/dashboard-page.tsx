@@ -1,0 +1,219 @@
+import { useEffect, useState } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { Plus, Bell, ArrowLeft } from "lucide-react";
+import { AppButton } from "../../components/ui/app-button";
+import { EventCard } from "../../components/authenticated/events/event-card";
+import { VotingCard } from "../../components/authenticated/events/voting-card";
+import { TopMembersWidget } from "../../components/authenticated/ranking/top-members-widget";
+import { StatsWidget } from "../../components/authenticated/ranking/stats-widget";
+import { HeroScoreCard } from "../../components/authenticated/dashboard/hero-score-card";
+import { PendingVotesSection } from "../../components/authenticated/dashboard/pending-votes-section";
+import { FeedTabs } from "../../components/authenticated/dashboard/feed-tabs";
+import {
+  mockEvents,
+  mockEventsGroup2,
+  mockTopMembers,
+  mockStats,
+  mockGroups,
+} from "../../lib/mock-data";
+import { setLastGroupId } from "../../lib/group-storage";
+import { EventStatus } from "../../types/event/event";
+
+export function DashboardPage() {
+  const { groupId } = useParams<{ groupId: string }>();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<"all" | "pending">("all");
+
+  // Find group data
+  const group = mockGroups.find((g) => g.id === groupId);
+
+  // Get events for this group
+  const groupEvents =
+    groupId === "grp-002"
+      ? mockEventsGroup2
+      : groupId === "grp-001"
+      ? mockEvents
+      : mockEvents; // fallback
+
+  // Save last visited group
+  useEffect(() => {
+    if (groupId) {
+      setLastGroupId(groupId);
+    }
+  }, [groupId]);
+
+  // Redirect if no groupId
+  useEffect(() => {
+    if (!groupId) {
+      navigate("/groups");
+    }
+  }, [groupId, navigate]);
+
+  if (!groupId || !group) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-text-secondary">Grupo não encontrado</p>
+      </div>
+    );
+  }
+
+  const allEvents = groupEvents;
+  const pendingEvents = allEvents.filter((e) => e.status === EventStatus.Pending);
+  const approvedEvents = allEvents.filter((e) => e.status === EventStatus.Approved);
+
+  const displayEvents = activeTab === "pending" ? pendingEvents : allEvents;
+
+  return (
+    <div className="p-4 lg:p-8 max-w-7xl mx-auto">
+      {/* Header Mobile */}
+      <div className="lg:hidden flex items-center justify-between mb-5">
+        <div className="flex items-center gap-2">
+          <Link
+            to="/groups"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-text-secondary hover:bg-gray-100 transition-colors"
+          >
+            <ArrowLeft size={18} />
+          </Link>
+          <div>
+            <h1 className="text-lg font-bold text-text-primary">{group.name}</h1>
+            <p className="text-xs text-text-muted">Dashboard</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          aria-label="Notificações"
+          className="w-9 h-9 rounded-full flex items-center justify-center text-text-secondary hover:bg-gray-100 transition-colors"
+        >
+          <Bell size={18} />
+        </button>
+      </div>
+
+      {/* Header Desktop */}
+      <div className="hidden lg:flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <Link
+            to="/groups"
+            className="text-sm text-text-secondary hover:text-text-primary flex items-center gap-1 transition-colors"
+          >
+            <ArrowLeft size={16} />
+            Meus Grupos
+          </Link>
+          <span className="text-text-muted">/</span>
+          <h1 className="text-xl font-bold text-text-primary">{group.name}</h1>
+        </div>
+        <AppButton color="red" size="sm">
+          <span className="flex items-center gap-1.5">
+            <Plus size={16} />
+            Novo Evento
+          </span>
+        </AppButton>
+      </div>
+
+      {/* Mobile: Hero Score + Pendentes + Feed */}
+      <div className="lg:hidden space-y-5">
+        {/* Hero Score Card */}
+        <HeroScoreCard score={2450} delta={150} />
+
+        {/* Pending Votes */}
+        <PendingVotesSection events={pendingEvents} />
+
+        {/* Tabs */}
+        <FeedTabs
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          pendingCount={pendingEvents.length}
+        />
+
+        {/* Feed */}
+        <div className="space-y-3">
+          <h2 className="text-base font-semibold text-text-primary">
+            Feed Recente
+          </h2>
+
+          {displayEvents.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-text-secondary text-sm mb-4">
+                Nenhum evento recente
+              </p>
+              <AppButton color="red" size="sm">
+                <Plus size={16} className="mr-1" />
+                Criar primeiro evento
+              </AppButton>
+            </div>
+          ) : (
+            displayEvents.map((event) =>
+              event.status === EventStatus.Pending ? (
+                <VotingCard key={event.id} event={event} />
+              ) : (
+                <EventCard key={event.id} event={event} />
+              )
+            )
+          )}
+        </div>
+
+        {/* Widgets embaixo no mobile */}
+        <div className="pt-4 space-y-4">
+          <TopMembersWidget members={mockTopMembers} />
+          <StatsWidget
+            weeklyEvents={mockStats.weeklyEvents}
+            activeMembers={mockStats.activeMembers}
+          />
+        </div>
+      </div>
+
+      {/* Desktop: Grid 3 colunas */}
+      <div className="hidden lg:grid lg:grid-cols-12 gap-6">
+        {/* Feed Central */}
+        <div className="lg:col-span-7 space-y-4">
+          {/* Tabs */}
+          <FeedTabs
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            pendingCount={pendingEvents.length}
+          />
+
+          {/* Pending Highlight */}
+          {pendingEvents.length > 0 && activeTab === "all" && (
+            <div className="space-y-3">
+              {pendingEvents.map((event) => (
+                <VotingCard key={event.id} event={event} />
+              ))}
+            </div>
+          )}
+
+          {/* Feed List */}
+          <div className="space-y-3">
+            {activeTab === "all"
+              ? approvedEvents.map((event) => (
+                  <EventCard key={event.id} event={event} />
+                ))
+              : pendingEvents.map((event) => (
+                  <VotingCard key={event.id} event={event} />
+                ))}
+          </div>
+
+          {displayEvents.length === 0 && (
+            <div className="text-center py-16">
+              <p className="text-text-secondary mb-4">
+                Este grupo está muito silencioso.
+              </p>
+              <AppButton color="red" size="sm">
+                <Plus size={16} className="mr-1" />
+                Criar primeiro evento
+              </AppButton>
+            </div>
+          )}
+        </div>
+
+        {/* Sidebar Direita - Widgets */}
+        <div className="lg:col-span-5 space-y-4">
+          <TopMembersWidget members={mockTopMembers} />
+          <StatsWidget
+            weeklyEvents={mockStats.weeklyEvents}
+            activeMembers={mockStats.activeMembers}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}

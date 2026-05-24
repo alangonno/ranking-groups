@@ -51,8 +51,11 @@ public class RegisterHandlerTests
 
         result.Should().NotBeNull();
         result.UserId.Should().NotBe(Guid.Empty);
-        result.Token.Should().Be("jwt_token");
+        result.AccessToken.Should().Be("jwt_token");
         result.RefreshToken.Should().NotBeNullOrEmpty();
+        result.Name.Should().Be(request.Name);
+        result.Username.Should().Be(request.Username);
+        result.Email.Should().Be(request.Email);
 
         _userRepository.Received(1).Add(Arg.Any<User>());
         _refreshTokenRepository.Received(1).Add(Arg.Any<RefreshToken>());

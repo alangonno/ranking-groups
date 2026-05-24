@@ -13,9 +13,13 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
+  userId: string;
   accessToken: string;
   refreshToken: string;
-  user: User;
+  name: string;
+  username: string;
+  email: string;
+  avatarUrl?: string;
 }
 
 export interface RegisterRequest {
@@ -26,7 +30,13 @@ export interface RegisterRequest {
 }
 
 export interface RegisterResponse {
-  user: User;
+  userId: string;
+  accessToken: string;
+  refreshToken: string;
+  name: string;
+  username: string;
+  email: string;
+  avatarUrl?: string;
 }
 
 export interface RefreshTokenRequest {

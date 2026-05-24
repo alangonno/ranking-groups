@@ -19,8 +19,12 @@ public class RegisterRequest
 public class RegisterResponse
 {
     public Guid UserId { get; set; }
-    public string Token { get; set; } = string.Empty;
+    public string AccessToken { get; set; } = string.Empty;
     public string RefreshToken { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string Username { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string? AvatarUrl { get; set; }
 }
 
 // 3. Interface
@@ -96,8 +100,12 @@ public class RegisterHandler : IRegisterHandler
         return new RegisterResponse
         {
             UserId = user.Id,
-            Token = token,
-            RefreshToken = refreshTokenValue
+            AccessToken = token,
+            RefreshToken = refreshTokenValue,
+            Name = user.Name,
+            Username = user.Username,
+            Email = user.Email,
+            AvatarUrl = user.AvatarUrl
         };
     }
 }

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { deleteJson, getJson, postJson, putJson } from "../lib/api";
-import {
+import type {
   CreateEventRequest,
   CreateEventResponse,
   Event,

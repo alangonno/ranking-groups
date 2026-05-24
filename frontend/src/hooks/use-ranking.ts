@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { getJson } from "../lib/api";
-import { RankingEntry, RankingQueryParams } from "../types/ranking/ranking";
+import type { RankingEntry, RankingQueryParams } from "../types/ranking/ranking";
 
 export function useRanking(groupId: string, params?: RankingQueryParams) {
   return useQuery<RankingEntry[]>({
