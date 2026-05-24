@@ -15,19 +15,22 @@ public class GroupsController : ControllerBase
     private readonly IListUserGroupsHandler _listUserGroupsHandler;
     private readonly IGetGroupDetailsHandler _getGroupDetailsHandler;
     private readonly ILeaveGroupHandler _leaveGroupHandler;
+    private readonly IGetUserGroupProfileHandler _getUserGroupProfileHandler;
 
     public GroupsController(
         ICreateGroupHandler createGroupHandler,
         IJoinGroupHandler joinGroupHandler,
         IListUserGroupsHandler listUserGroupsHandler,
         IGetGroupDetailsHandler getGroupDetailsHandler,
-        ILeaveGroupHandler leaveGroupHandler)
+        ILeaveGroupHandler leaveGroupHandler,
+        IGetUserGroupProfileHandler getUserGroupProfileHandler)
     {
         _createGroupHandler = createGroupHandler;
         _joinGroupHandler = joinGroupHandler;
         _listUserGroupsHandler = listUserGroupsHandler;
         _getGroupDetailsHandler = getGroupDetailsHandler;
         _leaveGroupHandler = leaveGroupHandler;
+        _getUserGroupProfileHandler = getUserGroupProfileHandler;
     }
 
     [HttpPost]
@@ -64,6 +67,14 @@ public class GroupsController : ControllerBase
     {
         request.GroupId = groupId;
         var response = await _leaveGroupHandler.HandleAsync(request, ct);
+        return Ok(response);
+    }
+
+    [HttpGet("{groupId:guid}/members/{userId:guid}")]
+    public async Task<IActionResult> GetUserProfile(Guid groupId, Guid userId, CancellationToken ct)
+    {
+        var request = new GetUserGroupProfileRequest { GroupId = groupId, UserId = userId };
+        var response = await _getUserGroupProfileHandler.HandleAsync(request, ct);
         return Ok(response);
     }
 }

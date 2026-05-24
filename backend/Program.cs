@@ -48,6 +48,7 @@ builder.Services.AddScoped<IJoinGroupHandler, JoinGroupHandler>();
 builder.Services.AddScoped<IListUserGroupsHandler, ListUserGroupsHandler>();
 builder.Services.AddScoped<IGetGroupDetailsHandler, GetGroupDetailsHandler>();
 builder.Services.AddScoped<ILeaveGroupHandler, LeaveGroupHandler>();
+builder.Services.AddScoped<IGetUserGroupProfileHandler, GetUserGroupProfileHandler>();
 
 // Event Handlers
 builder.Services.AddScoped<ICreateEventHandler, CreateEventHandler>();

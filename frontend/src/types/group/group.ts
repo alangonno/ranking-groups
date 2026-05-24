@@ -1,5 +1,8 @@
 import type { BaseEntity } from "../common/base-entity";
 import type { User } from "../auth/user";
+import type { EventWithScoreBalance } from "../event/event";
+import type { SharedEvent } from "../shared-event/shared-event";
+import type { RankingEntry } from "../ranking/ranking";
 
 export const GroupRole = {
   Owner: 1,
@@ -48,3 +51,18 @@ export interface JoinGroupRequest {
 }
 
 export type JoinGroupResponse = GroupMember;
+
+export interface GroupUserProfileResponse {
+  member: GroupMemberProfile;
+  events: EventWithScoreBalance[];
+  sharedEvents: SharedEvent[];
+}
+
+export interface GroupDetailsResponse {
+  groupId: string;
+  name: string;
+  description?: string;
+  inviteCode: string;
+  members: GroupMemberProfile[];
+  ranking: RankingEntry[];
+}
