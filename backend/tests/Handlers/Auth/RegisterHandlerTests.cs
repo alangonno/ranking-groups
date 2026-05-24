@@ -45,7 +45,7 @@ public class RegisterHandlerTests
         _userRepository.ExistsEmailAsync(request.Email).Returns(false);
         _userRepository.ExistsUsernameAsync(request.Username).Returns(false);
         _passwordHasher.Hash(request.Password).Returns("hashed_password");
-        _jwtService.GenerateToken(Arg.Any<Guid>()).Returns("jwt_token");
+        _jwtService.GenerateToken(Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>()).Returns("jwt_token");
 
         var result = await _handler.HandleAsync(request, CancellationToken.None);
 

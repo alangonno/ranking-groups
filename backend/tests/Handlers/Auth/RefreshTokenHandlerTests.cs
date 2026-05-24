@@ -39,13 +39,19 @@ public class RefreshTokenHandlerTests
         {
 
             UserId = Guid.NewGuid(),
+            User = new User
+            {
+                Name = "Test User",
+                Email = "test@example.com",
+                Username = "testuser"
+            },
             Token = request.RefreshToken,
             ExpiresAt = DateTime.UtcNow.AddDays(1),
             IsRevoked = false
         };
 
         _refreshTokenRepository.GetByTokenAsync(request.RefreshToken).Returns(refreshToken);
-        _jwtService.GenerateToken(refreshToken.UserId).Returns("new_jwt_token");
+        _jwtService.GenerateToken(refreshToken.UserId, refreshToken.User.Name, refreshToken.User.Email, refreshToken.User.Username).Returns("new_jwt_token");
 
         var result = await _handler.HandleAsync(request, CancellationToken.None);
 

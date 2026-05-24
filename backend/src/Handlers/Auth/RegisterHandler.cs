@@ -83,7 +83,7 @@ public class RegisterHandler : IRegisterHandler
         _userRepository.Add(user);
         await _context.SaveChangesAsync(ct);
 
-        var token = _jwtService.GenerateToken(user.Id);
+        var token = _jwtService.GenerateToken(user.Id, user.Name, user.Email, user.Username);
         var refreshTokenValue = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
 
         var refreshToken = new RefreshToken

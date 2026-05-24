@@ -14,20 +14,20 @@ import { useGroup } from "../../hooks/use-groups";
 import { useGroupEvents } from "../../hooks/use-events";
 import { useRanking } from "../../hooks/use-ranking";
 import { useUserProfile } from "../../hooks/use-user-profile";
-import { useCurrentUser } from "../../hooks/use-auth";
+import { useAuthContext } from "../../providers/auth-provider";
 
 export function DashboardPage() {
   const { groupId } = useParams<{ groupId: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"all" | "pending">("all");
-  const { data: user } = useCurrentUser();
+  const { user } = useAuthContext();
 
   const { data: group } = useGroup(groupId || "");
   const { data: groupEvents = [] } = useGroupEvents(groupId || "");
   const { data: ranking = [] } = useRanking(groupId || "");
   const { data: profile } = useUserProfile(
     groupId || "",
-    user?.id || ""
+    user!.id
   );
 
   // Save last visited group

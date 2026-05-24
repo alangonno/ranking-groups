@@ -62,7 +62,12 @@ public class RefreshTokenHandler : IRefreshTokenHandler
             throw new BusinessRuleException("expired_refresh_token", "Refresh token expirado.");
         }
 
-        var token = _jwtService.GenerateToken(refreshToken.UserId);
+        var token = _jwtService.GenerateToken(
+            refreshToken.UserId,
+            refreshToken.User.Name,
+            refreshToken.User.Email,
+            refreshToken.User.Username
+        );
         var newRefreshTokenValue = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
 
         var newRefreshToken = new backend.src.Entities.RefreshToken

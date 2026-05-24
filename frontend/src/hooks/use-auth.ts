@@ -7,6 +7,7 @@ import {
   setAccessToken,
 } from "../lib/auth-token";
 import { queryClient } from "../lib/query-client";
+import { useAuthContext } from "../providers/auth-provider";
 import type { LoginRequest, LoginResponse } from "../types/auth/user";
 import type { RegisterRequest, RegisterResponse } from "../types/auth/user";
 import type { User } from "../types/auth/user";
@@ -26,51 +27,67 @@ function mapToUser(data: { userId: string; name: string; username: string; email
 }
 
 export function useLogin() {
+  const { setUser } = useAuthContext();
+
   return useMutation({
     mutationFn: (payload: LoginRequest) =>
       postJson<LoginResponse>("/api/auth/login", payload),
     onSuccess: (data) => {
       setAccessToken(data.accessToken);
       queryClient.setQueryData(AUTH_KEY, mapToUser(data));
+      setUser({
+        id: data.userId,
+        name: data.name,
+        email: data.email,
+        username: data.username,
+      });
     },
   });
 }
 
 export function useRegister() {
+  const { setUser } = useAuthContext();
+
   return useMutation({
     mutationFn: (payload: RegisterRequest) =>
       postJson<RegisterResponse>("/api/auth/register", payload),
     onSuccess: (data) => {
       setAccessToken(data.accessToken);
       queryClient.setQueryData(AUTH_KEY, mapToUser(data));
+      setUser({
+        id: data.userId,
+        name: data.name,
+        email: data.email,
+        username: data.username,
+      });
     },
   });
 }
 
 export function useLogout() {
+  const { clearUser } = useAuthContext();
+
   return useMutation({
     mutationFn: async () => {
       removeAccessToken();
       queryClient.clear();
     },
+    onSuccess: () => {
+      clearUser();
+    },
   });
 }
 
 export function useCurrentUser() {
-  const userId = getUserIdFromToken();
+  const { user } = useAuthContext();
 
   return useQuery<User | null>({
     queryKey: AUTH_KEY,
     queryFn: async () => {
-      const token = getAccessToken();
-      if (!token) return null;
-
-      const cached = queryClient.getQueryData<User>(AUTH_KEY);
-      if (cached) return cached;
-
-      return null;
+      if (!user) return null;
+      return user as User;
     },
-    enabled: !!userId,
+    enabled: !!user,
     staleTime: 5 * 60 * 1000,
   });
 }

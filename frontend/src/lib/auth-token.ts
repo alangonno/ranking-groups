@@ -26,3 +26,28 @@ export function getUserIdFromToken(): string | null {
     return null;
   }
 }
+
+export function getUserFromToken(): {
+  id: string;
+  name: string;
+  email: string;
+  username: string;
+} | null {
+  const token = getAccessToken();
+  if (!token) return null;
+
+  try {
+    const payload = token.split(".")[1];
+    if (!payload) return null;
+
+    const decoded = JSON.parse(atob(payload));
+    return {
+      id: decoded.sub || decoded.userId || decoded.id || "",
+      name: decoded.name || "",
+      email: decoded.email || "",
+      username: decoded.username || "",
+    };
+  } catch {
+    return null;
+  }
+}

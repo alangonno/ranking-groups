@@ -75,7 +75,7 @@ public class LoginHandler : ILoginHandler
             throw new BusinessRuleException("invalid_credentials", "Email ou senha incorretos.");
         }
 
-        var token = _jwtService.GenerateToken(user.Id);
+        var token = _jwtService.GenerateToken(user.Id, user.Name, user.Email, user.Username);
         var refreshTokenValue = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
 
         var refreshToken = new RefreshToken

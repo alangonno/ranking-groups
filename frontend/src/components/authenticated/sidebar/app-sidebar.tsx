@@ -7,7 +7,8 @@ import {
   Contact,
   LogOut,
 } from "lucide-react";
-import { useCurrentUser, useLogout } from "../../../hooks/use-auth";
+import { useLogout } from "../../../hooks/use-auth";
+import { useAuthContext } from "../../../providers/auth-provider";
 import { useCurrentGroupId } from "../../../lib/use-group-context";
 
 const menuItems = [
@@ -15,7 +16,7 @@ const menuItems = [
 ];
 
 export function AppSidebar() {
-  const { data: user } = useCurrentUser();
+  const { user } = useAuthContext();
   const logout = useLogout();
   const navigate = useNavigate();
   const groupId = useCurrentGroupId();
@@ -32,7 +33,7 @@ export function AppSidebar() {
         { path: `/group/${groupId}/ranking`, label: "Ranking", icon: Trophy },
         { path: `/group/${groupId}/events`, label: "Eventos", icon: Trophy },
         { path: `/group/${groupId}/members`, label: "Membros", icon: Contact },
-        { path: `/group/${groupId}/profile/${user?.id}`, label: "Perfil", icon: User },
+        { path: `/group/${groupId}/profile/${user!.id}`, label: "Perfil", icon: User },
       ]
     : [
         { path: null, label: "Dashboard", icon: LayoutDashboard },

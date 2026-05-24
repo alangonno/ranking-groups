@@ -6,11 +6,11 @@ import { RankingListItem } from "../../components/authenticated/ranking/ranking-
 import { RankingFilter } from "../../components/authenticated/ranking/ranking-filter";
 import { SearchInput } from "../../components/authenticated/ranking/search-input";
 import { useRanking } from "../../hooks/use-ranking";
-import { useCurrentUser } from "../../hooks/use-auth";
+import { useAuthContext } from "../../providers/auth-provider";
 
 export function RankingPage() {
   const { groupId } = useParams<{ groupId: string }>();
-  const { data: user } = useCurrentUser();
+  const { user } = useAuthContext();
   const [filter, setFilter] = useState("month");
   const [search, setSearch] = useState("");
   const [parent] = useAutoAnimate();

@@ -7,7 +7,7 @@ namespace backend.src.Services;
 
 public interface IJwtService
 {
-    string GenerateToken(Guid userId);
+    string GenerateToken(Guid userId, string name, string email, string username);
 }
 
 public class JwtService : IJwtService
@@ -25,14 +25,17 @@ public class JwtService : IJwtService
         _expirationHours = int.Parse(GetEnvOrThrow("JWT_EXPIRATION_HOURS"));
     }
 
-    public string GenerateToken(Guid userId)
+    public string GenerateToken(Guid userId, string name, string email, string username)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secret));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var claims = new[]
         {
-            new Claim(JwtRegisteredClaimNames.Sub, userId.ToString())
+            new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
+            new Claim("name", name),
+            new Claim("email", email),
+            new Claim("username", username)
         };
 
         var token = new JwtSecurityToken(

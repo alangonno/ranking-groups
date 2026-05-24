@@ -50,7 +50,7 @@ public class LoginHandlerTests
 
         _userRepository.GetByEmailAsync(request.Email).Returns(user);
         _passwordHasher.Verify(request.Password, user.PasswordHash).Returns(true);
-        _jwtService.GenerateToken(user.Id).Returns("jwt_token");
+        _jwtService.GenerateToken(user.Id, user.Name, user.Email, user.Username).Returns("jwt_token");
 
         var result = await _handler.HandleAsync(request, CancellationToken.None);
 
@@ -83,7 +83,7 @@ public class LoginHandlerTests
         _userRepository.GetByEmailAsync(request.Email).Returns((User?)null);
         _userRepository.GetByUsernameAsync(request.Email).Returns(user);
         _passwordHasher.Verify(request.Password, user.PasswordHash).Returns(true);
-        _jwtService.GenerateToken(user.Id).Returns("jwt_token");
+        _jwtService.GenerateToken(user.Id, user.Name, user.Email, user.Username).Returns("jwt_token");
 
         var result = await _handler.HandleAsync(request, CancellationToken.None);
 

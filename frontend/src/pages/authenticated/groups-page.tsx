@@ -4,12 +4,12 @@ import { GroupCard } from "../../components/authenticated/groups/group-card";
 import { CreateGroupModal } from "../../components/authenticated/groups/create-group-modal";
 import { JoinGroupModal } from "../../components/authenticated/groups/join-group-modal";
 import { useGroups } from "../../hooks/use-groups";
-import { useCurrentUser } from "../../hooks/use-auth";
+import { useAuthContext } from "../../providers/auth-provider";
 
 export function GroupsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
-  const { data: user } = useCurrentUser();
+  const { user } = useAuthContext();
   const { data: groups = [] } = useGroups();
 
   const hasGroups = groups.length > 0;
