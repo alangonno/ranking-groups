@@ -70,25 +70,6 @@ public class EventRulesTests
     }
 
     [Fact]
-    public void ValidateAffectedUserIsNotCreator_WithDifferentUsers_ShouldNotThrow()
-    {
-        var affectedUserId = Guid.NewGuid();
-        var creatorUserId = Guid.NewGuid();
-
-        var act = () => EventRules.ValidateAffectedUserIsNotCreator(affectedUserId, creatorUserId);
-        act.Should().NotThrow();
-    }
-
-    [Fact]
-    public void ValidateAffectedUserIsNotCreator_WithSameUser_ShouldThrowBusinessRuleException()
-    {
-        var userId = Guid.NewGuid();
-
-        var act = () => EventRules.ValidateAffectedUserIsNotCreator(userId, userId);
-        act.Should().Throw<BusinessRuleException>();
-    }
-
-    [Fact]
     public void ValidateAffectedUserCannotModify_NegativeEvent_AffectedUser_ShouldThrowBusinessRuleException()
     {
         var affectedUserId = Guid.NewGuid();

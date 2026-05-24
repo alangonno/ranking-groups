@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { Plus, Bell, ArrowLeft } from "lucide-react";
 import { AppButton } from "../../components/ui/app-button";
 import { EventCard } from "../../components/authenticated/events/event-card";
@@ -8,26 +8,27 @@ import { TopMembersWidget } from "../../components/authenticated/ranking/top-mem
 import { HeroScoreCard } from "../../components/authenticated/dashboard/hero-score-card";
 import { PendingVotesSection } from "../../components/authenticated/dashboard/pending-votes-section";
 import { FeedTabs } from "../../components/authenticated/dashboard/feed-tabs";
+import { CreateEventModal } from "../../components/authenticated/events/create-event-modal";
 import { setLastGroupId } from "../../lib/group-storage";
 import { EventStatus } from "../../types/event/event";
 import { useGroup } from "../../hooks/use-groups";
 import { useGroupEvents } from "../../hooks/use-events";
 import { useRanking } from "../../hooks/use-ranking";
 import { useUserProfile } from "../../hooks/use-user-profile";
-import { useAuthContext } from "../../providers/auth-provider";
+import { useCurrentUser } from "../../hooks/use-auth";
 
 export function DashboardPage() {
   const { groupId } = useParams<{ groupId: string }>();
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"all" | "pending">("all");
-  const { user } = useAuthContext();
+  const [showCreateEvent, setShowCreateEvent] = useState(false);
+  const { data: user } = useCurrentUser();
 
   const { data: group } = useGroup(groupId || "");
   const { data: groupEvents = [] } = useGroupEvents(groupId || "");
   const { data: ranking = [] } = useRanking(groupId || "");
   const { data: profile } = useUserProfile(
     groupId || "",
-    user!.id
+    user?.id || ""
   );
 
   // Save last visited group
@@ -100,7 +101,7 @@ export function DashboardPage() {
           <span className="text-text-muted">/</span>
           <h1 className="text-xl font-bold text-text-primary">{group?.name || "Grupo"}</h1>
         </div>
-        <AppButton color="red" size="sm" onClick={() => navigate(`/group/${groupId}/events`)}>
+        <AppButton color="red" size="sm" onClick={() => setShowCreateEvent(true)}>
           <span className="flex items-center gap-1.5">
             <Plus size={16} />
             Novo Evento
@@ -134,7 +135,7 @@ export function DashboardPage() {
               <p className="text-text-secondary text-sm mb-4">
                 Nenhum evento recente
               </p>
-              <AppButton color="red" size="sm" onClick={() => navigate(`/group/${groupId}/events`)}>
+              <AppButton color="red" size="sm" onClick={() => setShowCreateEvent(true)}>
                 <Plus size={16} className="mr-1" />
                 Criar primeiro evento
               </AppButton>
@@ -192,7 +193,7 @@ export function DashboardPage() {
               <p className="text-text-secondary mb-4">
                 Este grupo está muito silencioso.
               </p>
-              <AppButton color="red" size="sm" onClick={() => navigate(`/group/${groupId}/events`)}>
+              <AppButton color="red" size="sm" onClick={() => setShowCreateEvent(true)}>
                 <Plus size={16} className="mr-1" />
                 Criar primeiro evento
               </AppButton>
@@ -205,6 +206,13 @@ export function DashboardPage() {
           <TopMembersWidget members={topMembers} />
         </div>
       </div>
+
+      {/* Create Event Modal */}
+      <CreateEventModal
+        isOpen={showCreateEvent}
+        onClose={() => setShowCreateEvent(false)}
+        groupId={groupId || ""}
+      />
     </div>
   );
 }

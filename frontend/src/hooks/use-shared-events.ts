@@ -14,7 +14,7 @@ export function useGroupSharedEvents(groupId: string) {
     queryFn: async () => {
       const response = await getJson<{
         sharedEvents: Array<{
-          id: string;
+          sharedEventId: string;
           title: string;
           description: string;
           points: number;
@@ -27,7 +27,7 @@ export function useGroupSharedEvents(groupId: string) {
         }>;
       }>(`/api/shared-events/group/${groupId}`);
       return (response.sharedEvents || []).map((se) => ({
-        id: se.id,
+        id: se.sharedEventId,
         title: se.title,
         description: se.description,
         points: se.points,
@@ -35,6 +35,7 @@ export function useGroupSharedEvents(groupId: string) {
         createdAt: se.createdAt,
         groupId: se.groupId,
         createdByUserId: se.createdByUserId,
+        participantCount: se.participantCount,
       }));
     },
     enabled: !!groupId,

@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
+import { Plus } from "lucide-react";
 import { QuickActionCards } from "../../components/authenticated/events/quick-action-card";
 import { SharedEventsCarousel } from "../../components/authenticated/events/shared-events-carousel";
 import { EventCard } from "../../components/authenticated/events/event-card";
 import { VotingCard } from "../../components/authenticated/events/voting-card";
+import { CreateEventModal } from "../../components/authenticated/events/create-event-modal";
+import { CreateSharedEventModal } from "../../components/authenticated/events/create-shared-event-modal";
 import { EventStatus } from "../../types/event/event";
 import { useGroupEvents } from "../../hooks/use-events";
 import { useGroupSharedEvents } from "../../hooks/use-shared-events";
@@ -11,6 +14,8 @@ import { useGroupSharedEvents } from "../../hooks/use-shared-events";
 export function EventsPage() {
   const { groupId } = useParams<{ groupId: string }>();
   const [activeTab, setActiveTab] = useState<"all" | "personal" | "shared" | "pending">("all");
+  const [showCreateEvent, setShowCreateEvent] = useState(false);
+  const [showCreateSharedEvent, setShowCreateSharedEvent] = useState(false);
 
   const { data: allEvents = [] } = useGroupEvents(groupId || "");
   const { data: sharedEvents = [] } = useGroupSharedEvents(groupId || "");
@@ -31,7 +36,7 @@ export function EventsPage() {
     id: se.id,
     title: se.title,
     points: se.points,
-    participantCount: se.participants?.length ?? 0,
+    participantCount: se.participantCount,
   }));
 
   return (
@@ -52,11 +57,23 @@ export function EventsPage() {
             Acompanhe as atividades do grupo
           </p>
         </div>
+        <button
+          type="button"
+          onClick={() => setShowCreateEvent(true)}
+          className="flex items-center gap-2 py-2 px-4 rounded-full bg-primary text-white font-medium hover:bg-primary-hover transition-colors shadow-sm"
+        >
+          <Plus size={18} />
+          Novo Evento
+        </button>
       </div>
 
       {/* Quick Actions */}
       <div className="mb-6">
-        <QuickActionCards />
+        <QuickActionCards
+          onCreatePositive={() => setShowCreateEvent(true)}
+          onCreateNegative={() => setShowCreateEvent(true)}
+          onCreateShared={() => setShowCreateSharedEvent(true)}
+        />
       </div>
 
       {/* Shared Events Carousel */}
@@ -112,6 +129,18 @@ export function EventsPage() {
           )
         )}
       </div>
+
+      {/* Modals */}
+      <CreateEventModal
+        isOpen={showCreateEvent}
+        onClose={() => setShowCreateEvent(false)}
+        groupId={groupId || ""}
+      />
+      <CreateSharedEventModal
+        isOpen={showCreateSharedEvent}
+        onClose={() => setShowCreateSharedEvent(false)}
+        groupId={groupId || ""}
+      />
     </div>
   );
 }

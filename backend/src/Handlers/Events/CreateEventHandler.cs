@@ -68,7 +68,6 @@ public class CreateEventHandler : ICreateEventHandler
             ?? throw new BusinessRuleException("unauthorized", "Usuário não autenticado.");
 
         EventRules.ValidatePoints(request.Points);
-        EventRules.ValidateAffectedUserIsNotCreator(request.AffectedUserId, userId);
 
         var group = await _groupRepository.GetByIdAsync(request.GroupId);
         if (group == null)
@@ -85,8 +84,13 @@ public class CreateEventHandler : ICreateEventHandler
             throw new BusinessRuleException("affected_user_not_member", "O usuário afetado deve ser membro do grupo.");
         }
 
-        var status = request.Type == EventType.Negative ? EventStatus.Pending : EventStatus.Approved;
-        EventRules.ValidateInitialStatus(request.Type, status);
+        var isSelfImposed = request.AffectedUserId == userId;
+        var status = (request.Type == EventType.Negative && !isSelfImposed)
+            ? EventStatus.Pending
+            : EventStatus.Approved;
+
+        if (!isSelfImposed)
+            EventRules.ValidateInitialStatus(request.Type, status);
 
         var @event = new Event
         {

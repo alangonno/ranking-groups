@@ -52,14 +52,4 @@ public static class EventRules
         }
     }
 
-    public static void ValidateAffectedUserIsNotCreator(Guid affectedUserId, Guid creatorUserId)
-    {
-        if (affectedUserId == creatorUserId)
-        {
-            throw new BusinessRuleException(
-                "affected_user_is_creator",
-                "O usuário afetado não pode ser o mesmo que o criador do evento."
-            );
-        }
-    }
 }

@@ -16,6 +16,7 @@ export interface SharedEvent extends BaseEntity {
   isClosed: boolean;
   createdByUser?: User;
   participants?: SharedEventParticipant[];
+  participantCount: number;
 }
 
 export interface CreateSharedEventRequest {
