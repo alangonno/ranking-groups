@@ -37,6 +37,7 @@ src/
  │    │    ├── groups/                 ← group-card, create-group-modal, join-group-modal
  │    │    ├── ranking/                ← podium-card, ranking-list-item, ranking-filter, search-input, top-members-widget, stats-widget
  │    │    ├── dashboard/              ← hero-score-card, pending-votes-section, feed-tabs
+ │    │    ├── members/                ← member-card
  │    │    ├── sidebar/                ← app-sidebar.tsx
  │    │    └── navigation/             ← bottom-nav.tsx
  │    │
@@ -49,6 +50,7 @@ src/
  │    │    ├── groups-page.tsx         ← /groups
  │    │    ├── ranking-page.tsx        ← /group/:groupId/ranking
  │    │    ├── events-page.tsx         ← /group/:groupId/events
+ │    │    ├── members-page.tsx        ← /group/:groupId/members
  │    │    └── profile-page.tsx        ← /group/:groupId/profile (futuro)
  │    │
  │    └── public/
@@ -59,6 +61,7 @@ src/
  │    ├── use-auth.ts                  ← useLogin, useRegister, useLogout, useCurrentUser
  │    ├── use-events.ts                ← useGroupEvents, useCreateEvent, useUpdateEvent, useDeleteEvent, useVoteEvent
  │    ├── use-groups.ts                ← useGroups, useGroup, useCreateGroup, useJoinGroup, useLeaveGroup
+ │    ├── use-members.ts              ← useMembers
  │    ├── use-shared-events.ts        ← useGroupSharedEvents, useCreateSharedEvent, useJoinSharedEvent, etc.
  │    └── use-ranking.ts              ← useRanking, useFeed
  │
@@ -275,11 +278,11 @@ Login/Register → /groups (lista de grupos)
                       ├── Entrar via Código → Modal → POST /api/groups/join
                       └── Selecionar Grupo → /group/:groupId
                                                   │
-                                                  ├── Dashboard (/group/:groupId)
-                                                  ├── Ranking (/group/:groupId/ranking)
-                                                  ├── Events (/group/:groupId/events)
-                                                  ├── Members (/group/:groupId/members) [futuro]
-                                                  └── Profile (/group/:groupId/profile) [futuro]
+                                                   ├── Dashboard (/group/:groupId)
+                                                   ├── Ranking (/group/:groupId/ranking)
+                                                   ├── Events (/group/:groupId/events)
+                                                   ├── Members (/group/:groupId/members)
+                                                   └── Profile (/group/:groupId/profile) [futuro]
                                                   │
                                                   └── Voltar → /groups (troca de grupo)
 ```
@@ -305,6 +308,7 @@ Comportamento dinâmico baseado na URL atual:
 | Dashboard | `text-muted`, `cursor-not-allowed` | `/group/:groupId` |
 | Ranking | `text-muted`, `cursor-not-allowed` | `/group/:groupId/ranking` |
 | Eventos | `text-muted`, `cursor-not-allowed` | `/group/:groupId/events` |
+| Membros | `text-muted`, `cursor-not-allowed` | `/group/:groupId/members` |
 | Perfil | `text-muted`, `cursor-not-allowed` | `/group/:groupId/profile` |
 | Meus Grupos | Ativo | `/groups` |
 
@@ -320,7 +324,7 @@ Fora de grupo (`/groups`):
 Dentro de grupo (`/group/:groupId/*`):
 ```
 ┌─────────────────────────────┐
-│ [Home][Ranking][FAB][Grupos][Perfil] │
+│ [Home][Ranking][FAB][Grupos][Membros] │
 └─────────────────────────────┘
 ```
 
@@ -328,7 +332,7 @@ Links dinâmicos:
 - Home → `/group/:groupId`
 - Ranking → `/group/:groupId/ranking`
 - Grupos → `/groups`
-- Perfil → `/group/:groupId/profile`
+- Membros → `/group/:groupId/members`
 
 ---
 
@@ -499,7 +503,7 @@ Autenticadas - Dentro de Grupo (contextual):
   /group/:groupId
   /group/:groupId/ranking
   /group/:groupId/events
-  /group/:groupId/members     [futuro]
+  /group/:groupId/members
   /group/:groupId/profile     [futuro]
 ```
 

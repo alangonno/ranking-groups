@@ -12,6 +12,7 @@ import { GroupsPage } from "../pages/authenticated/groups-page";
 import { DashboardPage } from "../pages/authenticated/dashboard-page";
 import { RankingPage } from "../pages/authenticated/ranking-page";
 import { EventsPage } from "../pages/authenticated/events-page";
+import { MembersPage } from "../pages/authenticated/members-page";
 import { getAccessToken } from "../lib/auth-token";
 
 function AuthGuard() {
@@ -51,6 +52,7 @@ export const router = createBrowserRouter([
               { path: "", element: <DashboardPage /> },
               { path: "ranking", element: <RankingPage /> },
               { path: "events", element: <EventsPage /> },
+              { path: "members", element: <MembersPage /> },
             ],
           },
           { path: "", element: <Navigate to="/groups" replace /> },

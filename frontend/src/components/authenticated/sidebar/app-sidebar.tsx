@@ -4,6 +4,7 @@ import {
   Users,
   Trophy,
   User,
+  Contact,
   LogOut,
 } from "lucide-react";
 import { useCurrentUser, useLogout } from "../../../hooks/use-auth";
@@ -30,11 +31,13 @@ export function AppSidebar() {
         { path: `/group/${groupId}`, label: "Dashboard", icon: LayoutDashboard },
         { path: `/group/${groupId}/ranking`, label: "Ranking", icon: Trophy },
         { path: `/group/${groupId}/events`, label: "Eventos", icon: Trophy },
+        { path: `/group/${groupId}/members`, label: "Membros", icon: Contact },
         { path: `/group/${groupId}/profile`, label: "Perfil", icon: User },
       ]
     : [
         { path: null, label: "Dashboard", icon: LayoutDashboard },
         { path: null, label: "Ranking", icon: Trophy },
+        { path: null, label: "Membros", icon: Contact },
         { path: null, label: "Perfil", icon: User },
       ];
 

@@ -4,7 +4,7 @@ import {
   Trophy,
   Plus,
   Users,
-  User,
+  Contact,
 } from "lucide-react";
 import { useCurrentGroupId } from "../../../lib/use-group-context";
 
@@ -39,7 +39,7 @@ export function BottomNav() {
     { path: `/group/${groupId}/ranking`, label: "Ranking", icon: Trophy },
     { path: "/create", label: "Novo", icon: Plus, isFab: true },
     { path: "/groups", label: "Grupos", icon: Users },
-    { path: `/group/${groupId}/profile`, label: "Perfil", icon: User },
+    { path: `/group/${groupId}/members`, label: "Membros", icon: Contact },
   ];
 
   return (

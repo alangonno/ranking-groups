@@ -304,5 +304,26 @@ export const mockSharedEvents: MockSharedEvent[] = [
   },
 ];
 
+import { GroupRole } from "../types/group/group";
+import type { GroupMemberProfile } from "../types/group/group";
+
+export const mockMembers: GroupMemberProfile[] = [
+  { userId: "user-008", name: "Ricardo Almeida", username: "ricardoalmeida", email: "ricardo@email.com", avatar: "RA", role: GroupRole.Owner, currentScore: 1250, rankPosition: 1 },
+  { userId: "user-005", name: "Ana Paula", username: "anapaula", email: "ana@email.com", avatar: "AP", role: GroupRole.Admin, currentScore: 1100, rankPosition: 2 },
+  { userId: "user-002", name: "Maria Santos", username: "mariasantos", email: "maria@email.com", avatar: "MS", role: GroupRole.Admin, currentScore: 980, rankPosition: 3 },
+  { userId: "user-001", name: "João Silva", username: "joaosilva", email: "joao@email.com", avatar: "JS", role: GroupRole.Member, currentScore: 850, rankPosition: 4 },
+  { userId: "user-003", name: "Pedro Costa", username: "pedrocosta", email: "pedro@email.com", avatar: "PC", role: GroupRole.Member, currentScore: 720, rankPosition: 5 },
+  { userId: "user-004", name: "Bruno Lima", username: "brunolima", email: "bruno@email.com", avatar: "BL", role: GroupRole.Member, currentScore: 680, rankPosition: 6 },
+  { userId: "user-006", name: "Carlos Mendes", username: "carlosmendes", email: "carlos@email.com", avatar: "CM", role: GroupRole.Member, currentScore: 540, rankPosition: 7 },
+  { userId: "user-007", name: "Fernanda Rocha", username: "fernandarocha", email: "fernanda@email.com", avatar: "FR", role: GroupRole.Member, currentScore: 490, rankPosition: 8 },
+  { userId: "user-009", name: "Juliana Torres", username: "julianatorres", email: "juliana@email.com", avatar: "JT", role: GroupRole.Member, currentScore: 430, rankPosition: 9 },
+  { userId: "user-010", name: "Marcelo Dias", username: "marcelodias", email: "marcelo@email.com", avatar: "MD", role: GroupRole.Member, currentScore: 380, rankPosition: 10 },
+  { userId: "user-011", name: "Patrícia Lima", username: "patricialima", email: "patricia@email.com", avatar: "PL", role: GroupRole.Member, currentScore: 320, rankPosition: 11 },
+  { userId: "user-012", name: "Roberto Silva", username: "robertosilva", email: "roberto@email.com", avatar: "RS", role: GroupRole.Member, currentScore: 280, rankPosition: 12 },
+  { userId: "user-013", name: "Camila Souza", username: "camilasouza", email: "camila@email.com", avatar: "CS", role: GroupRole.Member, currentScore: 210, rankPosition: 13 },
+  { userId: "user-014", name: "André Oliveira", username: "andreoliveira", email: "andre@email.com", avatar: "AO", role: GroupRole.Member, currentScore: 150, rankPosition: 14 },
+  { userId: "user-015", name: "Laura Martins", username: "lauramartins", email: "laura@email.com", avatar: "LM", role: GroupRole.Member, currentScore: 90, rankPosition: 15 },
+];
+
 // TODO: Substituir por useGroupEvents(groupId) quando o backend estiver pronto
 // e o usuário tiver um grupo selecionado ativo.

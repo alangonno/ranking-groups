@@ -25,6 +25,17 @@ export interface GroupMember extends BaseEntity {
   currentScore: number;
 }
 
+export interface GroupMemberProfile {
+  userId: string;
+  name: string;
+  username: string;
+  email: string;
+  avatar: string;
+  role: GroupRole;
+  currentScore: number;
+  rankPosition: number;
+}
+
 export interface CreateGroupRequest {
   name: string;
   description?: string;
