@@ -4,16 +4,19 @@ import { QuickActionCards } from "../../components/authenticated/events/quick-ac
 import { SharedEventsCarousel } from "../../components/authenticated/events/shared-events-carousel";
 import { EventCard } from "../../components/authenticated/events/event-card";
 import { VotingCard } from "../../components/authenticated/events/voting-card";
-import { mockEvents, mockSharedEvents } from "../../lib/mock-data";
 import { EventStatus } from "../../types/event/event";
+import { useGroupEvents } from "../../hooks/use-events";
+import { useGroupSharedEvents } from "../../hooks/use-shared-events";
 
 export function EventsPage() {
   const { groupId } = useParams<{ groupId: string }>();
   const [activeTab, setActiveTab] = useState<"all" | "personal" | "shared" | "pending">("all");
 
-  const allEvents = mockEvents;
-  const pendingEvents = mockEvents.filter((e) => e.status === EventStatus.Pending);
-  const approvedEvents = mockEvents.filter((e) => e.status === EventStatus.Approved);
+  const { data: allEvents = [] } = useGroupEvents(groupId || "");
+  const { data: sharedEvents = [] } = useGroupSharedEvents(groupId || "");
+
+  const pendingEvents = allEvents.filter((e) => e.status === EventStatus.Pending);
+  const approvedEvents = allEvents.filter((e) => e.status === EventStatus.Approved);
 
   const displayEvents =
     activeTab === "pending"
@@ -23,6 +26,13 @@ export function EventsPage() {
       : activeTab === "shared"
       ? []
       : allEvents;
+
+  const sharedEventsForCarousel = sharedEvents.map((se) => ({
+    id: se.id,
+    title: se.title,
+    points: se.points,
+    participantCount: se.participants?.length ?? 0,
+  }));
 
   return (
     <div className="p-4 lg:p-8 max-w-5xl mx-auto">
@@ -51,7 +61,7 @@ export function EventsPage() {
 
       {/* Shared Events Carousel */}
       <div className="mb-6">
-        <SharedEventsCarousel events={mockSharedEvents} />
+        <SharedEventsCarousel events={sharedEventsForCarousel} />
       </div>
 
       {/* Tabs */}

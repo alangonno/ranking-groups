@@ -1,55 +1,40 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useState } from "react";
+import { useParams, Link } from "react-router-dom";
 import { Plus, Bell, ArrowLeft } from "lucide-react";
 import { AppButton } from "../../components/ui/app-button";
 import { EventCard } from "../../components/authenticated/events/event-card";
 import { VotingCard } from "../../components/authenticated/events/voting-card";
 import { TopMembersWidget } from "../../components/authenticated/ranking/top-members-widget";
-import { StatsWidget } from "../../components/authenticated/ranking/stats-widget";
 import { HeroScoreCard } from "../../components/authenticated/dashboard/hero-score-card";
 import { PendingVotesSection } from "../../components/authenticated/dashboard/pending-votes-section";
 import { FeedTabs } from "../../components/authenticated/dashboard/feed-tabs";
-import {
-  mockEvents,
-  mockEventsGroup2,
-  mockTopMembers,
-  mockStats,
-  mockGroups,
-} from "../../lib/mock-data";
 import { setLastGroupId } from "../../lib/group-storage";
 import { EventStatus } from "../../types/event/event";
+import { useGroup } from "../../hooks/use-groups";
+import { useGroupEvents } from "../../hooks/use-events";
+import { useRanking } from "../../hooks/use-ranking";
+import { useUserProfile } from "../../hooks/use-user-profile";
+import { useCurrentUser } from "../../hooks/use-auth";
 
 export function DashboardPage() {
   const { groupId } = useParams<{ groupId: string }>();
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"all" | "pending">("all");
+  const { data: user } = useCurrentUser();
 
-  // Find group data
-  const group = mockGroups.find((g) => g.id === groupId);
-
-  // Get events for this group
-  const groupEvents =
-    groupId === "grp-002"
-      ? mockEventsGroup2
-      : groupId === "grp-001"
-      ? mockEvents
-      : mockEvents; // fallback
+  const { data: group } = useGroup(groupId || "");
+  const { data: groupEvents = [] } = useGroupEvents(groupId || "");
+  const { data: ranking = [] } = useRanking(groupId || "");
+  const { data: profile } = useUserProfile(
+    groupId || "",
+    user?.id || ""
+  );
 
   // Save last visited group
-  useEffect(() => {
-    if (groupId) {
-      setLastGroupId(groupId);
-    }
-  }, [groupId]);
+  if (groupId) {
+    setLastGroupId(groupId);
+  }
 
-  // Redirect if no groupId
-  useEffect(() => {
-    if (!groupId) {
-      navigate("/groups");
-    }
-  }, [groupId, navigate]);
-
-  if (!groupId || !group) {
+  if (!groupId) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <p className="text-text-secondary">Grupo não encontrado</p>
@@ -57,11 +42,24 @@ export function DashboardPage() {
     );
   }
 
-  const allEvents = groupEvents;
-  const pendingEvents = allEvents.filter((e) => e.status === EventStatus.Pending);
-  const approvedEvents = allEvents.filter((e) => e.status === EventStatus.Approved);
+  const pendingEvents = groupEvents.filter((e) => e.status === EventStatus.Pending);
+  const approvedEvents = groupEvents.filter((e) => e.status === EventStatus.Approved);
 
-  const displayEvents = activeTab === "pending" ? pendingEvents : allEvents;
+  const displayEvents = activeTab === "pending" ? pendingEvents : groupEvents;
+
+  const topMembers = ranking.slice(0, 5).map((entry, index) => ({
+    position: index + 1,
+    name: entry.user?.name || "",
+    points: entry.score,
+    avatar: entry.user?.name
+      ? entry.user.name
+          .split(" ")
+          .map((n) => n[0])
+          .join("")
+          .toUpperCase()
+          .slice(0, 2)
+      : "??",
+  }));
 
   return (
     <div className="p-4 lg:p-8 max-w-7xl mx-auto">
@@ -75,7 +73,7 @@ export function DashboardPage() {
             <ArrowLeft size={18} />
           </Link>
           <div>
-            <h1 className="text-lg font-bold text-text-primary">{group.name}</h1>
+            <h1 className="text-lg font-bold text-text-primary">{group?.name || "Grupo"}</h1>
             <p className="text-xs text-text-muted">Dashboard</p>
           </div>
         </div>
@@ -99,7 +97,7 @@ export function DashboardPage() {
             Meus Grupos
           </Link>
           <span className="text-text-muted">/</span>
-          <h1 className="text-xl font-bold text-text-primary">{group.name}</h1>
+          <h1 className="text-xl font-bold text-text-primary">{group?.name || "Grupo"}</h1>
         </div>
         <AppButton color="red" size="sm">
           <span className="flex items-center gap-1.5">
@@ -112,7 +110,7 @@ export function DashboardPage() {
       {/* Mobile: Hero Score + Pendentes + Feed */}
       <div className="lg:hidden space-y-5">
         {/* Hero Score Card */}
-        <HeroScoreCard score={2450} delta={150} />
+        <HeroScoreCard score={profile?.member.currentScore || 0} delta={0} />
 
         {/* Pending Votes */}
         <PendingVotesSection events={pendingEvents} />
@@ -153,11 +151,7 @@ export function DashboardPage() {
 
         {/* Widgets embaixo no mobile */}
         <div className="pt-4 space-y-4">
-          <TopMembersWidget members={mockTopMembers} />
-          <StatsWidget
-            weeklyEvents={mockStats.weeklyEvents}
-            activeMembers={mockStats.activeMembers}
-          />
+          <TopMembersWidget members={topMembers} />
         </div>
       </div>
 
@@ -207,11 +201,7 @@ export function DashboardPage() {
 
         {/* Sidebar Direita - Widgets */}
         <div className="lg:col-span-5 space-y-4">
-          <TopMembersWidget members={mockTopMembers} />
-          <StatsWidget
-            weeklyEvents={mockStats.weeklyEvents}
-            activeMembers={mockStats.activeMembers}
-          />
+          <TopMembersWidget members={topMembers} />
         </div>
       </div>
     </div>

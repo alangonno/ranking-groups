@@ -3,17 +3,18 @@ import { Plus, LogIn, Users } from "lucide-react";
 import { GroupCard } from "../../components/authenticated/groups/group-card";
 import { CreateGroupModal } from "../../components/authenticated/groups/create-group-modal";
 import { JoinGroupModal } from "../../components/authenticated/groups/join-group-modal";
-import { mockGroups } from "../../lib/mock-data";
+import { useGroups } from "../../hooks/use-groups";
 import { useCurrentUser } from "../../hooks/use-auth";
 
 export function GroupsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const { data: user } = useCurrentUser();
+  const { data: groups = [] } = useGroups();
 
-  const hasGroups = mockGroups.length > 0;
-  const primaryGroup = hasGroups ? mockGroups[0] : null;
-  const otherGroups = hasGroups ? mockGroups.slice(1) : [];
+  const hasGroups = groups.length > 0;
+  const primaryGroup = hasGroups ? groups[0] : null;
+  const otherGroups = hasGroups ? groups.slice(1) : [];
 
   const userInitials = user?.name
     ? user.name

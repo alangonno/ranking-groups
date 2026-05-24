@@ -5,7 +5,7 @@ import { PodiumCard } from "../../components/authenticated/ranking/podium-card";
 import { RankingListItem } from "../../components/authenticated/ranking/ranking-list-item";
 import { RankingFilter } from "../../components/authenticated/ranking/ranking-filter";
 import { SearchInput } from "../../components/authenticated/ranking/search-input";
-import { mockRanking } from "../../lib/mock-data";
+import { useRanking } from "../../hooks/use-ranking";
 import { useCurrentUser } from "../../hooks/use-auth";
 
 export function RankingPage() {
@@ -15,34 +15,36 @@ export function RankingPage() {
   const [search, setSearch] = useState("");
   const [parent] = useAutoAnimate();
 
+  const { data: ranking = [] } = useRanking(groupId || "");
+
   const filteredRanking = useMemo(() => {
-    let data = [...mockRanking];
+    let data = [...ranking];
     if (search.trim()) {
       data = data.filter((m) =>
-        m.name.toLowerCase().includes(search.toLowerCase())
+        m.user.name.toLowerCase().includes(search.toLowerCase())
       );
     }
     // Simulate different data per filter
     if (filter === "last-month") {
-      data = data.map((m) => ({ ...m, points: Math.round(m.points * 0.8) }));
+      data = data.map((m) => ({ ...m, score: Math.round(m.score * 0.8) }));
     } else if (filter === "all") {
-      data = data.map((m) => ({ ...m, points: Math.round(m.points * 1.5) }));
+      data = data.map((m) => ({ ...m, score: Math.round(m.score * 1.5) }));
     }
-    return data.sort((a, b) => b.points - a.points);
-  }, [filter, search]);
+    return data.sort((a, b) => b.score - a.score);
+  }, [filter, search, ranking]);
 
   const top1 = filteredRanking[0];
   const top2 = filteredRanking[1];
   const rest = filteredRanking.slice(2);
 
-  const currentUserId = user?.id || "user-001";
+  const currentUserId = user?.id || "";
   const currentUserPosition = filteredRanking.findIndex(
-    (m) => m.userId === currentUserId
+    (m) => m.user.id === currentUserId
   );
   const currentUserData =
     currentUserPosition >= 0 ? filteredRanking[currentUserPosition] : null;
 
-  const maxPoints = filteredRanking[0]?.points || 1;
+  const maxPoints = filteredRanking[0]?.score || 1;
 
   return (
     <div className="p-4 lg:p-8 max-w-5xl mx-auto">
@@ -77,18 +79,28 @@ export function RankingPage() {
         {top1 && (
           <PodiumCard
             position={1}
-            name={top1.name}
-            points={top1.points}
-            avatar={top1.avatar}
+            name={top1.user.name}
+            points={top1.score}
+            avatar={top1.user.name
+              .split(" ")
+              .map((n) => n[0])
+              .join("")
+              .toUpperCase()
+              .slice(0, 2)}
             badges={["Elite", "15 Streaks"]}
           />
         )}
         {top2 && (
           <PodiumCard
             position={2}
-            name={top2.name}
-            points={top2.points}
-            avatar={top2.avatar}
+            name={top2.user.name}
+            points={top2.score}
+            avatar={top2.user.name
+              .split(" ")
+              .map((n) => n[0])
+              .join("")
+              .toUpperCase()
+              .slice(0, 2)}
             growth={450}
           />
         )}
@@ -98,13 +110,18 @@ export function RankingPage() {
       <div ref={parent} className="space-y-3">
         {rest.map((member, index) => (
           <RankingListItem
-            key={member.userId}
+            key={member.user.id}
             position={index + 3}
-            name={member.name}
-            points={member.points}
-            avatar={member.avatar}
+            name={member.user.name}
+            points={member.score}
+            avatar={member.user.name
+              .split(" ")
+              .map((n) => n[0])
+              .join("")
+              .toUpperCase()
+              .slice(0, 2)}
             maxPoints={maxPoints}
-            isCurrentUser={member.userId === currentUserId}
+            isCurrentUser={member.user.id === currentUserId}
           />
         ))}
       </div>
@@ -127,14 +144,19 @@ export function RankingPage() {
                 #{currentUserPosition + 1}
               </span>
               <div className="w-8 h-8 rounded-full bg-primary-light flex items-center justify-center text-primary font-bold text-xs">
-                {currentUserData.avatar}
+                {currentUserData.user.name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .toUpperCase()
+                  .slice(0, 2)}
               </div>
               <span className="text-sm font-medium text-text-primary">
                 Você
               </span>
             </div>
             <span className="text-sm font-bold text-text-primary">
-              {currentUserData.points.toLocaleString()} pts
+              {currentUserData.score.toLocaleString()} pts
             </span>
           </div>
         </div>
