@@ -11,7 +11,32 @@ import type {
 export function useGroupSharedEvents(groupId: string) {
   return useQuery<SharedEvent[]>({
     queryKey: ["shared-events", "group", groupId],
-    queryFn: () => getJson<SharedEvent[]>(`/api/shared-events/group/${groupId}`),
+    queryFn: async () => {
+      const response = await getJson<{
+        sharedEvents: Array<{
+          id: string;
+          title: string;
+          description: string;
+          points: number;
+          isClosed: boolean;
+          createdAt: string;
+          groupId: string;
+          createdByUserId: string;
+          createdByUserName: string;
+          participantCount: number;
+        }>;
+      }>(`/api/shared-events/group/${groupId}`);
+      return (response.sharedEvents || []).map((se) => ({
+        id: se.id,
+        title: se.title,
+        description: se.description,
+        points: se.points,
+        isClosed: se.isClosed,
+        createdAt: se.createdAt,
+        groupId: se.groupId,
+        createdByUserId: se.createdByUserId,
+      }));
+    },
     enabled: !!groupId,
   });
 }

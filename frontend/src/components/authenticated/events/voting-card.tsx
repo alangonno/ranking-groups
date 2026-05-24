@@ -3,7 +3,9 @@ import { AppCard } from "../../ui/app-card";
 import { AppSpinner } from "../../ui/app-spinner";
 import { AppTooltip } from "../../ui/app-tooltip";
 import { ArrowDown, ClipboardList } from "lucide-react";
-import type { Event } from "../../../types/event/event";
+import type { Event, EventVoteType } from "../../../types/event/event";
+import { useVoteEvent } from "../../../hooks/use-events";
+import { getUserIdFromToken } from "../../../lib/auth-token";
 
 interface VotingCardProps {
   event: Event;
@@ -11,25 +13,25 @@ interface VotingCardProps {
 }
 
 export function VotingCard({ event, compact = false }: VotingCardProps) {
-  const [isVoting, setIsVoting] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
+  const vote = useVoteEvent(event.id);
 
   const affectedUser = event.affectedUser;
   const creator = event.createdByUser;
   const votesCount = event.approvals?.length || 0;
   const quorumNeeded = 5;
 
-  const isCreator = creator?.id === "user-001";
-  const isAffected = affectedUser?.id === "user-001";
+  const currentUserId = getUserIdFromToken() || "";
+  const isCreator = creator?.id === currentUserId;
+  const isAffected = affectedUser?.id === currentUserId;
   const canVote = !isCreator && !isAffected && !hasVoted;
 
-  function handleVote(_type: "confirm" | "reject") {
-    if (!canVote || isVoting) return;
-    setIsVoting(true);
-    setTimeout(() => {
-      setIsVoting(false);
-      setHasVoted(true);
-    }, 1000);
+  function handleVote(type: "confirm" | "reject") {
+    if (!canVote || vote.isPending) return;
+    vote.mutate(
+      { voteType: type === "confirm" ? 1 : 2 as EventVoteType },
+      { onSuccess: () => setHasVoted(true) }
+    );
   }
 
   const initials = affectedUser?.name
@@ -58,17 +60,17 @@ export function VotingCard({ event, compact = false }: VotingCardProps) {
                 type="button"
                 className="flex-1 text-xs py-1.5 px-3 rounded-lg border border-gray-300 text-text-primary bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={() => handleVote("reject")}
-                disabled={!canVote || isVoting}
+                disabled={!canVote || vote.isPending}
               >
-                {isVoting ? <AppSpinner size="xs" /> : "Negar"}
+                {vote.isPending ? <AppSpinner size="xs" /> : "Negar"}
               </button>
               <button
                 type="button"
                 className="flex-1 text-xs py-1.5 px-3 rounded-lg bg-primary text-white hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={() => handleVote("confirm")}
-                disabled={!canVote || isVoting}
+                disabled={!canVote || vote.isPending}
               >
-                {isVoting ? <AppSpinner size="xs" /> : "Aprovar"}
+                {vote.isPending ? <AppSpinner size="xs" /> : "Aprovar"}
               </button>
             </div>
           </div>
@@ -139,17 +141,17 @@ export function VotingCard({ event, compact = false }: VotingCardProps) {
                 type="button"
                 className="w-full py-2.5 px-4 rounded-lg border border-gray-300 text-text-primary bg-white hover:bg-gray-50 font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={() => handleVote("reject")}
-                disabled={!canVote || isVoting}
+                disabled={!canVote || vote.isPending}
               >
-                {isVoting ? <AppSpinner size="sm" /> : "Rejeitar"}
+                {vote.isPending ? <AppSpinner size="sm" /> : "Rejeitar"}
               </button>
               <button
                 type="button"
                 className="w-full py-2.5 px-4 rounded-lg bg-primary text-white hover:bg-primary-hover font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={() => handleVote("confirm")}
-                disabled={!canVote || isVoting}
+                disabled={!canVote || vote.isPending}
               >
-                {isVoting ? <AppSpinner size="sm" /> : "Confirmar"}
+                {vote.isPending ? <AppSpinner size="sm" /> : "Confirmar"}
               </button>
             </div>
           </div>

@@ -32,7 +32,7 @@ export function AppSidebar() {
         { path: `/group/${groupId}/ranking`, label: "Ranking", icon: Trophy },
         { path: `/group/${groupId}/events`, label: "Eventos", icon: Trophy },
         { path: `/group/${groupId}/members`, label: "Membros", icon: Contact },
-        { path: `/group/${groupId}/profile`, label: "Perfil", icon: User },
+        { path: `/group/${groupId}/profile/${user?.id}`, label: "Perfil", icon: User },
       ]
     : [
         { path: null, label: "Dashboard", icon: LayoutDashboard },

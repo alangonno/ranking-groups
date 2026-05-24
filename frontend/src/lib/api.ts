@@ -89,7 +89,7 @@ export async function postJson<TResponse>(
 
 export async function patchJson<TResponse>(
   url: string,
-  body?: unknown
+  body?: unknown 
 ): Promise<TResponse> {
   try {
     const response = await apiClient.patch<TResponse>(url, body);

@@ -3,6 +3,8 @@ import { AppButton } from "../../ui/app-button";
 import { AppInput } from "../../ui/app-input";
 import { AppSpinner } from "../../ui/app-spinner";
 import { X } from "lucide-react";
+import { useJoinGroup } from "../../../hooks/use-groups";
+import { ApiError } from "../../../lib/api";
 
 interface JoinGroupModalProps {
   isOpen: boolean;
@@ -11,20 +13,27 @@ interface JoinGroupModalProps {
 
 export function JoinGroupModal({ isOpen, onClose }: JoinGroupModalProps) {
   const [code, setCode] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const joinGroup = useJoinGroup();
 
   if (!isOpen) return null;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!code.trim()) return;
-    setIsSubmitting(true);
-    // TODO: Integrar com useJoinGroup() quando backend estiver pronto
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setCode("");
-      onClose();
-    }, 1000);
+    if (code.length < 8) return;
+    setError(null);
+    joinGroup.mutate(
+      { inviteCode: code },
+      {
+        onSuccess: () => {
+          setCode("");
+          onClose();
+        },
+        onError: (err) => {
+          setError(err instanceof ApiError ? err.message : "Erro ao entrar no grupo");
+        },
+      }
+    );
   }
 
   return (
@@ -44,17 +53,19 @@ export function JoinGroupModal({ isOpen, onClose }: JoinGroupModalProps) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1.5">
+            <label htmlFor="group-code" className="block text-sm font-medium text-text-secondary mb-1.5">
               Código do Grupo
             </label>
             <AppInput
+              id="group-code"
               placeholder="ABC12345"
               value={code}
               onChange={(e) => setCode(e.target.value.toUpperCase())}
               required
-              disabled={isSubmitting}
+              disabled={joinGroup.isPending}
+              sizing="md"
               className="w-full text-center text-lg font-mono tracking-wider"
               maxLength={8}
             />
@@ -63,13 +74,18 @@ export function JoinGroupModal({ isOpen, onClose }: JoinGroupModalProps) {
             </p>
           </div>
 
+          {error && (
+            <div className="text-sm text-danger bg-red-50 rounded-lg px-4 py-2.5">
+              {error}
+            </div>
+          )}
+
           <AppButton
             type="submit"
-            color="red"
-            className="w-full"
-            disabled={isSubmitting || code.length < 8}
+            className="w-full bg-primary hover:bg-primary-hover text-white focus:ring-primary-light focus:ring-2 disabled:opacity-50"
+            disabled={joinGroup.isPending || code.length < 8}
           >
-            {isSubmitting ? (
+            {joinGroup.isPending ? (
               <span className="flex items-center justify-center gap-2">
                 <AppSpinner size="sm" />
                 Entrando...

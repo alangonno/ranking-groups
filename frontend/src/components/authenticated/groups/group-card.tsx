@@ -9,7 +9,7 @@ interface GroupCardProps {
   isHighlighted?: boolean;
 }
 
-export function GroupCard({ group, memberCount = 12, isHighlighted = false }: GroupCardProps) {
+export function GroupCard({ group, memberCount, isHighlighted = false }: GroupCardProps) {
   const initials = group.name
     .split(" ")
     .map((n) => n[0])
@@ -38,10 +38,12 @@ export function GroupCard({ group, memberCount = 12, isHighlighted = false }: Gr
                 <p className="text-sm text-text-secondary mt-1 line-clamp-2">
                   {group.description}
                 </p>
-                <div className="flex items-center gap-2 mt-3 text-xs text-text-muted">
-                  <Users size={14} />
-                  <span>{memberCount} membros</span>
-                </div>
+                {memberCount !== undefined && (
+                  <div className="flex items-center gap-2 mt-3 text-xs text-text-muted">
+                    <Users size={14} />
+                    <span>{memberCount} membros</span>
+                  </div>
+                )}
               </div>
               <ChevronRight size={20} className="text-text-muted flex-shrink-0 mt-1" />
             </div>
@@ -64,15 +66,12 @@ export function GroupCard({ group, memberCount = 12, isHighlighted = false }: Gr
           <p className="text-xs text-text-secondary truncate">
             {group.description}
           </p>
-          <div className="flex items-center gap-2 mt-1 text-xs text-text-muted">
-            <Users size={12} />
-            <span>{memberCount} membros</span>
-          </div>
-        </div>
-        <div className="text-right flex-shrink-0">
-          <span className="text-xs font-medium text-text-secondary">
-            Rank #{Math.floor(Math.random() * 50) + 1}
-          </span>
+          {memberCount !== undefined && (
+            <div className="flex items-center gap-2 mt-1 text-xs text-text-muted">
+              <Users size={12} />
+              <span>{memberCount} membros</span>
+            </div>
+          )}
         </div>
         <ChevronRight size={18} className="text-text-muted flex-shrink-0" />
       </Link>

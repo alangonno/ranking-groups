@@ -24,14 +24,8 @@ export function RankingPage() {
         m.user.name.toLowerCase().includes(search.toLowerCase())
       );
     }
-    // Simulate different data per filter
-    if (filter === "last-month") {
-      data = data.map((m) => ({ ...m, score: Math.round(m.score * 0.8) }));
-    } else if (filter === "all") {
-      data = data.map((m) => ({ ...m, score: Math.round(m.score * 1.5) }));
-    }
     return data.sort((a, b) => b.score - a.score);
-  }, [filter, search, ranking]);
+  }, [search, ranking]);
 
   const top1 = filteredRanking[0];
   const top2 = filteredRanking[1];

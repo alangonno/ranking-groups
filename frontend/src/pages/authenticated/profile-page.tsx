@@ -98,7 +98,7 @@ export function ProfilePage() {
               </div>
               <div className="flex items-center gap-1 mt-2 text-text-muted text-xs">
                 <Calendar size={14} />
-                <span>Membro desde {formatDate("2024-01-15T10:00:00Z")}</span>
+                <span>Membro do grupo</span>
               </div>
             </div>
           </div>

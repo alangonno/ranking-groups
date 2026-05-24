@@ -1,6 +1,7 @@
 import { Users } from "lucide-react";
 import { AppCard } from "../../ui/app-card";
 import { AppButton } from "../../ui/app-button";
+import { useJoinSharedEvent } from "../../../hooks/use-shared-events";
 
 interface SharedEvent {
   id: string;
@@ -15,6 +16,8 @@ interface SharedEventCardProps {
 }
 
 export function SharedEventCard({ event }: SharedEventCardProps) {
+  const joinEvent = useJoinSharedEvent(event.id);
+
   return (
     <AppCard className="shadow-[0_1px_3px_rgba(0,0,0,0.05)] min-w-[260px] snap-start p-0 overflow-hidden">
       {event.image ? (
@@ -40,8 +43,14 @@ export function SharedEventCard({ event }: SharedEventCardProps) {
             <Users size={12} />
             <span>{event.participantCount} confirmados</span>
           </div>
-          <AppButton size="xs" color="light" className="text-xs px-3 py-1.5">
-            Participar
+          <AppButton
+            size="xs"
+            color="light"
+            className="text-xs px-3 py-1.5"
+            onClick={() => joinEvent.mutate()}
+            disabled={joinEvent.isPending}
+          >
+            {joinEvent.isPending ? "Entrando..." : "Participar"}
           </AppButton>
         </div>
       </div>

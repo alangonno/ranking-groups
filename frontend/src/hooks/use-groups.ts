@@ -2,23 +2,53 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getJson, postJson } from "../lib/api";
 import type {
   CreateGroupRequest,
-  CreateGroupResponse,
   Group,
   JoinGroupRequest,
-  JoinGroupResponse,
+  UserGroupSummary,
+  CreateGroupBackendResponse,
+  JoinGroupBackendResponse,
 } from "../types/group/group";
 
 export function useGroups() {
   return useQuery<Group[]>({
     queryKey: ["groups"],
-    queryFn: () => getJson<Group[]>("/api/groups"),
+    queryFn: async () => {
+      const response = await getJson<{ groups: UserGroupSummary[] }>("/api/groups");
+      return response.groups.map((g) => ({
+        id: g.groupId,
+        name: g.name,
+        inviteCode: g.inviteCode,
+        description: undefined,
+        createdByUserId: "",
+        createdByUser: undefined,
+        createdAt: "",
+        updatedAt: undefined,
+      }));
+    },
   });
 }
 
 export function useGroup(groupId: string) {
   return useQuery<Group>({
     queryKey: ["groups", groupId],
-    queryFn: () => getJson<Group>(`/api/groups/${groupId}`),
+    queryFn: async () => {
+      const response = await getJson<{
+        groupId: string;
+        name: string;
+        description?: string;
+        inviteCode: string;
+      }>(`/api/groups/${groupId}`);
+      return {
+        id: response.groupId,
+        name: response.name,
+        description: response.description,
+        inviteCode: response.inviteCode,
+        createdByUserId: "",
+        createdByUser: undefined,
+        createdAt: "",
+        updatedAt: undefined,
+      };
+    },
     enabled: !!groupId,
   });
 }
@@ -28,7 +58,7 @@ export function useCreateGroup() {
 
   return useMutation({
     mutationFn: (payload: CreateGroupRequest) =>
-      postJson<CreateGroupResponse>("/api/groups", payload),
+      postJson<CreateGroupBackendResponse>("/api/groups", payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["groups"] });
     },
@@ -40,10 +70,9 @@ export function useJoinGroup() {
 
   return useMutation({
     mutationFn: (payload: JoinGroupRequest) =>
-      postJson<JoinGroupResponse>("/api/groups/join", payload),
-    onSuccess: (_data, variables) => {
+      postJson<JoinGroupBackendResponse>("/api/groups/join", payload),
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["groups"] });
-      queryClient.invalidateQueries({ queryKey: ["groups", variables.inviteCode] });
     },
   });
 }

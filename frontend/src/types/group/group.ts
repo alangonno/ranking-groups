@@ -51,6 +51,27 @@ export interface JoinGroupRequest {
 
 export type JoinGroupResponse = GroupMember;
 
+export interface UserGroupSummary {
+  groupId: string;
+  name: string;
+  role: string;
+  currentScore: number;
+  inviteCode: string;
+}
+
+export interface CreateGroupBackendResponse {
+  groupId: string;
+  name: string;
+  inviteCode: string;
+  createdAt: string;
+}
+
+export interface JoinGroupBackendResponse {
+  groupId: string;
+  name: string;
+  joinedAt: string;
+}
+
 export interface UserEventHistory {
   id: string;
   title: string;

@@ -4,6 +4,8 @@ import type {
   CreateEventRequest,
   CreateEventResponse,
   Event,
+  EventStatus,
+  EventType,
   EventWithScoreBalance,
   UpdateEventRequest,
   UpdateEventResponse,
@@ -11,10 +13,57 @@ import type {
   VoteEventResponse,
 } from "../types/event/event";
 
+const EVENT_STATUS_MAP: Record<string, EventStatus> = {
+  Pending: 1,
+  Approved: 2,
+  Rejected: 3,
+  Cancelled: 4,
+};
+
+const EVENT_TYPE_MAP: Record<string, EventType> = {
+  Positive: 1,
+  Negative: 2,
+};
+
+function mapEventFromBackend(e: {
+  eventId: string;
+  title: string;
+  description: string;
+  points: number;
+  type: string;
+  status: string;
+  createdAt: string;
+  createdByUserId: string;
+  createdByUserName: string;
+  affectedUserId: string;
+  affectedUserName: string;
+  approvalCount?: number;
+}): Event {
+  return {
+    id: e.eventId,
+    groupId: "",
+    createdByUserId: e.createdByUserId,
+    affectedUserId: e.affectedUserId,
+    title: e.title,
+    description: e.description,
+    points: e.points,
+    type: EVENT_TYPE_MAP[e.type] ?? 1,
+    status: EVENT_STATUS_MAP[e.status] ?? 1,
+    createdAt: e.createdAt,
+    createdByUser: { id: e.createdByUserId, name: e.createdByUserName, username: "", email: "" },
+    affectedUser: { id: e.affectedUserId, name: e.affectedUserName, username: "", email: "" },
+  };
+}
+
 export function useGroupEvents(groupId: string) {
   return useQuery<Event[]>({
     queryKey: ["events", "group", groupId],
-    queryFn: () => getJson<Event[]>(`/api/events/group/${groupId}`),
+    queryFn: async () => {
+      const response = await getJson<{ events: Array<Parameters<typeof mapEventFromBackend>[0]> }>(
+        `/api/events/group/${groupId}`
+      );
+      return (response.events || []).map(mapEventFromBackend);
+    },
     enabled: !!groupId,
   });
 }
@@ -22,8 +71,15 @@ export function useGroupEvents(groupId: string) {
 export function useUserEvents(groupId: string, userId: string) {
   return useQuery<EventWithScoreBalance[]>({
     queryKey: ["events", "group", groupId, "user", userId],
-    queryFn: () =>
-      getJson<EventWithScoreBalance[]>(`/api/events/group/${groupId}/user/${userId}`),
+    queryFn: async () => {
+      const response = await getJson<{
+        events: Array<Parameters<typeof mapEventFromBackend>[0] & { scoreBalance: number }>;
+      }>(`/api/events/group/${groupId}/user/${userId}`);
+      return (response.events || []).map((e) => ({
+        ...mapEventFromBackend(e),
+        scoreBalance: e.scoreBalance,
+      }));
+    },
     enabled: !!groupId && !!userId,
   });
 }
