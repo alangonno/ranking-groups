@@ -325,5 +325,45 @@ export const mockMembers: GroupMemberProfile[] = [
   { userId: "user-015", name: "Laura Martins", username: "lauramartins", email: "laura@email.com", avatar: "LM", role: GroupRole.Member, currentScore: 90, rankPosition: 15 },
 ];
 
+export interface MockUserSharedEvent {
+  id: string;
+  title: string;
+  points: number;
+  userRole: "organizer" | "participant";
+  participantCount: number;
+  image?: string;
+}
+
+export const mockUserSharedEvents: MockUserSharedEvent[] = [
+  {
+    id: "use-001",
+    title: "Maratona de Programação",
+    points: 50,
+    userRole: "organizer",
+    participantCount: 8,
+  },
+  {
+    id: "use-002",
+    title: "Churrasco de Confraternização",
+    points: 30,
+    userRole: "participant",
+    participantCount: 12,
+  },
+  {
+    id: "use-003",
+    title: "Corrida Beneficente 5K",
+    points: 25,
+    userRole: "participant",
+    participantCount: 6,
+  },
+  {
+    id: "use-004",
+    title: "Workshop de Design Thinking",
+    points: 40,
+    userRole: "organizer",
+    participantCount: 15,
+  },
+];
+
 // TODO: Substituir por useGroupEvents(groupId) quando o backend estiver pronto
 // e o usuário tiver um grupo selecionado ativo.

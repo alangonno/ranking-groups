@@ -51,7 +51,7 @@ src/
  │    │    ├── ranking-page.tsx        ← /group/:groupId/ranking
  │    │    ├── events-page.tsx         ← /group/:groupId/events
  │    │    ├── members-page.tsx        ← /group/:groupId/members
- │    │    └── profile-page.tsx        ← /group/:groupId/profile (futuro)
+ │    │    └── profile-page.tsx        ← /group/:groupId/profile/:userId
  │    │
  │    └── public/
  │         ├── login-page.tsx
@@ -62,6 +62,7 @@ src/
  │    ├── use-events.ts                ← useGroupEvents, useCreateEvent, useUpdateEvent, useDeleteEvent, useVoteEvent
  │    ├── use-groups.ts                ← useGroups, useGroup, useCreateGroup, useJoinGroup, useLeaveGroup
  │    ├── use-members.ts              ← useMembers
+ │    ├── use-user-profile.ts         ← useUserProfile
  │    ├── use-shared-events.ts        ← useGroupSharedEvents, useCreateSharedEvent, useJoinSharedEvent, etc.
  │    └── use-ranking.ts              ← useRanking, useFeed
  │
@@ -282,7 +283,7 @@ Login/Register → /groups (lista de grupos)
                                                    ├── Ranking (/group/:groupId/ranking)
                                                    ├── Events (/group/:groupId/events)
                                                    ├── Members (/group/:groupId/members)
-                                                   └── Profile (/group/:groupId/profile) [futuro]
+                                                   └── Profile (/group/:groupId/profile/:userId)
                                                   │
                                                   └── Voltar → /groups (troca de grupo)
 ```
@@ -504,7 +505,7 @@ Autenticadas - Dentro de Grupo (contextual):
   /group/:groupId/ranking
   /group/:groupId/events
   /group/:groupId/members
-  /group/:groupId/profile     [futuro]
+  /group/:groupId/profile/:userId
 ```
 
 ---
