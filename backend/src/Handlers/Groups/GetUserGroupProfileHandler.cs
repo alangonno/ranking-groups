@@ -57,6 +57,7 @@ public class SharedEventParticipationDto
     public bool IsClosed { get; set; }
     public string CreatedByUserName { get; set; } = string.Empty;
     public int ParticipantCount { get; set; }
+    public string UserRole { get; set; } = string.Empty;
 }
 
 public interface IGetUserGroupProfileHandler
@@ -163,7 +164,8 @@ public class GetUserGroupProfileHandler : IGetUserGroupProfileHandler
             Points = se.Points,
             IsClosed = se.IsClosed,
             CreatedByUserName = se.CreatedByUser?.Name ?? string.Empty,
-            ParticipantCount = se.Participants?.Count ?? 0
+            ParticipantCount = se.Participants?.Count ?? 0,
+            UserRole = se.CreatedByUserId == request.UserId ? "organizer" : "participant"
         }).ToList();
 
         return new GetUserGroupProfileResponse

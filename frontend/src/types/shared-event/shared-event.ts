@@ -38,3 +38,8 @@ export type UpdateSharedEventResponse = SharedEvent;
 export type JoinSharedEventResponse = SharedEventParticipant;
 
 export type LeaveSharedEventResponse = void;
+
+export interface UserSharedEvent extends SharedEvent {
+  userRole: "organizer" | "participant";
+  participantCount: number;
+}

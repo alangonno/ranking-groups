@@ -3,7 +3,6 @@ import { ArrowUp, Calendar } from "lucide-react";
 import { useUserProfile } from "../../hooks/use-user-profile";
 import { useCurrentUser } from "../../hooks/use-auth";
 import { GroupRole } from "../../types/group/group";
-import { EventType } from "../../types/event/event";
 import { AppBadge } from "../../components/ui/app-badge";
 
 function roleLabel(role: GroupRole): string {
@@ -138,7 +137,7 @@ export function ProfilePage() {
                 <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-border" />
                 <div className="space-y-6">
                   {events.map((event) => {
-                    const isPositive = event.type === EventType.Positive;
+                    const isPositive = event.type === "Positive";
                     const signedPoints = isPositive ? event.points : -event.points;
                     return (
                       <div key={event.id} className="relative flex gap-4">
