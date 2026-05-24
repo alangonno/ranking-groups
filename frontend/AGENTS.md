@@ -2,13 +2,15 @@
 
 # Stack
 
-- React
-- Vite
-- TypeScript
-- React Router
-- TanStack Query
-- Flowbite React
-- TailwindCSS
+- React 19
+- Vite 6
+- TypeScript 6
+- React Router 7
+- TanStack Query 5
+- Flowbite React 0.12
+- TailwindCSS 4 (via @tailwindcss/vite)
+- lucide-react (ícones)
+- @formkit/auto-animate (animações de lista)
 
 ---
 
@@ -19,63 +21,70 @@ src/
  ├── app/
  │
  ├── components/
- │    ├── ui/
+ │    ├── ui/                          ← Wrappers do Flowbite React (genéricos)
+ │    │    ├── app-button.tsx
+ │    │    ├── app-card.tsx
+ │    │    ├── app-badge.tsx
+ │    │    ├── app-modal.tsx
+ │    │    ├── app-input.tsx
+ │    │    ├── app-spinner.tsx
+ │    │    ├── app-tabs.tsx
+ │    │    └── ...
  │    │
- │    ├── authenticated/
+ │    ├── authenticated/               ← Componentes de área autenticada
  │    │    ├── auth/
- │    │    ├── events/
- │    │    ├── groups/
- │    │    ├── ranking/
- │    │    └── profile/
+ │    │    ├── events/                 ← event-card, voting-card, quick-action-card, shared-event-card, shared-events-carousel
+ │    │    ├── groups/                 ← group-card, create-group-modal, join-group-modal
+ │    │    ├── ranking/                ← podium-card, ranking-list-item, ranking-filter, search-input, top-members-widget, stats-widget
+ │    │    ├── dashboard/              ← hero-score-card, pending-votes-section, feed-tabs
+ │    │    ├── sidebar/                ← app-sidebar.tsx
+ │    │    └── navigation/             ← bottom-nav.tsx
  │    │
  │    └── public/
- │         ├── auth/
- │         └── landing/
+ │         └── auth/                   ← login-form.tsx, register-form.tsx
  │
  ├── pages/
  │    ├── authenticated/
- │    │    ├── dashboard-page.tsx
- │    │    ├── group-page.tsx
- │    │    ├── ranking-page.tsx
- │    │    └── profile-page.tsx
+ │    │    ├── dashboard-page.tsx      ← /group/:groupId
+ │    │    ├── groups-page.tsx         ← /groups
+ │    │    ├── ranking-page.tsx        ← /group/:groupId/ranking
+ │    │    ├── events-page.tsx         ← /group/:groupId/events
+ │    │    └── profile-page.tsx        ← /group/:groupId/profile (futuro)
  │    │
  │    └── public/
  │         ├── login-page.tsx
- │         ├── register-page.tsx
- │         └── landing-page.tsx
+ │         └── register-page.tsx
  │
  ├── hooks/
- │    ├── use-auth/
- │    ├── use-events/
- │    ├── use-groups/
- │    └── use-ranking/
+ │    ├── use-auth.ts                  ← useLogin, useRegister, useLogout, useCurrentUser
+ │    ├── use-events.ts                ← useGroupEvents, useCreateEvent, useUpdateEvent, useDeleteEvent, useVoteEvent
+ │    ├── use-groups.ts                ← useGroups, useGroup, useCreateGroup, useJoinGroup, useLeaveGroup
+ │    ├── use-shared-events.ts        ← useGroupSharedEvents, useCreateSharedEvent, useJoinSharedEvent, etc.
+ │    └── use-ranking.ts              ← useRanking, useFeed
  │
  ├── lib/
- │    ├── api/
- │    │    ├── api-client.ts
- │    │    ├── api-error.ts
- │    │    ├── get-json.ts
- │    │    ├── post-json.ts
- │    │    ├── patch-json.ts
- │    │    ├── put-json.ts
- │    │    └── delete-json.ts
- │    │
+ │    ├── api.ts                       ← Cliente axios + wrappers HTTP (consolidado)
+ │    ├── query-client.ts             ← Configuração do TanStack Query
+ │    ├── auth-token.ts               ← get/set/remove token, getUserIdFromToken
+ │    ├── group-storage.ts            ← get/set/remove lastGroupId (localStorage)
+ │    ├── use-group-context.ts        ← Hook: extrai groupId da URL em tempo real
+ │    ├── mock-data.ts                ← Dados mockados para desenvolvimento
  │    ├── constants/
  │    ├── utils/
  │    └── validations/
  │
- ├── services/
- │
  ├── providers/
+ │    └── query-provider.tsx           ← QueryClientProvider + Devtools
  │
  ├── layouts/
- │    ├── authenticated-layout.tsx
- │    └── public-layout.tsx
+ │    ├── authenticated-layout.tsx    ← Sidebar + BottomNav + Main Content
+ │    ├── public-layout.tsx           ← Layout limpo para login/register
+ │    └── group-layout.tsx            ← Wrapper para rotas /group/:groupId/*
  │
  ├── routes/
- │    ├── authenticated-routes.tsx
  │    ├── public-routes.tsx
- │    └── router.tsx
+ │    ├── authenticated-routes.tsx
+ │    └── router.tsx                  ← createBrowserRouter com rotas contextuais
  │
  ├── store/
  │    ├── auth-store.ts
@@ -85,6 +94,7 @@ src/
  │    ├── auth/
  │    ├── event/
  │    ├── group/
+ │    ├── shared-event/
  │    ├── ranking/
  │    └── common/
  │
@@ -103,17 +113,20 @@ src/
 
 ## components/ui
 
-Contém apenas componentes reutilizáveis e genéricos.
+Contém apenas wrappers genéricos do Flowbite React.
+
+Regra: Nunca usar Flowbite diretamente em pages ou componentes de feature. Sempre importar de `components/ui`.
 
 Exemplos:
 
 ```text
-button.tsx
-dialog.tsx
-input.tsx
-card.tsx
-badge.tsx
-table.tsx
+app-button.tsx      ← wrapper de <Button>
+app-card.tsx        ← wrapper de <Card>
+app-badge.tsx       ← wrapper de <Badge>
+app-modal.tsx       ← wrapper de <Modal>
+app-input.tsx       ← wrapper de <TextInput>
+app-spinner.tsx     ← wrapper de <Spinner>
+app-tabs.tsx        ← wrapper de <Tabs>
 ```
 
 Não conter:
@@ -121,6 +134,7 @@ Não conter:
 - lógica de negócio
 - chamadas HTTP
 - dependência de feature
+- estilização customizada pesada
 
 ---
 
@@ -138,17 +152,20 @@ components/authenticated/
  ├── events/
  ├── groups/
  ├── ranking/
- └── profile/
+ ├── dashboard/
+ ├── sidebar/          ← app-sidebar.tsx
+ └── navigation/       ← bottom-nav.tsx
 ```
 
 Exemplos:
 
 ```text
 components/authenticated/events/
- ├── create-event-modal.tsx
- ├── event-feed.tsx
  ├── event-card.tsx
- └── approve-event-button.tsx
+ ├── voting-card.tsx
+ ├── quick-action-card.tsx
+ ├── shared-event-card.tsx
+ └── shared-events-carousel.tsx
 ```
 
 ---
@@ -163,16 +180,9 @@ Estrutura:
 
 ```text
 components/public/
- ├── auth/
- └── landing/
-```
-
-Exemplos:
-
-```text
-components/public/auth/
- ├── login-form.tsx
- └── register-form.tsx
+ └── auth/
+      ├── login-form.tsx
+      └── register-form.tsx
 ```
 
 ---
@@ -185,9 +195,11 @@ Exemplo:
 
 ```text
 pages/authenticated/
- ├── dashboard-page.tsx
- ├── group-page.tsx
- └── ranking-page.tsx
+ ├── dashboard-page.tsx      ← /group/:groupId
+ ├── groups-page.tsx         ← /groups
+ ├── ranking-page.tsx        ← /group/:groupId/ranking
+ ├── events-page.tsx         ← /group/:groupId/events
+ └── profile-page.tsx        ← /group/:groupId/profile
 ```
 
 ---
@@ -200,12 +212,14 @@ Pages devem:
 - orquestrar layout
 - conectar hooks
 - evitar lógica pesada
+- receber groupId via useParams() quando contextual ao grupo
 
 Pages NÃO devem:
 
 - conter chamadas HTTP diretas
 - conter lógica de negócio
 - conter componentes gigantes
+- assumir grupo sem validar groupId
 
 ---
 
@@ -217,8 +231,9 @@ A estrutura deve priorizar:
 - descoberta rápida
 - baixo acoplamento
 - organização por feature
-- separação clara de contexto
+- separação clara de contexto (público vs autenticado)
 - escalabilidade saudável
+- navegação contextual ao grupo
 
 ---
 
@@ -226,12 +241,13 @@ A estrutura deve priorizar:
 
 ## Obrigatório
 
-- separar componentes por contexto
-- separar componentes por feature
+- separar componentes por contexto (public vs authenticated)
+- separar componentes por feature (events, groups, ranking, etc.)
 - evitar componentes globais desnecessários
-- manter componentes pequenos
+- manter componentes pequenos e focados
 - evitar duplicação
 - seguir estrutura definida
+- validar groupId em todas as páginas contextuais
 
 ---
 
@@ -244,6 +260,75 @@ Não implementar:
 - lógica de negócio em componentes
 - hooks dentro de pages sem reutilização
 - abstrações prematuras
+- dependência de localStorage para contexto de navegação (usar URL)
+
+---
+
+# Fluxo de Grupo (Arquitetura Central)
+
+O sistema é centrado no conceito de **grupo**. Todo o fluxo de navegação segue este padrão:
+
+```
+Login/Register → /groups (lista de grupos)
+                      │
+                      ├── Criar Grupo → Modal → POST /api/groups
+                      ├── Entrar via Código → Modal → POST /api/groups/join
+                      └── Selecionar Grupo → /group/:groupId
+                                                  │
+                                                  ├── Dashboard (/group/:groupId)
+                                                  ├── Ranking (/group/:groupId/ranking)
+                                                  ├── Events (/group/:groupId/events)
+                                                  ├── Members (/group/:groupId/members) [futuro]
+                                                  └── Profile (/group/:groupId/profile) [futuro]
+                                                  │
+                                                  └── Voltar → /groups (troca de grupo)
+```
+
+Regras:
+
+1. **Pós-login:** Sempre redirecionar para `/groups`
+2. **Sem grupo selecionado:** Sidebar mostra Dashboard/Ranking/Perfil como disabled (cinza)
+3. **Com grupo selecionado:** Todos os links da sidebar apontam para `/group/:groupId/*`
+4. **Persistência:** Último grupo visitado salvo no localStorage (apenas para conveniência do link Dashboard)
+5. **Fonte da verdade:** O `groupId` real vem sempre da URL (`useParams`), nunca do localStorage
+
+---
+
+# Navegação Contextual ao Grupo
+
+## Sidebar (Desktop)
+
+Comportamento dinâmico baseado na URL atual:
+
+| Item | Fora de grupo (`/groups`) | Dentro de grupo (`/group/:groupId/*`) |
+|---|---|---|
+| Dashboard | `text-muted`, `cursor-not-allowed` | `/group/:groupId` |
+| Ranking | `text-muted`, `cursor-not-allowed` | `/group/:groupId/ranking` |
+| Eventos | `text-muted`, `cursor-not-allowed` | `/group/:groupId/events` |
+| Perfil | `text-muted`, `cursor-not-allowed` | `/group/:groupId/profile` |
+| Meus Grupos | Ativo | `/groups` |
+
+## BottomNav (Mobile)
+
+Fora de grupo (`/groups`):
+```
+┌─────────────────────────────┐
+│         [Grupos ●]          │  ← Apenas 1 item visível
+└─────────────────────────────┘
+```
+
+Dentro de grupo (`/group/:groupId/*`):
+```
+┌─────────────────────────────┐
+│ [Home][Ranking][FAB][Grupos][Perfil] │
+└─────────────────────────────┘
+```
+
+Links dinâmicos:
+- Home → `/group/:groupId`
+- Ranking → `/group/:groupId/ranking`
+- Grupos → `/groups`
+- Perfil → `/group/:groupId/profile`
 
 ---
 
@@ -255,10 +340,11 @@ Estrutura:
 
 ```text
 hooks/
- ├── use-auth/
- ├── use-events/
- ├── use-groups/
- └── use-ranking/
+ ├── use-auth.ts
+ ├── use-events.ts
+ ├── use-groups.ts
+ ├── use-shared-events.ts
+ └── use-ranking.ts
 ```
 
 ---
@@ -271,6 +357,7 @@ Hooks devem:
 - encapsular estados
 - encapsular queries/mutations
 - reutilizar lógica de feature
+- não conter lógica de roteamento
 
 Hooks NÃO devem:
 
@@ -280,51 +367,27 @@ Hooks NÃO devem:
 
 ---
 
-# Estrutura Recomendada dos Hooks
-
-Exemplo:
-
-```text
-hooks/use-events/
- ├── use-create-event.ts
- ├── use-approve-event.ts
- ├── use-group-events.ts
- └── use-event-permissions.ts
-```
-
----
-
-# Regras da Pasta lib/api
+# lib/api.ts
 
 ## Objetivo
 
-Centralizar toda comunicação HTTP.
+Centralizar toda comunicação HTTP em um único arquivo.
 
----
-
-# Estrutura
+## Estrutura
 
 ```text
-lib/api/
- ├── api-client.ts
- ├── api-error.ts
- ├── get-json.ts
- ├── post-json.ts
- ├── patch-json.ts
- ├── put-json.ts
- └── delete-json.ts
+lib/
+ └── api.ts          ← api-client (axios), ApiError, getJson, postJson, patchJson, putJson, deleteJson
 ```
 
----
-
-# Regras
+## Regras
 
 Funções HTTP devem:
 
 - retornar JSON tipado
-- lançar erros padronizados
+- lançar erros padronizados (ApiError)
 - centralizar headers
-- centralizar autenticação
+- centralizar autenticação (Bearer token via localStorage)
 - centralizar tratamento de token
 
 ---
@@ -333,21 +396,10 @@ Funções HTTP devem:
 
 ```ts
 await postJson<CreateEventResponse>(
-  "/events",
+  "/api/events",
   payload
 )
 ```
-
----
-
-# api-client.ts
-
-Responsável por:
-
-- baseURL
-- Authorization
-- interceptors
-- tratamento global de erro
 
 ---
 
@@ -360,15 +412,18 @@ Estrutura:
 ```text
 types/
  ├── auth/
+ │    └── user.ts          ← User, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, etc.
  ├── event/
+ │    └── event.ts         ← Event, EventStatus, EventType, EventVoteType, EventApproval, CreateEventRequest, etc.
  ├── group/
+ │    └── group.ts         ← Group, GroupMember, GroupRole, CreateGroupRequest, JoinGroupRequest, etc.
+ ├── shared-event/
+ │    └── shared-event.ts  ← SharedEvent, SharedEventParticipant, CreateSharedEventRequest, etc.
  ├── ranking/
+ │    └── ranking.ts       ← RankingEntry, RankingQueryParams
  └── common/
+      └── base-entity.ts   ← BaseEntity
 ```
-
----
-
-# Regras de Types
 
 Types devem conter:
 
@@ -378,19 +433,7 @@ Types devem conter:
 - enums
 - estados
 
-Não duplicar tipos.
-
----
-
-# Exemplo
-
-```text
-types/event/
- ├── create-event-request.ts
- ├── create-event-response.ts
- ├── event.ts
- └── event-status.ts
-```
+Não duplicar tipos. Centralizar tudo no arquivo de domínio.
 
 ---
 
@@ -435,9 +478,29 @@ Separar:
 
 ```text
 routes/
- ├── authenticated-routes.tsx
  ├── public-routes.tsx
- └── router.tsx
+ ├── authenticated-routes.tsx
+ └── router.tsx          ← createBrowserRouter
+```
+
+---
+
+# Padrão de Rotas
+
+```text
+Públicas:
+  /login
+  /register
+
+Autenticadas - Fora de Grupo:
+  /groups
+
+Autenticadas - Dentro de Grupo (contextual):
+  /group/:groupId
+  /group/:groupId/ranking
+  /group/:groupId/events
+  /group/:groupId/members     [futuro]
+  /group/:groupId/profile     [futuro]
 ```
 
 ---
@@ -448,8 +511,9 @@ Separar layouts por contexto.
 
 ```text
 layouts/
- ├── authenticated-layout.tsx
- └── public-layout.tsx
+ ├── authenticated-layout.tsx    ← Sidebar + BottomNav + Main Content
+ ├── public-layout.tsx           ← Layout limpo para login/register
+ └── group-layout.tsx            ← Wrapper para rotas /group/:groupId/*
 ```
 
 ---
@@ -481,11 +545,15 @@ Toda regra crítica deve existir no backend.
 
 ## Obrigatório
 
-- usar Tailwind
-- usar shadcn/ui
+- usar Tailwind v4
+- usar wrappers do Flowbite React via `components/ui`
 - evitar CSS isolado sem necessidade
 - evitar styled-components
 - manter consistência visual
+- usar sombra sutil: `shadow-[0_1px_3px_rgba(0,0,0,0.05)]`
+- cards brancos puros (`#FFFFFF`) com fundo off-white (`#F9FAFB`)
+- usar bordas cinza claras (`#E5E7EB`) quando necessário
+- remover bordas pretas sólidas e tracejadas
 
 ---
 
@@ -498,6 +566,7 @@ Toda regra crítica deve existir no backend.
 - evitar genericidade artificial
 - implementar incrementalmente
 - seguir estrutura definida
+- seguir fluxo: types → hooks → component → page → integração
 
 ---
 
@@ -522,6 +591,7 @@ O agente deve:
 - evitar alterar estruturas não relacionadas
 - evitar refactors globais desnecessários
 - respeitar contexto arquitetural definido
+- validar groupId em páginas contextuais
 
 ---
 
@@ -533,6 +603,7 @@ O agente deve:
 - indicar arquivos criados/modificados
 - evitar reescrever arquivos inteiros sem necessidade
 - justificar mudanças arquiteturais importantes
+- seguir o fluxo de grupo: login → grupos → grupo → páginas
 
 ---
 
@@ -547,6 +618,7 @@ Não implementar:
 - lógica de negócio em UI
 - chamadas HTTP diretas em páginas
 - lógica duplicada
+- navegação baseada apenas em localStorage (sempre usar URL)
 
 ---
 
@@ -561,6 +633,6 @@ Prioridades do frontend:
 5. reutilização saudável
 6. performance saudável
 7. manutenção
-
+8. navegação contextual ao grupo
 
 ---

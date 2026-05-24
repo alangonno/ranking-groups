@@ -244,5 +244,65 @@ export const mockStats = {
   activeMembers: 45,
 };
 
+export interface MockRankingMember {
+  userId: string;
+  name: string;
+  points: number;
+  avatar: string;
+}
+
+export const mockRanking: MockRankingMember[] = [
+  { userId: "user-008", name: "Ricardo Almeida", points: 1250, avatar: "RA" },
+  { userId: "user-005", name: "Ana Paula", points: 1100, avatar: "AP" },
+  { userId: "user-002", name: "Maria Santos", points: 980, avatar: "MS" },
+  { userId: "user-001", name: "João Silva", points: 850, avatar: "JS" },
+  { userId: "user-003", name: "Pedro Costa", points: 720, avatar: "PC" },
+  { userId: "user-004", name: "Bruno Lima", points: 680, avatar: "BL" },
+  { userId: "user-006", name: "Carlos Mendes", points: 540, avatar: "CM" },
+  { userId: "user-007", name: "Fernanda Rocha", points: 490, avatar: "FR" },
+  { userId: "user-009", name: "Juliana Torres", points: 430, avatar: "JT" },
+  { userId: "user-010", name: "Marcelo Dias", points: 380, avatar: "MD" },
+  { userId: "user-011", name: "Patrícia Lima", points: 320, avatar: "PL" },
+  { userId: "user-012", name: "Roberto Silva", points: 280, avatar: "RS" },
+  { userId: "user-013", name: "Camila Souza", points: 210, avatar: "CS" },
+  { userId: "user-014", name: "André Oliveira", points: 150, avatar: "AO" },
+  { userId: "user-015", name: "Laura Martins", points: 90, avatar: "LM" },
+];
+
+export interface MockSharedEvent {
+  id: string;
+  title: string;
+  points: number;
+  participantCount: number;
+  image?: string;
+}
+
+export const mockSharedEvents: MockSharedEvent[] = [
+  {
+    id: "se-001",
+    title: "Maratona de Programação",
+    points: 50,
+    participantCount: 8,
+  },
+  {
+    id: "se-002",
+    title: "Churrasco de Confraternização",
+    points: 30,
+    participantCount: 12,
+  },
+  {
+    id: "se-003",
+    title: "Corrida Beneficente 5K",
+    points: 25,
+    participantCount: 6,
+  },
+  {
+    id: "se-004",
+    title: "Workshop de Design Thinking",
+    points: 40,
+    participantCount: 15,
+  },
+];
+
 // TODO: Substituir por useGroupEvents(groupId) quando o backend estiver pronto
 // e o usuário tiver um grupo selecionado ativo.

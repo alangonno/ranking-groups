@@ -7,19 +7,17 @@ import {
   LogOut,
 } from "lucide-react";
 import { useCurrentUser, useLogout } from "../../../hooks/use-auth";
-import { getLastGroupId } from "../../../lib/group-storage";
+import { useCurrentGroupId } from "../../../lib/use-group-context";
 
 const menuItems = [
   { path: "/groups", label: "Meus Grupos", icon: Users },
-  { path: "/ranking", label: "Ranking", icon: Trophy },
-  { path: "/profile", label: "Perfil", icon: User },
 ];
 
 export function AppSidebar() {
   const { data: user } = useCurrentUser();
   const logout = useLogout();
   const navigate = useNavigate();
-  const lastGroupId = getLastGroupId();
+  const groupId = useCurrentGroupId();
 
   function handleLogout() {
     logout.mutate(undefined, {
@@ -27,7 +25,18 @@ export function AppSidebar() {
     });
   }
 
-  const dashboardPath = lastGroupId ? `/group/${lastGroupId}` : "/groups";
+  const groupLinks = groupId
+    ? [
+        { path: `/group/${groupId}`, label: "Dashboard", icon: LayoutDashboard },
+        { path: `/group/${groupId}/ranking`, label: "Ranking", icon: Trophy },
+        { path: `/group/${groupId}/events`, label: "Eventos", icon: Trophy },
+        { path: `/group/${groupId}/profile`, label: "Perfil", icon: User },
+      ]
+    : [
+        { path: null, label: "Dashboard", icon: LayoutDashboard },
+        { path: null, label: "Ranking", icon: Trophy },
+        { path: null, label: "Perfil", icon: User },
+      ];
 
   return (
     <aside className="w-60 min-h-screen bg-white flex flex-col fixed left-0 top-0 z-40">
@@ -42,20 +51,36 @@ export function AppSidebar() {
 
       {/* Menu */}
       <nav className="flex-1 px-3 space-y-1">
-        {/* Dashboard Link - contextual ao último grupo */}
-        <NavLink
-          to={dashboardPath}
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-colors ${
-              isActive && lastGroupId
-                ? "bg-primary-light text-primary border-l-4 border-primary rounded-r-lg"
-                : "text-text-secondary hover:bg-gray-50 hover:text-text-primary rounded-lg"
-            }`
+        {groupLinks.map((item) => {
+          const Icon = item.icon;
+          if (item.path) {
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-primary-light text-primary border-l-4 border-primary rounded-r-lg"
+                      : "text-text-secondary hover:bg-gray-50 hover:text-text-primary rounded-lg"
+                  }`
+                }
+              >
+                <Icon size={20} />
+                {item.label}
+              </NavLink>
+            );
           }
-        >
-          <LayoutDashboard size={20} />
-          Dashboard
-        </NavLink>
+          return (
+            <div
+              key={item.label}
+              className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-text-muted cursor-not-allowed"
+            >
+              <Icon size={20} />
+              {item.label}
+            </div>
+          );
+        })}
 
         {menuItems.map((item) => {
           const Icon = item.icon;

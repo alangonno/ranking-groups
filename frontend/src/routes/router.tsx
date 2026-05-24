@@ -5,10 +5,13 @@ import {
 } from "react-router-dom";
 import { PublicLayout } from "../layouts/public-layout";
 import { AuthenticatedLayout } from "../layouts/authenticated-layout";
+import { GroupLayout } from "../layouts/group-layout";
 import { LoginPage } from "../pages/public/login-page";
 import { RegisterPage } from "../pages/public/register-page";
 import { GroupsPage } from "../pages/authenticated/groups-page";
 import { DashboardPage } from "../pages/authenticated/dashboard-page";
+import { RankingPage } from "../pages/authenticated/ranking-page";
+import { EventsPage } from "../pages/authenticated/events-page";
 import { getAccessToken } from "../lib/auth-token";
 
 function AuthGuard() {
@@ -41,7 +44,15 @@ export const router = createBrowserRouter([
         element: <AuthenticatedLayout />,
         children: [
           { path: "groups", element: <GroupsPage /> },
-          { path: "group/:groupId", element: <DashboardPage /> },
+          {
+            path: "group/:groupId",
+            element: <GroupLayout />,
+            children: [
+              { path: "", element: <DashboardPage /> },
+              { path: "ranking", element: <RankingPage /> },
+              { path: "events", element: <EventsPage /> },
+            ],
+          },
           { path: "", element: <Navigate to="/groups" replace /> },
         ],
       },
