@@ -21,6 +21,8 @@ public class SharedEventConfiguration : IEntityTypeConfiguration<SharedEvent>
         builder.Property(se => se.Points)
             .IsRequired();
 
+        builder.Property(se => se.ClosesAt);
+
         builder.HasIndex(se => se.GroupId);
         builder.HasIndex(se => se.CreatedByUserId);
         builder.HasIndex(se => se.CreatedAt);

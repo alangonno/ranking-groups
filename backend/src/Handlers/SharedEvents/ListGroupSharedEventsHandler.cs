@@ -23,10 +23,12 @@ public class SharedEventSummaryDto
     public string Description { get; set; } = string.Empty;
     public int Points { get; set; }
     public bool IsClosed { get; set; }
+    public DateTime? ClosesAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public Guid CreatedByUserId { get; set; }
     public string CreatedByUserName { get; set; } = string.Empty;
     public int ParticipantCount { get; set; }
+    public bool HasCurrentUserJoined { get; set; }
 }
 
 public interface IListGroupSharedEventsHandler
@@ -67,10 +69,12 @@ public class ListGroupSharedEventsHandler : IListGroupSharedEventsHandler
             Description = se.Description,
             Points = se.Points,
             IsClosed = se.IsClosed,
+            ClosesAt = se.ClosesAt,
             CreatedAt = se.CreatedAt,
             CreatedByUserId = se.CreatedByUserId,
             CreatedByUserName = se.CreatedByUser?.Name ?? string.Empty,
-            ParticipantCount = se.Participants.Count
+            ParticipantCount = se.Participants.Count,
+            HasCurrentUserJoined = se.Participants.Any(p => p.UserId == userId)
         }).ToList();
 
         return new ListGroupSharedEventsResponse { SharedEvents = dtos };

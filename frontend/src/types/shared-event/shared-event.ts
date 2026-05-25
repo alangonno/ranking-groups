@@ -14,9 +14,11 @@ export interface SharedEvent extends BaseEntity {
   description: string;
   points: number;
   isClosed: boolean;
+  closesAt?: string;
   createdByUser?: User;
   participants?: SharedEventParticipant[];
   participantCount: number;
+  hasCurrentUserJoined: boolean;
 }
 
 export interface CreateSharedEventRequest {
@@ -24,6 +26,7 @@ export interface CreateSharedEventRequest {
   title: string;
   description: string;
   points: number;
+  closesAt?: string;
 }
 
 export type CreateSharedEventResponse = SharedEvent;

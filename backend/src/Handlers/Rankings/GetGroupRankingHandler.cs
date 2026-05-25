@@ -35,15 +35,18 @@ public interface IGetGroupRankingHandler
 public class GetGroupRankingHandler : IGetGroupRankingHandler
 {
     private readonly IEventRepository _eventRepository;
+    private readonly ISharedEventRepository _sharedEventRepository;
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
 
     public GetGroupRankingHandler(
         IEventRepository eventRepository,
+        ISharedEventRepository sharedEventRepository,
         IGroupMemberRepository groupMemberRepository,
         ICurrentUserService currentUserService)
     {
         _eventRepository = eventRepository;
+        _sharedEventRepository = sharedEventRepository;
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
     }
@@ -62,10 +65,19 @@ public class GetGroupRankingHandler : IGetGroupRankingHandler
         var events = await _eventRepository.GetByGroupAsync(request.GroupId);
         var approvedEvents = events.Where(e => e.Status == EventStatus.Approved).ToList();
 
+        var sharedEvents = await _sharedEventRepository.GetByGroupAsync(request.GroupId);
+
         var memberScores = members.Select(m =>
         {
             var userEvents = approvedEvents.Where(e => e.AffectedUserId == m.UserId).ToList();
             var score = RankingRules.CalculateScoreFromEvents(userEvents, fromDate, toDate);
+
+            var userSharedPoints = sharedEvents
+                .SelectMany(se => se.Participants)
+                .Where(p => p.UserId == m.UserId && p.CreatedAt >= fromDate && p.CreatedAt <= toDate)
+                .Sum(p => p.SharedEvent.Points);
+
+            score += userSharedPoints;
 
             return new RankingMemberDto
             {

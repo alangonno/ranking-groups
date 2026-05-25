@@ -37,6 +37,10 @@ export function EventsPage() {
     title: se.title,
     points: se.points,
     participantCount: se.participantCount,
+    isClosed: se.isClosed,
+    createdByUserId: se.createdByUserId,
+    hasCurrentUserJoined: se.hasCurrentUserJoined,
+    closesAt: se.closesAt,
   }));
 
   return (

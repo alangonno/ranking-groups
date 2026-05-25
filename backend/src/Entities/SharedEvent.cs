@@ -12,6 +12,6 @@ public class SharedEvent : Entity
     public string Description { get; set; } = string.Empty;
     public int Points { get; set; }
     public bool IsClosed { get; set; }
-
+    public DateTime? ClosesAt { get; set; }
     public ICollection<SharedEventParticipant> Participants { get; set; } = new List<SharedEventParticipant>();
 }

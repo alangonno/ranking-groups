@@ -17,6 +17,7 @@ export function CreateSharedEventModal({ isOpen, onClose, groupId }: CreateShare
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [points, setPoints] = useState("");
+  const [closesAt, setClosesAt] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const createSharedEvent = useCreateSharedEvent();
@@ -40,12 +41,14 @@ export function CreateSharedEventModal({ isOpen, onClose, groupId }: CreateShare
         title: title.trim(),
         description: description.trim(),
         points: pointsNum,
+        closesAt: closesAt ? new Date(closesAt).toISOString() : undefined,
       },
       {
         onSuccess: () => {
           setTitle("");
           setDescription("");
           setPoints("");
+          setClosesAt("");
           onClose();
         },
         onError: (err) => {
@@ -122,6 +125,21 @@ export function CreateSharedEventModal({ isOpen, onClose, groupId }: CreateShare
               value={points}
               onChange={(e) => setPoints(e.target.value)}
               required
+              disabled={createSharedEvent.isPending}
+              sizing="md"
+              className="w-full"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="shared-closes-at" className="block text-sm font-medium text-text-secondary mb-1.5">
+              Data de fechamento <span className="text-text-muted">(opcional)</span>
+            </label>
+            <AppInput
+              id="shared-closes-at"
+              type="datetime-local"
+              value={closesAt}
+              onChange={(e) => setClosesAt(e.target.value)}
               disabled={createSharedEvent.isPending}
               sizing="md"
               className="w-full"

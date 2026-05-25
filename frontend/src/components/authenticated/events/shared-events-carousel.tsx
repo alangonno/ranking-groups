@@ -5,6 +5,10 @@ interface SharedEvent {
   title: string;
   points: number;
   participantCount: number;
+  isClosed: boolean;
+  createdByUserId: string;
+  hasCurrentUserJoined: boolean;
+  closesAt?: string;
   image?: string;
 }
 

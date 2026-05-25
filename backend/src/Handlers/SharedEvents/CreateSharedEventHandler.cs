@@ -14,6 +14,7 @@ public class CreateSharedEventRequest
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public int Points { get; set; }
+    public DateTime? ClosesAt { get; set; }
 }
 
 public class CreateSharedEventResponse
@@ -81,7 +82,8 @@ public class CreateSharedEventHandler : ICreateSharedEventHandler
             Title = request.Title,
             Description = request.Description,
             Points = request.Points,
-            IsClosed = false
+            IsClosed = false,
+            ClosesAt = request.ClosesAt
         };
 
         _sharedEventRepository.Add(sharedEvent);

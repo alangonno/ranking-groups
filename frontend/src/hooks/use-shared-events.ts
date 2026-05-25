@@ -19,11 +19,13 @@ export function useGroupSharedEvents(groupId: string) {
           description: string;
           points: number;
           isClosed: boolean;
+          closesAt: string | null;
           createdAt: string;
           groupId: string;
           createdByUserId: string;
           createdByUserName: string;
           participantCount: number;
+          hasCurrentUserJoined: boolean;
         }>;
       }>(`/api/shared-events/group/${groupId}`);
       return (response.sharedEvents || []).map((se) => ({
@@ -32,10 +34,12 @@ export function useGroupSharedEvents(groupId: string) {
         description: se.description,
         points: se.points,
         isClosed: se.isClosed,
+        closesAt: se.closesAt ?? undefined,
         createdAt: se.createdAt,
         groupId: se.groupId,
         createdByUserId: se.createdByUserId,
         participantCount: se.participantCount,
+        hasCurrentUserJoined: se.hasCurrentUserJoined,
       }));
     },
     enabled: !!groupId,
@@ -98,7 +102,7 @@ export function useJoinSharedEvent(id: string) {
   return useMutation({
     mutationFn: () => postJson<void>(`/api/shared-events/${id}/join`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["shared-events", id] });
+      queryClient.invalidateQueries({ queryKey: ["shared-events"] });
       queryClient.invalidateQueries({ queryKey: ["ranking"] });
       queryClient.invalidateQueries({ queryKey: ["feed"] });
     },
@@ -111,7 +115,7 @@ export function useLeaveSharedEvent(id: string) {
   return useMutation({
     mutationFn: () => postJson<void>(`/api/shared-events/${id}/leave`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["shared-events", id] });
+      queryClient.invalidateQueries({ queryKey: ["shared-events"] });
       queryClient.invalidateQueries({ queryKey: ["ranking"] });
       queryClient.invalidateQueries({ queryKey: ["feed"] });
     },
@@ -124,7 +128,6 @@ export function useCloseSharedEvent(id: string) {
   return useMutation({
     mutationFn: () => postJson<void>(`/api/shared-events/${id}/close`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["shared-events", id] });
       queryClient.invalidateQueries({ queryKey: ["shared-events"] });
       queryClient.invalidateQueries({ queryKey: ["ranking"] });
       queryClient.invalidateQueries({ queryKey: ["feed"] });

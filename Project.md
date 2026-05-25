@@ -109,7 +109,8 @@ Exemplo:
 Estragou algo importante -15
 ```
 
-Eventos negativos impostos de um usuario para outro usuario exigem validação por votação.
+Eventos negativos impostos de um usuário para outro exigem validação por votação.
+Eventos auto-impostos (qualquer tipo) são aprovados automaticamente sem votação.
 
 ---
 
@@ -410,7 +411,9 @@ Toda implementação deve considerar:
 - não permitir pontuação menor ou igual a zero (aplicado a todos os eventos)
 - eventos aprovados não podem ser editados
 - eventos aprovados não podem ser deletados (hard delete)
-- criador não pode ser o mesmo que usuário afetado
+- qualquer usuário pode criar evento para si mesmo (auto-imposto)
+  - eventos auto-impostos são aprovados automaticamente, independente do tipo
+  - eventos negativos para outros usuários iniciam como Pending (aguardam votação)
 - ao deletar evento aprovado, o impacto no CurrentScore do afetado é revertido
 - ao editar pontos de evento aprovado, o CurrentScore do afetado é ajustado pelo delta
 

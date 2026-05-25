@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using backend.src.Data;
@@ -11,9 +12,11 @@ using backend.src.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260524221853_AddSharedEventClosesAt")]
+    partial class AddSharedEventClosesAt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -69,7 +72,7 @@ namespace backend.Migrations
 
                     b.HasIndex("PerformedByUserId");
 
-                    b.ToTable("audit_logs", (string)null);
+                    b.ToTable("audit_logs");
                 });
 
             modelBuilder.Entity("backend.src.Entities.Event", b =>
@@ -147,7 +150,7 @@ namespace backend.Migrations
 
                     b.HasIndex("Status");
 
-                    b.ToTable("events", (string)null);
+                    b.ToTable("events");
                 });
 
             modelBuilder.Entity("backend.src.Entities.EventApproval", b =>
@@ -184,7 +187,7 @@ namespace backend.Migrations
                     b.HasIndex("EventId", "UserId")
                         .IsUnique();
 
-                    b.ToTable("event_approvals", (string)null);
+                    b.ToTable("event_approvals");
                 });
 
             modelBuilder.Entity("backend.src.Entities.Group", b =>
@@ -230,7 +233,7 @@ namespace backend.Migrations
                     b.HasIndex("InviteCode")
                         .IsUnique();
 
-                    b.ToTable("groups", (string)null);
+                    b.ToTable("groups");
                 });
 
             modelBuilder.Entity("backend.src.Entities.GroupMember", b =>
@@ -273,7 +276,7 @@ namespace backend.Migrations
                     b.HasIndex("GroupId", "UserId")
                         .IsUnique();
 
-                    b.ToTable("group_members", (string)null);
+                    b.ToTable("group_members");
                 });
 
             modelBuilder.Entity("backend.src.Entities.Notification", b =>
@@ -315,7 +318,7 @@ namespace backend.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("notifications", (string)null);
+                    b.ToTable("notifications");
                 });
 
             modelBuilder.Entity("backend.src.Entities.RefreshToken", b =>
@@ -358,7 +361,7 @@ namespace backend.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("refresh_tokens", (string)null);
+                    b.ToTable("refresh_tokens");
                 });
 
             modelBuilder.Entity("backend.src.Entities.SharedEvent", b =>
@@ -418,7 +421,7 @@ namespace backend.Migrations
 
                     b.HasIndex("IsClosed");
 
-                    b.ToTable("shared_events", (string)null);
+                    b.ToTable("shared_events");
                 });
 
             modelBuilder.Entity("backend.src.Entities.SharedEventParticipant", b =>
@@ -451,7 +454,7 @@ namespace backend.Migrations
                     b.HasIndex("SharedEventId", "UserId")
                         .IsUnique();
 
-                    b.ToTable("shared_event_participants", (string)null);
+                    b.ToTable("shared_event_participants");
                 });
 
             modelBuilder.Entity("backend.src.Entities.User", b =>
@@ -505,7 +508,7 @@ namespace backend.Migrations
                     b.HasIndex("Username")
                         .IsUnique();
 
-                    b.ToTable("users", (string)null);
+                    b.ToTable("users");
                 });
 
             modelBuilder.Entity("backend.src.Entities.AuditLog", b =>
