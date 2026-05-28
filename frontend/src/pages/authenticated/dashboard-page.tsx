@@ -85,8 +85,8 @@ export function DashboardPage() {
             <ArrowLeft size={18} />
           </Link>
           <div>
-            <h1 className="text-lg font-bold text-text-primary">{group?.name || "Grupo"}</h1>
-            <p className="text-xs text-text-muted">Dashboard</p>
+            <h1 className="text-lg font-bold text-text-primary">Dashboard</h1>
+            <p className="text-xs text-text-muted">{group?.name || "Grupo"}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">

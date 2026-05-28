@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { ArrowUp, Calendar } from "lucide-react";
 import { useUserProfile } from "../../hooks/use-user-profile";
+import { useGroup } from "../../hooks/use-groups";
 import { useAuthContext } from "../../providers/auth-provider";
 import { GroupRole } from "../../types/group/group";
 import { AppBadge } from "../../components/ui/app-badge";
@@ -29,6 +30,7 @@ function formatDate(iso: string): string {
 
 export function ProfilePage() {
   const { groupId, userId } = useParams<{ groupId: string; userId: string }>();
+  const { data: group } = useGroup(groupId || "");
   const { data: profile, isLoading } = useUserProfile(groupId || "", userId || "");
   const { user: currentUser } = useAuthContext();
 
@@ -71,6 +73,22 @@ export function ProfilePage() {
 
   return (
     <div className="p-4 lg:p-8 max-w-5xl mx-auto">
+      {/* Header Mobile */}
+      <div className="lg:hidden flex items-center justify-between mb-5">
+        <div>
+          <h1 className="text-xl font-bold text-text-primary">Perfil</h1>
+          <p className="text-sm text-text-secondary">{group?.name || "Grupo"}</p>
+        </div>
+      </div>
+
+      {/* Header Desktop */}
+      <div className="hidden lg:flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-text-primary">Perfil</h1>
+          <p className="text-sm text-text-secondary">{group?.name || "Grupo"}</p>
+        </div>
+      </div>
+
       {/* Hero Section */}
       <div className="flex flex-col lg:flex-row gap-4 mb-8">
         {/* User Card */}

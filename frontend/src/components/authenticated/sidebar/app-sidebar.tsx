@@ -3,6 +3,7 @@ import {
   LayoutDashboard,
   Users,
   Trophy,
+  Calendar,
   User,
   Contact,
   LogOut,
@@ -29,14 +30,14 @@ export function AppSidebar() {
     ? [
         { path: `/group/${groupId}`, label: "Dashboard", icon: LayoutDashboard, exact: true },
         { path: `/group/${groupId}/ranking`, label: "Ranking", icon: Trophy },
-        { path: `/group/${groupId}/events`, label: "Eventos", icon: Trophy },
+        { path: `/group/${groupId}/events`, label: "Eventos", icon: Calendar },
         { path: `/group/${groupId}/members`, label: "Membros", icon: Contact },
         { path: `/group/${groupId}/profile/${user!.id}`, label: "Perfil", icon: User },
       ]
     : [
         { path: null, label: "Dashboard", icon: LayoutDashboard },
         { path: null, label: "Ranking", icon: Trophy },
-        { path: null, label: "Eventos", icon: Trophy },
+        { path: null, label: "Eventos", icon: Calendar },
         { path: null, label: "Membros", icon: Contact },
         { path: null, label: "Perfil", icon: User },
       ];

@@ -9,6 +9,7 @@ import { CreateEventModal } from "../../components/authenticated/events/create-e
 import { CreateSharedEventModal } from "../../components/authenticated/events/create-shared-event-modal";
 import { EventStatus } from "../../types/event/event";
 import { useGroupEvents } from "../../hooks/use-events";
+import { useGroup } from "../../hooks/use-groups";
 import { useGroupSharedEvents } from "../../hooks/use-shared-events";
 import { useAuthContext } from "../../providers/auth-provider";
 
@@ -16,7 +17,7 @@ export function EventsPage() {
   const { groupId } = useParams<{ groupId: string }>();
   const location = useLocation();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"all" | "personal" | "shared" | "pending">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "my">("all");
   const { user } = useAuthContext();
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [showCreateSharedEvent, setShowCreateSharedEvent] = useState(false);
@@ -37,20 +38,21 @@ export function EventsPage() {
     }
   }, [location.state?.createEvent]);
 
+  const { data: group } = useGroup(groupId || "");
   const { data: allEvents = [] } = useGroupEvents(groupId || "");
   const { data: sharedEvents = [] } = useGroupSharedEvents(groupId || "");
 
-  const pendingEvents = allEvents.filter((e) => e.status === EventStatus.Pending);
-  const approvedEvents = allEvents.filter((e) => e.status === EventStatus.Approved);
+  const myEvents = allEvents.filter(
+    (e) => e.createdByUserId === user?.id || e.affectedUserId === user?.id
+  );
 
-  const displayEvents =
-    activeTab === "pending"
-      ? pendingEvents
-      : activeTab === "personal"
-      ? approvedEvents
-      : activeTab === "shared"
-      ? []
-      : allEvents;
+  const filteredEvents = activeTab === "my" ? myEvents : allEvents;
+
+  const displayEvents = [...filteredEvents].sort((a, b) => {
+    if (a.status === EventStatus.Pending && b.status !== EventStatus.Pending) return -1;
+    if (a.status !== EventStatus.Pending && b.status === EventStatus.Pending) return 1;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
 
   const sharedEventsForCarousel = sharedEvents.map((se) => ({
     id: se.id,
@@ -69,7 +71,7 @@ export function EventsPage() {
       <div className="lg:hidden flex items-center justify-between mb-5">
         <div>
           <h1 className="text-xl font-bold text-text-primary">Eventos</h1>
-          <p className="text-sm text-text-secondary">Grupo: {groupId}</p>
+          <p className="text-sm text-text-secondary">{group?.name || "Grupo"}</p>
         </div>
         <button
           type="button"
@@ -84,10 +86,10 @@ export function EventsPage() {
       <div className="hidden lg:flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-text-primary">
-            Feed de Eventos
+            Eventos
           </h1>
           <p className="text-sm text-text-secondary">
-            Acompanhe as atividades do grupo
+            {group?.name || "Grupo"}
           </p>
         </div>
         <button
@@ -118,10 +120,8 @@ export function EventsPage() {
       <div className="mb-4">
         <div className="flex gap-2 flex-wrap">
           {[
-          { key: "all" as const, label: "Todos", count: 0 },
-          { key: "personal" as const, label: "Pessoais", count: 0 },
-          { key: "shared" as const, label: "Compartilhados", count: 0 },
-          { key: "pending" as const, label: "Pendentes", count: pendingEvents.length },
+          { key: "all" as const, label: "Todos" },
+          { key: "my" as const, label: "Seus Eventos" },
         ].map((tab) => (
           <button
             key={tab.key}
@@ -134,11 +134,6 @@ export function EventsPage() {
             }`}
           >
             {tab.label}
-            {tab.count > 0 && (
-              <span className="bg-primary text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                {tab.count}
-              </span>
-            )}
           </button>
         ))}
         </div>

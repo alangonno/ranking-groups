@@ -6,6 +6,7 @@ import { RankingListItem } from "../../components/authenticated/ranking/ranking-
 import { RankingFilter } from "../../components/authenticated/ranking/ranking-filter";
 import { SearchInput } from "../../components/authenticated/ranking/search-input";
 import { useRanking } from "../../hooks/use-ranking";
+import { useGroup } from "../../hooks/use-groups";
 import { useAuthContext } from "../../providers/auth-provider";
 
 export function RankingPage() {
@@ -25,6 +26,7 @@ export function RankingPage() {
         .slice(0, 2)
     : "U";
 
+  const { data: group } = useGroup(groupId || "");
   const { data: ranking = [] } = useRanking(groupId || "");
 
   const filteredRanking = useMemo(() => {
@@ -56,7 +58,7 @@ export function RankingPage() {
       <div className="lg:hidden flex items-center justify-between mb-5">
         <div>
           <h1 className="text-xl font-bold text-text-primary">Ranking</h1>
-          <p className="text-sm text-text-secondary">Grupo: {groupId}</p>
+          <p className="text-sm text-text-secondary">{group?.name || "Grupo"}</p>
         </div>
         <button
           type="button"
@@ -70,9 +72,9 @@ export function RankingPage() {
       {/* Header Desktop */}
       <div className="hidden lg:flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-on-surface">Ranking do Grupo</h1>
+          <h1 className="text-2xl font-bold text-on-surface">Ranking</h1>
           <p className="text-body-md font-body-md text-secondary">
-            Veja quem está no topo da competição
+            {group?.name || "Grupo"}
           </p>
         </div>
       </div>

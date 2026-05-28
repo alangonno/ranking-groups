@@ -47,7 +47,7 @@ export function MembersPage() {
         <div>
           <h1 className="text-xl font-bold text-text-primary">Membros</h1>
           <p className="text-sm text-text-secondary">
-            {members?.length || 0} membros ativos
+            {group?.name || "Grupo"}
           </p>
         </div>
         <button
@@ -63,10 +63,10 @@ export function MembersPage() {
       <div className="hidden lg:flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-text-primary">
-            {group?.name || "Grupo"}
+            Membros
           </h1>
           <p className="text-sm text-text-secondary">
-            {members?.length || 0} Active Members
+            {group?.name || "Grupo"}
           </p>
         </div>
       </div>

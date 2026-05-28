@@ -1,7 +1,7 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Home,
-  Trophy,
+  Calendar,
   Plus,
   Users,
   Contact,
@@ -36,10 +36,10 @@ export function BottomNav() {
 
   const navItems = [
     { path: `/group/${groupId}`, label: "Início", icon: Home },
-    { path: `/group/${groupId}/ranking`, label: "Ranking", icon: Trophy },
+    { path: `/group/${groupId}/events`, label: "Eventos", icon: Calendar },
     { path: `/group/${groupId}/events`, label: "Novo", icon: Plus, isFab: true },
-    { path: "/groups", label: "Grupos", icon: Users },
     { path: `/group/${groupId}/members`, label: "Membros", icon: Contact },
+    { path: "/groups", label: "Grupos", icon: Users },
   ];
 
   return (
