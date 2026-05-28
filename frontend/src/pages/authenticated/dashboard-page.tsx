@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { Plus, Bell, ArrowLeft } from "lucide-react";
 import { AppButton } from "../../components/ui/app-button";
 import { EventCard } from "../../components/authenticated/events/event-card";
@@ -19,9 +19,19 @@ import { useCurrentUser } from "../../hooks/use-auth";
 
 export function DashboardPage() {
   const { groupId } = useParams<{ groupId: string }>();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"all" | "pending">("all");
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const { data: user } = useCurrentUser();
+
+  const userInitials = user?.name
+    ? user.name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
+    : "U";
 
   const { data: group } = useGroup(groupId || "");
   const { data: groupEvents = [] } = useGroupEvents(groupId || "");
@@ -79,13 +89,22 @@ export function DashboardPage() {
             <p className="text-xs text-text-muted">Dashboard</p>
           </div>
         </div>
-        <button
-          type="button"
-          aria-label="Notificações"
-          className="w-9 h-9 rounded-full flex items-center justify-center text-secondary hover:bg-surface-container-low transition-colors"
-        >
-          <Bell size={18} />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => navigate(`/group/${groupId}/profile/${user?.id}`)}
+            className="w-9 h-9 rounded-full bg-primary-light flex items-center justify-center text-primary font-bold text-sm hover:bg-primary-light/70 transition-colors"
+          >
+            {userInitials}
+          </button>
+          <button
+            type="button"
+            aria-label="Notificações"
+            className="w-9 h-9 rounded-full flex items-center justify-center text-secondary hover:bg-surface-container-low transition-colors"
+          >
+            <Bell size={18} />
+          </button>
+        </div>
       </div>
 
       {/* Header Desktop */}

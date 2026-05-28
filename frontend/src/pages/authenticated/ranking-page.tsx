@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { PodiumCard } from "../../components/authenticated/ranking/podium-card";
 import { RankingListItem } from "../../components/authenticated/ranking/ranking-list-item";
@@ -10,10 +10,20 @@ import { useAuthContext } from "../../providers/auth-provider";
 
 export function RankingPage() {
   const { groupId } = useParams<{ groupId: string }>();
+  const navigate = useNavigate();
   const { user } = useAuthContext();
   const [filter, setFilter] = useState("month");
   const [search, setSearch] = useState("");
   const [parent] = useAutoAnimate();
+
+  const userInitials = user?.name
+    ? user.name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
+    : "U";
 
   const { data: ranking = [] } = useRanking(groupId || "");
 
@@ -43,9 +53,18 @@ export function RankingPage() {
   return (
     <div className="p-4 lg:p-8 max-w-5xl mx-auto">
       {/* Header Mobile */}
-      <div className="lg:hidden mb-5">
-        <h1 className="text-xl font-bold text-text-primary">Ranking</h1>
-        <p className="text-sm text-text-secondary">Grupo: {groupId}</p>
+      <div className="lg:hidden flex items-center justify-between mb-5">
+        <div>
+          <h1 className="text-xl font-bold text-text-primary">Ranking</h1>
+          <p className="text-sm text-text-secondary">Grupo: {groupId}</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => navigate(`/group/${groupId}/profile/${user?.id}`)}
+          className="w-9 h-9 rounded-full bg-primary-light flex items-center justify-center text-primary font-bold text-sm hover:bg-primary-light/70 transition-colors"
+        >
+          {userInitials}
+        </button>
       </div>
 
       {/* Header Desktop */}
