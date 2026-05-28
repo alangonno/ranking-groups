@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { QuickActionCards } from "../../components/authenticated/events/quick-action-card";
 import { SharedEventsCarousel } from "../../components/authenticated/events/shared-events-carousel";
@@ -13,9 +13,18 @@ import { useGroupSharedEvents } from "../../hooks/use-shared-events";
 
 export function EventsPage() {
   const { groupId } = useParams<{ groupId: string }>();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"all" | "personal" | "shared" | "pending">("all");
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [showCreateSharedEvent, setShowCreateSharedEvent] = useState(false);
+
+  useEffect(() => {
+    if (location.state?.createEvent) {
+      setShowCreateEvent(true);
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location.state?.createEvent]);
 
   const { data: allEvents = [] } = useGroupEvents(groupId || "");
   const { data: sharedEvents = [] } = useGroupSharedEvents(groupId || "");

@@ -72,10 +72,11 @@ export function AppSidebar() {
         <div className="px-6 mb-6">
           <button
             type="button"
+            onClick={() => navigate(`/group/${groupId}/events`, { state: { createEvent: true } })}
             className="w-full bg-primary text-white rounded-full py-2.5 px-4 text-label-bold font-label-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity shadow-sm"
           >
             <Plus size={18} />
-            Create Event
+            Novo Evento
           </button>
         </div>
       )}

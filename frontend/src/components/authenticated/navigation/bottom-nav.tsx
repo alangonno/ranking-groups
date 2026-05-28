@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Home,
   Trophy,
@@ -11,6 +11,7 @@ import { useAuthContext } from "../../../providers/auth-provider";
 
 export function BottomNav() {
   const location = useLocation();
+  const navigate = useNavigate();
   const groupId = useCurrentGroupId();
   const { user } = useAuthContext();
 
@@ -38,7 +39,7 @@ export function BottomNav() {
   const navItems = [
     { path: `/group/${groupId}`, label: "Início", icon: Home },
     { path: `/group/${groupId}/ranking`, label: "Ranking", icon: Trophy },
-    { path: "/create", label: "Novo", icon: Plus, isFab: true },
+    { path: `/group/${groupId}/events`, label: "Novo", icon: Plus, isFab: true },
     { path: "/groups", label: "Grupos", icon: Users },
     { path: `/group/${groupId}/profile/${user!.id}`, label: "Perfil", icon: User },
   ];
@@ -55,18 +56,19 @@ export function BottomNav() {
 
         if (item.isFab) {
           return (
-            <NavLink
+            <button
               key={item.path}
-              to={item.path}
+              type="button"
+              onClick={() => navigate(item.path, { state: { createEvent: true } })}
               className="relative flex flex-col items-center -top-4"
             >
-              <div className="w-12 h-12 bg-primary text-on-primary rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform">
+              <div className="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform">
                 <Icon size={24} />
               </div>
               <span className="text-[10px] font-label-bold text-primary mt-0.5">
                 {item.label}
               </span>
-            </NavLink>
+            </button>
           );
         }
 
