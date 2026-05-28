@@ -1,5 +1,3 @@
-import { AppProgress } from "../../ui/app-progress";
-
 interface RankingListItemProps {
   position: number;
   name: string;
@@ -21,43 +19,50 @@ export function RankingListItem({
 
   return (
     <div
-      className={`flex items-center gap-4 p-4 rounded-xl transition-colors ${
+      className={`bg-surface-container-lowest rounded-xl p-4 shadow-sm border flex items-center gap-4 transition-transform duration-200 hover:scale-[0.99] cursor-pointer ${
         isCurrentUser
-          ? "bg-red-50 border border-primary/20"
-          : "bg-white shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:bg-gray-50"
+          ? "border-primary/30 bg-primary-container/5"
+          : "border-surface-container"
       }`}
     >
       <span
-        className={`text-lg font-bold w-6 ${
-          position <= 2 ? "text-primary" : "text-gray-700"
+        className={`w-8 text-center text-headline-md font-headline-md ${
+          position <= 2 ? "text-primary" : "text-secondary"
         }`}
       >
         {position}
       </span>
 
-      <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-text-secondary font-bold text-sm flex-shrink-0">
+      <div className="w-11 h-11 rounded-full bg-surface-container flex items-center justify-center text-secondary font-bold text-sm flex-shrink-0">
         {avatar}
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-text-primary">
+        <p className="text-body-md font-body-md font-bold text-on-surface">
           {name}
           {isCurrentUser && (
-            <span className="text-primary ml-1.5 text-xs font-bold">
+            <span className="text-primary ml-1.5 text-caption font-caption font-bold">
               Você
             </span>
           )}
         </p>
-        <div className="mt-1.5">
-          <AppProgress progress={progress} size="sm" color="red" />
+        <div className="hidden sm:block mt-2">
+          <div className="h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-500 ${
+                position === 1 ? "bg-primary" : "bg-primary-fixed-dim"
+              }`}
+              style={{ width: `${Math.min(progress, 100)}%` }}
+            />
+          </div>
         </div>
       </div>
 
       <div className="text-right flex-shrink-0">
-        <p className="text-sm font-bold text-text-primary">
+        <p className="text-headline-md font-headline-md text-on-surface">
           {points.toLocaleString()}
         </p>
-        <p className="text-xs text-text-muted">pts</p>
+        <p className="text-caption font-caption text-secondary">pts</p>
       </div>
     </div>
   );

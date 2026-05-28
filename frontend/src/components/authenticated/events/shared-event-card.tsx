@@ -1,5 +1,4 @@
 import { Users, ArrowUp, CheckCircle2, Clock } from "lucide-react";
-import { AppCard } from "../../ui/app-card";
 import { AppButton } from "../../ui/app-button";
 import { useJoinSharedEvent, useCloseSharedEvent } from "../../../hooks/use-shared-events";
 import { getUserIdFromToken } from "../../../lib/auth-token";
@@ -37,43 +36,46 @@ export function SharedEventCard({ event }: SharedEventCardProps) {
   }
 
   return (
-    <AppCard className="shadow-[0_1px_3px_rgba(0,0,0,0.05)] min-w-[260px] snap-start p-0 overflow-hidden">
+    <div className="bg-surface-container-lowest shadow-sm rounded-2xl min-w-[260px] snap-start overflow-hidden border border-surface-container group cursor-pointer hover:border-outline-variant transition-colors">
       {event.image ? (
         <div className="h-24 bg-gradient-to-r from-blue-400 to-purple-500 relative">
-          <span className="absolute top-2 left-2 bg-white/90 text-text-primary text-[10px] font-bold px-2 py-1 rounded-full">
+          <span className="absolute top-2 left-2 bg-surface/90 backdrop-blur-sm text-on-surface text-[10px] font-bold px-2 py-1 rounded-full">
             Em breve
           </span>
         </div>
       ) : (
-        <div className="h-24 bg-blue-50 flex items-center justify-center">
-          <Users size={32} className="text-blue-400" />
+        <div className="h-24 bg-surface-variant flex items-center justify-center">
+          <Users size={32} className="text-secondary" />
         </div>
       )}
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="text-sm font-semibold text-text-primary truncate">
+      <div className="p-5">
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <h3 className="text-headline-md font-headline-md text-on-surface truncate">
             {event.title}
           </h3>
           {event.isClosed && (
-            <span className="flex-shrink-0 inline-flex items-center gap-0.5 bg-gray-100 text-text-muted text-[10px] font-medium px-2 py-0.5 rounded-full">
-              <CheckCircle2 size={10} />
+            <span className="flex-shrink-0 inline-flex items-center gap-0.5 bg-surface-container text-secondary text-caption font-caption px-2 py-0.5 rounded-full">
+              <CheckCircle2 size={12} />
               Encerrado
             </span>
           )}
         </div>
-        <span className="inline-flex items-center gap-0.5 bg-green-50 text-green-800 text-xs font-medium px-2.5 py-1 rounded-full mt-1">
+
+        <div className="bg-primary-container/10 text-primary px-2 py-1 rounded text-caption font-caption font-bold inline-flex items-center gap-0.5">
           <ArrowUp size={12} />
-          +{event.points}pts
-        </span>
+          +{event.points} Pts
+        </div>
+
         {event.closesAt && !event.isClosed && (
-          <p className="flex items-center gap-1 text-[10px] text-text-muted mt-1">
-            <Clock size={10} />
+          <p className="flex items-center gap-1 text-caption font-caption text-secondary mt-2">
+            <Clock size={12} />
             Fecha em {formatClosesAt(event.closesAt)}
           </p>
         )}
-        <div className="flex items-center justify-between mt-3">
-          <div className="flex items-center gap-1 text-xs text-text-muted">
-            <Users size={12} />
+
+        <div className="flex items-center justify-between mt-4 pt-4 border-t border-surface-container">
+          <div className="flex items-center gap-1 text-caption font-caption text-secondary">
+            <Users size={14} />
             <span>{event.participantCount} confirmados</span>
           </div>
           <div className="flex gap-1.5">
@@ -106,6 +108,6 @@ export function SharedEventCard({ event }: SharedEventCardProps) {
           </div>
         </div>
       </div>
-    </AppCard>
+    </div>
   );
 }

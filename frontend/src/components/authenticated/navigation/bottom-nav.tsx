@@ -21,16 +21,15 @@ export function BottomNav() {
     return null;
   }
 
-  // If on /groups page without a group selected
   if (isGroupsPage && !isInGroup) {
     return (
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-border z-50 h-16 flex items-center justify-center shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-surface-container-lowest border-t border-surface-container-highest z-50 h-16 flex items-center justify-center shadow-[0_-4px_12px_rgba(0,0,0,0.05)] rounded-t-xl">
         <NavLink
           to="/groups"
           className="flex flex-col items-center justify-center gap-0.5 w-20 h-full text-primary"
         >
           <Users size={22} strokeWidth={2.5} />
-          <span className="text-[10px] font-medium">Grupos</span>
+          <span className="text-[10px] font-label-bold">Grupos</span>
         </NavLink>
       </nav>
     );
@@ -45,7 +44,7 @@ export function BottomNav() {
   ];
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-border z-50 h-16 flex items-center justify-around px-2 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-surface-container-lowest z-50 flex items-center justify-around px-2 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] rounded-t-xl border-t border-surface-container-highest h-16">
       {navItems.map((item) => {
         const Icon = item.icon;
         const isActive =
@@ -59,12 +58,12 @@ export function BottomNav() {
             <NavLink
               key={item.path}
               to={item.path}
-              className="relative -top-5 flex flex-col items-center"
+              className="relative flex flex-col items-center -top-4"
             >
-              <div className="w-14 h-14 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:bg-primary-hover active:scale-95 transition-transform">
+              <div className="w-12 h-12 bg-primary text-on-primary rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform">
                 <Icon size={24} />
               </div>
-              <span className="text-[10px] font-medium text-text-secondary mt-0.5">
+              <span className="text-[10px] font-label-bold text-primary mt-0.5">
                 {item.label}
               </span>
             </NavLink>
@@ -75,12 +74,18 @@ export function BottomNav() {
           <NavLink
             key={item.path}
             to={item.path}
-            className={`flex flex-col items-center justify-center gap-0.5 w-14 h-full ${
-              isActive ? "text-primary" : "text-text-muted"
+            className={`flex flex-col items-center justify-center gap-0.5 py-1 ${
+              isActive
+                ? "bg-primary-container text-on-primary-container rounded-full px-4"
+                : "text-secondary"
             }`}
           >
-            <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
-            <span className="text-[10px] font-medium">{item.label}</span>
+            <Icon
+              size={22}
+              strokeWidth={isActive ? 2.5 : 2}
+              className={isActive ? "" : ""}
+            />
+            <span className="text-[10px] font-label-bold">{item.label}</span>
           </NavLink>
         );
       })}

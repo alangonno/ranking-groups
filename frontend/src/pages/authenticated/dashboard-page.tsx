@@ -70,7 +70,7 @@ export function DashboardPage() {
         <div className="flex items-center gap-2">
           <Link
             to="/groups"
-            className="w-8 h-8 rounded-full flex items-center justify-center text-text-secondary hover:bg-gray-100 transition-colors"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-secondary hover:bg-surface-container-low transition-colors"
           >
             <ArrowLeft size={18} />
           </Link>
@@ -82,7 +82,7 @@ export function DashboardPage() {
         <button
           type="button"
           aria-label="Notificações"
-          className="w-9 h-9 rounded-full flex items-center justify-center text-text-secondary hover:bg-gray-100 transition-colors"
+          className="w-9 h-9 rounded-full flex items-center justify-center text-secondary hover:bg-surface-container-low transition-colors"
         >
           <Bell size={18} />
         </button>
@@ -93,7 +93,7 @@ export function DashboardPage() {
         <div className="flex items-center gap-3">
           <Link
             to="/groups"
-            className="text-sm text-text-secondary hover:text-text-primary flex items-center gap-1 transition-colors"
+            className="text-sm text-secondary hover:text-on-surface flex items-center gap-1 transition-colors"
           >
             <ArrowLeft size={16} />
             Meus Grupos
@@ -112,7 +112,7 @@ export function DashboardPage() {
       {/* Mobile: Hero Score + Pendentes + Feed */}
       <div className="lg:hidden space-y-5">
         {/* Hero Score Card */}
-        <HeroScoreCard score={profile?.member.currentScore || 0} delta={0} />
+        <HeroScoreCard score={profile?.currentScore || 0} delta={0} />
 
         {/* Pending Votes */}
         <PendingVotesSection events={pendingEvents} />
@@ -203,6 +203,22 @@ export function DashboardPage() {
 
         {/* Sidebar Direita - Widgets */}
         <div className="lg:col-span-5 space-y-4">
+          {/* Quick Stats Bento */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-primary-container/10 p-4 rounded-xl border border-primary-container/20 flex flex-col justify-center items-center text-center">
+              <span className="text-headline-md font-headline-md text-primary font-bold">
+                {approvedEvents.length + pendingEvents.length}
+              </span>
+              <span className="text-caption font-caption text-secondary">Total de Eventos</span>
+            </div>
+            <div className="bg-surface-container-low p-4 rounded-xl border border-surface-container flex flex-col justify-center items-center text-center">
+              <span className="text-headline-md font-headline-md text-on-surface font-bold">
+                {ranking.length}
+              </span>
+              <span className="text-caption font-caption text-secondary">Membros Ativos</span>
+            </div>
+          </div>
+
           <TopMembersWidget members={topMembers} />
         </div>
       </div>

@@ -8,14 +8,14 @@ interface FeedTabsProps {
 
 export function FeedTabs({ activeTab, onTabChange, pendingCount = 0 }: FeedTabsProps) {
   return (
-    <div className="flex gap-2">
+    <div className="flex bg-surface-container-low p-1 rounded-full border border-surface-container-highest w-full md:w-auto shadow-sm">
       <button
         type="button"
         onClick={() => onTabChange("all")}
-        className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+        className={`flex-1 md:flex-none px-5 py-2 rounded-full text-label-bold font-label-bold transition-all duration-200 ${
           activeTab === "all"
-            ? "bg-white text-text-primary shadow-sm border border-border"
-            : "bg-gray-100 text-text-secondary hover:bg-gray-200"
+            ? "bg-surface-container-lowest shadow-sm text-on-surface"
+            : "text-secondary hover:text-on-surface"
         }`}
       >
         Todos
@@ -23,15 +23,15 @@ export function FeedTabs({ activeTab, onTabChange, pendingCount = 0 }: FeedTabsP
       <button
         type="button"
         onClick={() => onTabChange("pending")}
-        className={`px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-1.5 ${
+        className={`flex-1 md:flex-none px-5 py-2 rounded-full text-label-bold font-label-bold transition-all duration-200 relative ${
           activeTab === "pending"
-            ? "bg-white text-text-primary shadow-sm border border-border"
-            : "bg-gray-100 text-text-secondary hover:bg-gray-200"
+            ? "bg-surface-container-lowest shadow-sm text-on-surface"
+            : "text-secondary hover:text-on-surface"
         }`}
       >
         Pendentes
         {pendingCount > 0 && (
-          <span className="bg-primary text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+          <span className="ml-1.5 inline-flex items-center text-white justify-center w-5 h-5 bg-primary text-on-primary rounded-full text-[10px] font-bold">
             {pendingCount}
           </span>
         )}

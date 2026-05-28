@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700;800&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -12,13 +13,75 @@
   --color-success: #10B981;
   --color-warning: #F59E0B;
   --color-danger: #EF4444;
+
+  --color-background: #f9f9f9;
+  --color-on-background: #1a1c1c;
+  --color-surface: #f9f9f9;
+  --color-surface-dim: #dadada;
+  --color-surface-bright: #f9f9f9;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f3f3f3;
+  --color-surface-container: #eeeeee;
+  --color-surface-container-high: #e8e8e8;
+  --color-surface-container-highest: #e2e2e2;
+  --color-on-surface: #1a1c1c;
+  --color-on-surface-variant: #5f3e39;
+  --color-primary-container: #eb0001;
+  --color-on-primary-container: #fffbff;
+  --color-secondary: #5f5e5e;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #e2dfde;
+  --color-on-secondary-container: #636262;
+  --color-tertiary: #0057c1;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #006ff1;
+  --color-on-tertiary-container: #fefcff;
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+  --color-outline: #956e67;
+  --color-outline-variant: #eabcb4;
+  --color-inverse-surface: #2f3131;
+  --color-inverse-on-surface: #f1f1f1;
+  --color-inverse-primary: #ffb4a8;
+  --color-primary-fixed: #ffdad4;
+  --color-primary-fixed-dim: #ffb4a8;
+
+  --font-headline-md: "Geist", system-ui, sans-serif;
+  --font-headline-lg: "Geist", system-ui, sans-serif;
+  --font-headline-lg-mobile: "Geist", system-ui, sans-serif;
+  --font-body-md: "Geist", system-ui, sans-serif;
+  --font-body-lg: "Geist", system-ui, sans-serif;
+  --font-label-bold: "Geist", system-ui, sans-serif;
+  --font-caption: "Geist", system-ui, sans-serif;
+  --font-display: "Geist", system-ui, sans-serif;
+
+  --font-size-headline-md: 20px;
+  --font-size-headline-lg: 32px;
+  --font-size-headline-lg-mobile: 24px;
+  --font-size-body-md: 14px;
+  --font-size-body-lg: 16px;
+  --font-size-label-bold: 12px;
+  --font-size-caption: 12px;
+  --font-size-display: 40px;
+
+  --spacing-gutter: 1rem;
+  --spacing-margin-desktop: 2rem;
+  --spacing-margin-mobile: 1rem;
+  --spacing-container-max: 1200px;
+  --spacing-section-gap: 2.5rem;
+  --spacing-stack-gap: 1rem;
+
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
 }
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  background-color: var(--color-off-white);
-  color: var(--color-text-primary);
+  font-family: "Geist", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-on-background);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

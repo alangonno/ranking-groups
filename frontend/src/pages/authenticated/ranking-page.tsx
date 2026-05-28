@@ -51,8 +51,8 @@ export function RankingPage() {
       {/* Header Desktop */}
       <div className="hidden lg:flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">Ranking do Grupo</h1>
-          <p className="text-sm text-text-secondary">
+          <h1 className="text-2xl font-bold text-on-surface">Ranking do Grupo</h1>
+          <p className="text-body-md font-body-md text-secondary">
             Veja quem está no topo da competição
           </p>
         </div>
@@ -68,8 +68,8 @@ export function RankingPage() {
         <RankingFilter value={filter} onChange={setFilter} />
       </div>
 
-      {/* Podium */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-8">
+      {/* Bento Podium */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-8">
         {top1 && (
           <PodiumCard
             position={1}
@@ -81,7 +81,6 @@ export function RankingPage() {
               .join("")
               .toUpperCase()
               .slice(0, 2)}
-            badges={["Elite", "15 Streaks"]}
           />
         )}
         {top2 && (
