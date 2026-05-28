@@ -4,16 +4,14 @@ import {
   Trophy,
   Plus,
   Users,
-  User,
+  Contact,
 } from "lucide-react";
 import { useCurrentGroupId } from "../../../lib/use-group-context";
-import { useAuthContext } from "../../../providers/auth-provider";
 
 export function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const groupId = useCurrentGroupId();
-  const { user } = useAuthContext();
 
   const isInGroup = !!groupId;
   const isGroupsPage = location.pathname === "/groups";
@@ -41,7 +39,7 @@ export function BottomNav() {
     { path: `/group/${groupId}/ranking`, label: "Ranking", icon: Trophy },
     { path: `/group/${groupId}/events`, label: "Novo", icon: Plus, isFab: true },
     { path: "/groups", label: "Grupos", icon: Users },
-    { path: `/group/${groupId}/profile/${user!.id}`, label: "Perfil", icon: User },
+    { path: `/group/${groupId}/members`, label: "Membros", icon: Contact },
   ];
 
   return (
