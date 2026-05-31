@@ -10,6 +10,7 @@ public interface ISharedEventParticipantRepository
     Task<SharedEventParticipant?> GetBySharedEventAndUserAsync(Guid sharedEventId, Guid userId);
     Task<bool> ExistsAsync(Guid sharedEventId, Guid userId);
     void Add(SharedEventParticipant participant);
+    void Update(SharedEventParticipant participant);
     void Remove(SharedEventParticipant participant);
 }
 
@@ -45,6 +46,11 @@ public class SharedEventParticipantRepository : ISharedEventParticipantRepositor
     public void Add(SharedEventParticipant participant)
     {
         _context.SharedEventParticipants.Add(participant);
+    }
+
+    public void Update(SharedEventParticipant participant)
+    {
+        _context.SharedEventParticipants.Update(participant);
     }
 
     public void Remove(SharedEventParticipant participant)

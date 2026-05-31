@@ -131,6 +131,37 @@ export function useCloseSharedEvent(id: string) {
       queryClient.invalidateQueries({ queryKey: ["shared-events"] });
       queryClient.invalidateQueries({ queryKey: ["ranking"] });
       queryClient.invalidateQueries({ queryKey: ["feed"] });
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+    },
+  });
+}
+
+export function useRequestSharedEventParticipantRemoval(sharedEventId: string, participantId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () =>
+      postJson<void>(`/api/shared-events/${sharedEventId}/participants/${participantId}/request-removal`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["shared-events"] });
+      queryClient.invalidateQueries({ queryKey: ["ranking"] });
+      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+    },
+  });
+}
+
+export function useVoteSharedEventParticipantRemoval(sharedEventId: string, participantId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (voteType: number) =>
+      postJson<void>(`/api/shared-events/${sharedEventId}/participants/${participantId}/vote`, { voteType }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["shared-events"] });
+      queryClient.invalidateQueries({ queryKey: ["ranking"] });
+      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
     },
   });
 }

@@ -72,7 +72,9 @@ namespace Api.Common.Enums;
 public enum EventVoteType
 {
     Approve = 1,
-    Reject = 2
+    Reject = 2,
+    Remove = 3,
+    Keep = 4
 }
 ```
 
@@ -217,6 +219,10 @@ public class Event : Entity
     public DateTime? RejectedAt { get; set; }
 
     public DateTime? CancelledAt { get; set; }
+
+    public bool IsPendingRemoval { get; set; }
+
+    public DateTime? RemovalVoteDeadline { get; set; }
 
     public ICollection<EventApproval> Approvals { get; set; }
         = new List<EventApproval>();
@@ -394,6 +400,35 @@ Representa votos de aprovação/rejeição.
 - unique(event_id, user_id)
 - affected user não vota
 - criador não aprova sozinho
+- armazena tanto votos de criação (Approve/Reject) quanto votos de remoção (Remove/Keep)
+- votos de remoção são independentes dos votos de criação
+
+---
+
+## Remoção de Evento
+
+- apenas eventos aprovados podem ser removidos
+- afetado removendo evento **positivo** sobre si → bypass (remove imediatamente, sem votação)
+- demais casos → votação de 48h
+- quorum: 1/3 dos membros do grupo, arredondado para cima
+- criador auto-vota **Keep**
+- iniciador auto-vota **Remove** (se não for o criador)
+- durante prazo: quorum atingido → resolve imediatamente
+- após prazo: não-votantes = **Keep**
+- Remove vence se: removeCount >= quorum AND removeCount > keepCount
+- Keep vence em caso de empate ou quorum não atingido
+- evento removido → impacto no CurrentScore é revertido
+
+---
+
+## Remoção de Participante de Shared Event
+
+- qualquer membro pode iniciar remoção de qualquer participante
+- prazo: 48h, quorum: 1/3 dos membros
+- participante afetado auto-vota **Keep**
+- iniciador auto-vota **Remove** (se não for o participante)
+- aprovado → participante sai, perde pontos, evento continua para os outros
+- rejeitado → participante fica, votos são limpos
 
 ---
 
@@ -443,6 +478,8 @@ affected_user_id
 created_by_user_id
 status
 created_at
+is_pending_removal
+removal_vote_deadline
 ```
 
 ---
@@ -510,6 +547,40 @@ public class SharedEventParticipant : Entity
     public Guid UserId { get; set; }
 
     public User User { get; set; } = null!;
+
+    public bool IsPendingRemoval { get; set; }
+
+    public DateTime? RemovalVoteDeadline { get; set; }
+}
+```
+
+---
+
+# Nova Entidade
+
+## SharedEventParticipantRemovalVote
+
+```csharp
+using Api.Common.Enums;
+using Api.Entities.Base;
+
+namespace Api.Entities;
+
+public class SharedEventParticipantRemovalVote : Entity
+{
+    public Guid SharedEventId { get; set; }
+
+    public SharedEvent SharedEvent { get; set; } = null!;
+
+    public Guid ParticipantId { get; set; }
+
+    public SharedEventParticipant Participant { get; set; } = null!;
+
+    public Guid UserId { get; set; }
+
+    public User User { get; set; } = null!;
+
+    public EventVoteType VoteType { get; set; }
 }
 ```
 
@@ -534,6 +605,18 @@ is_closed
 shared_event_id
 user_id
 (shared_event_id, user_id) unique
+is_pending_removal
+```
+
+---
+
+## SharedEventParticipantRemovalVotes
+
+```text
+shared_event_id
+participant_id
+user_id
+(shared_event_id, participant_id, user_id) unique
 ```
 
 ---

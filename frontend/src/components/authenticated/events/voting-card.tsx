@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useMemo } from "react";
 import { AppSpinner } from "../../ui/app-spinner";
-import { ArrowDown, ClipboardList, Trash2 } from "lucide-react";
+import { ArrowDown, ClipboardList, Trash2, Clock } from "lucide-react";
 import type { Event, EventVoteType } from "../../../types/event/event";
 import { useVoteEvent } from "../../../hooks/use-events";
 import { getUserIdFromToken } from "../../../lib/auth-token";
@@ -11,7 +11,6 @@ interface VotingCardProps {
 }
 
 export function VotingCard({ event, compact = false }: VotingCardProps) {
-  const [hasVoted, setHasVoted] = useState(false);
   const vote = useVoteEvent(event.id);
 
   const isRemovalVote = event.isPendingRemoval === true;
@@ -19,19 +18,42 @@ export function VotingCard({ event, compact = false }: VotingCardProps) {
   const affectedUser = event.affectedUser;
   const creator = event.createdByUser;
   const currentUserId = getUserIdFromToken() || "";
-  const isCreator = creator?.id === currentUserId;
   const isAffected = affectedUser?.id === currentUserId;
+
+  // Verifica se usuário já votou olhando para o array de approvals
+  const hasVoted = useMemo(() => {
+    return event.approvals?.some(a => a.userId === currentUserId) ?? false;
+  }, [event.approvals, currentUserId]);
+
   const canVote = !isAffected && !hasVoted;
+
+  // Contagens reais do backend
+  const removeCount = event.approvals?.filter(a => a.voteType === 3).length ?? 0;
+  const keepCount = event.approvals?.filter(a => a.voteType === 4).length ?? 0;
+  const quorumRequired = event.quorumRequired ?? 5;
+
+  // Calcula tempo restante
+  const timeRemaining = useMemo(() => {
+    if (!event.removalVoteDeadline) return null;
+    const deadline = new Date(event.removalVoteDeadline);
+    const now = new Date();
+    const diffMs = deadline.getTime() - now.getTime();
+    if (diffMs <= 0) return "Prazo expirado";
+    const hours = Math.floor(diffMs / (1000 * 60 * 60));
+    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    if (hours > 24) {
+      const days = Math.floor(hours / 24);
+      return `${days}d ${hours % 24}h restantes`;
+    }
+    return `${hours}h ${minutes}m restantes`;
+  }, [event.removalVoteDeadline]);
 
   function handleVote(type: "confirm" | "reject" | "remove" | "keep") {
     if (!canVote || vote.isPending) return;
     const voteType: EventVoteType = isRemovalVote
       ? type === "remove" ? 3 : 4
       : type === "confirm" ? 1 : 2;
-    vote.mutate(
-      { voteType },
-      { onSuccess: () => setHasVoted(true) }
-    );
+    vote.mutate({ voteType });
   }
 
   const initials = affectedUser?.name
@@ -103,11 +125,10 @@ export function VotingCard({ event, compact = false }: VotingCardProps) {
   }
 
   const votesCount = isRemovalVote
-    ? (event.approvals?.filter(a => a.voteType === 3 || a.voteType === 4).length || 0)
+    ? removeCount + keepCount
     : (event.approvals?.length || 0);
-  const quorumNeeded = 5;
 
-  const progressPercent = Math.min((votesCount / quorumNeeded) * 100, 100);
+  const progressPercent = Math.min((votesCount / quorumRequired) * 100, 100);
 
   return (
     <div className="bg-surface-container-lowest rounded-xl p-5 shadow-sm border border-outline-variant/50 relative overflow-hidden hover:scale-[0.99] transition-transform duration-200">
@@ -147,9 +168,15 @@ export function VotingCard({ event, compact = false }: VotingCardProps) {
               <ClipboardList size={16} className="text-secondary" />
               <span className="text-caption font-caption text-secondary">
                 {isRemovalVote
-                  ? `Votação de Remoção (${votesCount}/${quorumNeeded} votos)`
-                  : `Validação Pendente (${votesCount}/${quorumNeeded} votos)`}
+                  ? `Votação de Remoção (${removeCount}/${quorumRequired} remover, ${keepCount}/${quorumRequired} manter)`
+                  : `Validação Pendente (${votesCount}/${quorumRequired} votos)`}
               </span>
+              {isRemovalVote && timeRemaining && (
+                <span className="text-caption font-caption text-amber-600 flex items-center gap-1">
+                  <Clock size={12} />
+                  {timeRemaining}
+                </span>
+              )}
             </div>
 
             {!canVote && !hasVoted && (

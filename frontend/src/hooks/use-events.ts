@@ -40,7 +40,24 @@ function mapEventFromBackend(e: {
   affectedUserName: string;
   approvalCount?: number;
   isPendingRemoval?: boolean;
+  removalVoteDeadline?: string | null;
+  quorumRequired?: number;
+  removeCount?: number;
+  keepCount?: number;
+  approvals?: Array<{
+    userId: string;
+    userName: string;
+    voteType: string;
+    createdAt: string;
+  }>;
 }): Event {
+  const voteTypeMap: Record<string, number> = {
+    Approve: 1,
+    Reject: 2,
+    Remove: 3,
+    Keep: 4,
+  };
+
   return {
     id: e.eventId,
     groupId: "",
@@ -55,6 +72,16 @@ function mapEventFromBackend(e: {
     createdByUser: { id: e.createdByUserId, name: e.createdByUserName, username: "", email: "" },
     affectedUser: { id: e.affectedUserId, name: e.affectedUserName, username: "", email: "" },
     isPendingRemoval: e.isPendingRemoval ?? false,
+    removalVoteDeadline: e.removalVoteDeadline ?? undefined,
+    quorumRequired: e.quorumRequired,
+    approvals: e.approvals?.map(a => ({
+      id: "", // não usado na listagem
+      eventId: e.eventId,
+      userId: a.userId,
+      user: { id: a.userId, name: a.userName, username: "", email: "" },
+      voteType: voteTypeMap[a.voteType] ?? 1,
+      createdAt: a.createdAt,
+    })),
   };
 }
 
@@ -148,6 +175,7 @@ export function useVoteEvent(eventId: string) {
       queryClient.invalidateQueries({ queryKey: ["events"] });
       queryClient.invalidateQueries({ queryKey: ["ranking"] });
       queryClient.invalidateQueries({ queryKey: ["feed"] });
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
     },
   });
 }
@@ -163,6 +191,7 @@ export function useRequestEventRemoval(eventId: string) {
       queryClient.invalidateQueries({ queryKey: ["events"] });
       queryClient.invalidateQueries({ queryKey: ["ranking"] });
       queryClient.invalidateQueries({ queryKey: ["feed"] });
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
     },
   });
 }

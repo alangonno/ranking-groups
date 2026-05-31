@@ -1,7 +1,10 @@
+using backend.src.Common;
 using backend.src.Common.Exceptions;
 using backend.src.Common.Rules;
+using backend.src.Data;
 using backend.src.Entities;
 using backend.src.Entities.Enums;
+using backend.src.Handlers.Events;
 using backend.src.Repositories;
 using backend.src.Services;
 
@@ -39,6 +42,19 @@ public class TimelineItemDto
     public bool? IsClosed { get; set; }
     public int? ParticipantCount { get; set; }
     public bool IsPendingRemoval { get; set; }
+    public DateTime? RemovalVoteDeadline { get; set; }
+    public int QuorumRequired { get; set; }
+    public int RemoveCount { get; set; }
+    public int KeepCount { get; set; }
+    public List<EventApprovalSummaryDto> Approvals { get; set; } = new();
+}
+
+public class EventApprovalSummaryDto
+{
+    public Guid UserId { get; set; }
+    public string UserName { get; set; } = string.Empty;
+    public string VoteType { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
 }
 
 public class MemberProfileDto
@@ -92,17 +108,20 @@ public class GetUserGroupProfileHandler : IGetUserGroupProfileHandler
     private readonly IEventRepository _eventRepository;
     private readonly ISharedEventRepository _sharedEventRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly AppDbContext _context;
 
     public GetUserGroupProfileHandler(
         IGroupMemberRepository groupMemberRepository,
         IEventRepository eventRepository,
         ISharedEventRepository sharedEventRepository,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        AppDbContext context)
     {
         _groupMemberRepository = groupMemberRepository;
         _eventRepository = eventRepository;
         _sharedEventRepository = sharedEventRepository;
         _currentUserService = currentUserService;
+        _context = context;
     }
 
     public async Task<GetUserGroupProfileResponse> HandleAsync(GetUserGroupProfileRequest request, CancellationToken ct)
@@ -139,6 +158,14 @@ public class GetUserGroupProfileHandler : IGetUserGroupProfileHandler
         };
 
         var events = await _eventRepository.GetByGroupAsync(request.GroupId);
+
+        // Fallback para eventos antigos criados antes da migração de deadline
+        foreach (var ev in events.Where(e => e.IsPendingRemoval && !e.RemovalVoteDeadline.HasValue))
+        {
+            ev.RemovalVoteDeadline = DateTime.UtcNow.AddHours(48);
+        }
+        await _context.SaveChangesAsync(ct);
+
         var userEvents = events
             .Where(e => e.AffectedUserId == request.UserId)
             .OrderBy(e => e.CreatedAt)
@@ -189,6 +216,9 @@ public class GetUserGroupProfileHandler : IGetUserGroupProfileHandler
             UserRole = se.CreatedByUserId == request.UserId ? "organizer" : "participant"
         }).ToList();
 
+        var totalMembers = members.Count();
+        var quorum = EventRemovalRules.CalculateQuorum(totalMembers);
+
         var eventTimelineItems = userEvents.Select(e => new TimelineItemDto
         {
             Id = e.Id,
@@ -205,7 +235,18 @@ public class GetUserGroupProfileHandler : IGetUserGroupProfileHandler
             AffectedUserName = e.AffectedUser?.Name ?? string.Empty,
             IsClosed = null,
             ParticipantCount = null,
-            IsPendingRemoval = e.IsPendingRemoval
+            IsPendingRemoval = e.IsPendingRemoval,
+            RemovalVoteDeadline = e.RemovalVoteDeadline,
+            QuorumRequired = quorum,
+            RemoveCount = e.Approvals.Count(a => a.VoteType == EventVoteType.Remove),
+            KeepCount = e.Approvals.Count(a => a.VoteType == EventVoteType.Keep),
+            Approvals = e.Approvals.Select(a => new EventApprovalSummaryDto
+            {
+                UserId = a.UserId,
+                UserName = a.User?.Name ?? string.Empty,
+                VoteType = a.VoteType.ToString(),
+                CreatedAt = a.CreatedAt
+            }).ToList()
         });
 
         var sharedTimelineItems = participatedSharedEvents.SelectMany(se =>

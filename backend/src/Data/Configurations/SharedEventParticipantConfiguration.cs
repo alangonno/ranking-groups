@@ -22,5 +22,7 @@ public class SharedEventParticipantConfiguration : IEntityTypeConfiguration<Shar
             .WithMany(u => u.SharedEventParticipations)
             .HasForeignKey(sep => sep.UserId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(sep => sep.IsPendingRemoval);
     }
 }

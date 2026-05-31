@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { ArrowUp, Calendar, Trash2, ShieldAlert } from "lucide-react";
@@ -8,6 +9,7 @@ import { GroupRole } from "../../types/group/group";
 import { AppBadge } from "../../components/ui/app-badge";
 import { AppSpinner } from "../../components/ui/app-spinner";
 import { postJson } from "../../lib/api";
+import { getUserIdFromToken } from "../../lib/auth-token";
 import type { EventVoteType } from "../../types/event/event";
 
 function roleLabel(role: GroupRole): string {
@@ -41,7 +43,8 @@ export function ProfilePage() {
   const member = profile?.member;
   const timeline = profile?.timeline || [];
   const sharedEvents = profile?.sharedEvents || [];
-  const isOwnProfile = currentUser?.id === userId;
+  const currentUserId = getUserIdFromToken() || "";
+  const isOwnProfile = currentUserId === userId;
 
   const queryClient = useQueryClient();
 
@@ -56,12 +59,22 @@ export function ProfilePage() {
     },
   });
 
+  const [voteError, setVoteError] = useState<string | null>(null);
+
   const voteEvent = useMutation({
     mutationFn: ({ eventId, voteType }: { eventId: string; voteType: EventVoteType }) =>
       postJson(`/api/events/${eventId}/vote`, { voteType }),
     onSuccess: () => {
+      setVoteError(null);
       queryClient.invalidateQueries({ queryKey: ["user-profile"] });
       queryClient.invalidateQueries({ queryKey: ["events"] });
+    },
+    onError: (error: any) => {
+      if (error?.rule === "duplicate_vote_not_allowed" || error?.message?.includes("já votou")) {
+        setVoteError("Você já votou neste evento. Aguarde o resultado da votação.");
+      } else {
+        setVoteError(error?.message || "Erro ao votar");
+      }
     },
   });
 
@@ -171,6 +184,11 @@ export function ProfilePage() {
             Score Timeline
           </h2>
           <div className="bg-white rounded-xl border border-border shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5">
+            {voteError && (
+              <div className="mb-4 p-3 bg-error/10 border border-error/20 rounded-lg">
+                <p className="text-xs text-error font-medium">{voteError}</p>
+              </div>
+            )}
             {timeline.length === 0 ? (
               <p className="text-text-secondary text-sm text-center py-8">
                 Nenhum evento no timeline
@@ -183,9 +201,12 @@ export function ProfilePage() {
                   {timeline.map((item) => {
                     // Pending removal events -> show inline voting
                     if (item.isPendingRemoval && item.itemType === "event") {
-                      const currentUserId = currentUser?.id || "";
                       const isAffected = item.affectedUserId === currentUserId;
-                      const canVote = !isAffected;
+                      const hasVoted = item.approvals?.some(a => a.userId === currentUserId) ?? false;
+                      const canVote = !isAffected && !hasVoted;
+                      const removeCount = item.removeCount ?? 0;
+                      const keepCount = item.keepCount ?? 0;
+                      const quorum = item.quorumRequired ?? 5;
                       return (
                         <div key={item.id} className="relative flex gap-4">
                           <div className="w-4 h-4 rounded-full shrink-0 mt-1 bg-amber-500" />
@@ -197,35 +218,41 @@ export function ProfilePage() {
                                 </p>
                                 <p className="text-xs text-amber-700 mt-0.5 flex items-center gap-1">
                                   <ShieldAlert size={12} />
-                                  Remoção em votação
+                                  Remoção em votação ({removeCount}/{quorum} remover, {keepCount}/{quorum} manter)
                                 </p>
                               </div>
                               <span className="text-sm font-bold shrink-0 text-amber-700">
                                 {item.points}pts
                               </span>
                             </div>
-                            {canVote ? (
-                              <div className="flex gap-2 mt-2">
-                                <button
-                                  type="button"
-                                  className="flex-1 text-xs py-1.5 px-3 rounded-lg border border-amber-300 text-amber-800 bg-white hover:bg-amber-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                  onClick={() => voteEvent.mutate({ eventId: item.id, voteType: 4 })}
-                                  disabled={voteEvent.isPending}
-                                >
-                                  Manter
-                                </button>
-                                <button
-                                  type="button"
-                                  className="flex-1 text-xs py-1.5 px-3 rounded-lg bg-error text-white hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-                                  onClick={() => voteEvent.mutate({ eventId: item.id, voteType: 3 })}
-                                  disabled={voteEvent.isPending}
-                                >
-                                  Remover
-                                </button>
-                              </div>
-                            ) : (
-                              <p className="text-xs text-amber-600 mt-2">Usuário afetado não pode votar</p>
+                            {/* Status message above buttons */}
+                            {hasVoted && (
+                              <p className="text-xs text-success mt-2 font-medium">Voto registrado com sucesso!</p>
                             )}
+                            {!canVote && !hasVoted && (
+                              <p className="text-xs text-amber-600 mt-2">
+                                {isAffected ? "Usuário afetado não pode votar" : "Você não pode votar neste evento"}
+                              </p>
+                            )}
+                            {/* Buttons: always visible, disabled after vote */}
+                            <div className="flex gap-2 mt-2">
+                              <button
+                                type="button"
+                                className="flex-1 text-xs py-1.5 px-3 rounded-lg border border-amber-300 text-amber-800 bg-white hover:bg-amber-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-100"
+                                onClick={() => voteEvent.mutate({ eventId: item.id, voteType: 4 })}
+                                disabled={!canVote || voteEvent.isPending}
+                              >
+                                {voteEvent.isPending ? <AppSpinner size="xs" /> : "Manter"}
+                              </button>
+                              <button
+                                type="button"
+                                className="flex-1 text-xs py-1.5 px-3 rounded-lg bg-error text-white hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400"
+                                onClick={() => voteEvent.mutate({ eventId: item.id, voteType: 3 })}
+                                disabled={!canVote || voteEvent.isPending}
+                              >
+                                {voteEvent.isPending ? <AppSpinner size="xs" /> : "Remover"}
+                              </button>
+                            </div>
                             <div className="mt-2">
                               <p className="text-xs text-text-muted">
                                 Balance:{" "}

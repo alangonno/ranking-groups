@@ -1,5 +1,7 @@
+using backend.src.Common;
 using backend.src.Common.Exceptions;
 using backend.src.Common.Rules;
+using backend.src.Data;
 using backend.src.Entities;
 using backend.src.Entities.Enums;
 using backend.src.Repositories;
@@ -32,8 +34,19 @@ public class EventSummaryDto
     public string AffectedUserName { get; set; } = string.Empty;
     public int ApprovalCount { get; set; }
     public bool IsPendingRemoval { get; set; }
+    public DateTime? RemovalVoteDeadline { get; set; }
+    public int QuorumRequired { get; set; }
     public int RemoveCount { get; set; }
     public int KeepCount { get; set; }
+    public List<EventApprovalSummaryDto> Approvals { get; set; } = new();
+}
+
+public class EventApprovalSummaryDto
+{
+    public Guid UserId { get; set; }
+    public string UserName { get; set; } = string.Empty;
+    public string VoteType { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
 }
 
 public interface IListGroupEventsHandler
@@ -46,15 +59,18 @@ public class ListGroupEventsHandler : IListGroupEventsHandler
     private readonly IEventRepository _eventRepository;
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly AppDbContext _context;
 
     public ListGroupEventsHandler(
         IEventRepository eventRepository,
         IGroupMemberRepository groupMemberRepository,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        AppDbContext context)
     {
         _eventRepository = eventRepository;
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
+        _context = context;
     }
 
     public async Task<ListGroupEventsResponse> HandleAsync(ListGroupEventsRequest request, CancellationToken ct)
@@ -65,7 +81,17 @@ public class ListGroupEventsHandler : IListGroupEventsHandler
         var members = await _groupMemberRepository.GetMembersByGroupAsync(request.GroupId);
         GroupPermissionRules.ValidateUserCanInteract(userId, request.GroupId, members);
 
+        var totalMembers = members.Count();
+        var quorum = EventRemovalRules.CalculateQuorum(totalMembers);
+
         var events = await _eventRepository.GetByGroupAsync(request.GroupId);
+
+        // Fallback para eventos antigos criados antes da migração de deadline
+        foreach (var ev in events.Where(e => e.IsPendingRemoval && !e.RemovalVoteDeadline.HasValue))
+        {
+            ev.RemovalVoteDeadline = DateTime.UtcNow.AddHours(48);
+        }
+        await _context.SaveChangesAsync(ct);
 
         var dtos = events.Select(e => new EventSummaryDto
         {
@@ -82,8 +108,17 @@ public class ListGroupEventsHandler : IListGroupEventsHandler
             AffectedUserName = e.AffectedUser?.Name ?? string.Empty,
             ApprovalCount = e.Approvals.Count(a => a.VoteType == EventVoteType.Approve),
             IsPendingRemoval = e.IsPendingRemoval,
+            RemovalVoteDeadline = e.RemovalVoteDeadline,
+            QuorumRequired = quorum,
             RemoveCount = e.Approvals.Count(a => a.VoteType == EventVoteType.Remove),
-            KeepCount = e.Approvals.Count(a => a.VoteType == EventVoteType.Keep)
+            KeepCount = e.Approvals.Count(a => a.VoteType == EventVoteType.Keep),
+            Approvals = e.Approvals.Select(a => new EventApprovalSummaryDto
+            {
+                UserId = a.UserId,
+                UserName = a.User?.Name ?? string.Empty,
+                VoteType = a.VoteType.ToString(),
+                CreatedAt = a.CreatedAt
+            }).ToList()
         }).ToList();
 
         return new ListGroupEventsResponse { Events = dtos };

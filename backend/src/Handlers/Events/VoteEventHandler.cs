@@ -26,6 +26,7 @@ public class VoteEventResponse
     public int KeepCount { get; set; }
     public int QuorumRequired { get; set; }
     public bool RemovalResolved { get; set; }
+    public bool RemovedImmediately { get; set; }
 }
 
 public interface IVoteEventHandler
@@ -81,7 +82,16 @@ public class VoteEventHandler : IVoteEventHandler
         // --- Removal voting flow ---
         if (@event.IsPendingRemoval)
         {
+            // Resolve votação expirada antes de aceitar novo voto
+            if (@event.RemovalVoteDeadline.HasValue && DateTime.UtcNow > @event.RemovalVoteDeadline.Value)
+            {
+                var resolution = EventRemovalRules.ResolveExpiredRemovalVote(@event, members, existingApprovals);
+                var result = await ResolveExpiredRemovalVoteAsync(@event, userId, resolution, members, existingApprovals, ct);
+                return result;
+            }
+
             EventRemovalRules.ValidateEventIsPendingRemoval(@event.IsPendingRemoval);
+            EventRemovalRules.ValidateVoteDeadline(@event.RemovalVoteDeadline);
             EventRemovalRules.ValidateCanVoteRemoval(userId, @event, existingApprovals, members);
 
             var approval = new EventApproval
@@ -103,28 +113,8 @@ public class VoteEventHandler : IVoteEventHandler
 
             if (removeCount >= quorum && removeCount > keepCount)
             {
-                if (@event.Status == EventStatus.Approved)
-                {
-                    var affectedMember = await _groupMemberRepository.GetByGroupAndUserAsync(@event.GroupId, @event.AffectedUserId);
-                    if (affectedMember != null)
-                    {
-                        var revertPoints = @event.Type == EventType.Negative ? -@event.Points : @event.Points;
-                        affectedMember.CurrentScore -= revertPoints;
-                        _groupMemberRepository.Update(affectedMember);
-                    }
-                }
-
-                _eventRepository.Remove(@event);
+                await RemoveEventAsync(@event, userId, ct);
                 removalResolved = true;
-
-                await _context.SaveChangesAsync(ct);
-
-                var revertedPoints = @event.Status == EventStatus.Approved
-                    ? (@event.Type == EventType.Negative ? -@event.Points : @event.Points)
-                    : 0;
-                var removedLog = AuditLogBuilder.EventRemovedByVote(@event, userId, revertedPoints);
-                _auditLogRepository.Add(removedLog);
-                await _context.SaveChangesAsync(ct);
 
                 return new VoteEventResponse
                 {
@@ -136,13 +126,15 @@ public class VoteEventHandler : IVoteEventHandler
                     RemoveCount = removeCount,
                     KeepCount = keepCount,
                     QuorumRequired = quorum,
-                    RemovalResolved = true
+                    RemovalResolved = true,
+                    RemovedImmediately = true
                 };
             }
 
             if (keepCount >= quorum && keepCount > removeCount)
             {
                 @event.IsPendingRemoval = false;
+                @event.RemovalVoteDeadline = null;
                 _eventRepository.Update(@event);
 
                 await _context.SaveChangesAsync(ct);
@@ -164,7 +156,8 @@ public class VoteEventHandler : IVoteEventHandler
                 RemoveCount = removeCount,
                 KeepCount = keepCount,
                 QuorumRequired = quorum,
-                RemovalResolved = removalResolved
+                RemovalResolved = removalResolved,
+                RemovedImmediately = false
             };
         }
 
@@ -246,6 +239,104 @@ public class VoteEventHandler : IVoteEventHandler
             ApprovalCount = approvalCount,
             EventApproved = eventApproved
         };
+    }
+
+    private async Task<VoteEventResponse> ResolveExpiredRemovalVoteAsync(
+        Event @event, Guid userId, RemovalResolution resolution,
+        IEnumerable<GroupMember> members, IEnumerable<EventApproval> existingApprovals, CancellationToken ct)
+    {
+        var totalMembers = members.Count();
+        var quorum = EventRemovalRules.CalculateQuorum(totalMembers);
+        var removeCount = existingApprovals.Count(a => a.VoteType == EventVoteType.Remove);
+        var keepCount = existingApprovals.Count(a => a.VoteType == EventVoteType.Keep);
+
+        // Adiciona não-votantes como Keep para auditoria
+        var votedUserIds = existingApprovals
+            .Where(a => a.VoteType == EventVoteType.Remove || a.VoteType == EventVoteType.Keep)
+            .Select(a => a.UserId)
+            .ToHashSet();
+        var nonVoters = members.Where(m => !votedUserIds.Contains(m.UserId)).ToList();
+        keepCount += nonVoters.Count;
+
+        // Registra não-votantes como Keep no banco para histórico
+        foreach (var nonVoter in nonVoters)
+        {
+            _context.EventApprovals.Add(new EventApproval
+            {
+                EventId = @event.Id,
+                UserId = nonVoter.UserId,
+                VoteType = EventVoteType.Keep
+            });
+        }
+
+        if (resolution == RemovalResolution.Remove)
+        {
+            await RemoveEventAsync(@event, userId, ct);
+
+            return new VoteEventResponse
+            {
+                EventId = @event.Id,
+                Status = "Deleted",
+                ApprovalCount = 0,
+                EventApproved = false,
+                IsPendingRemoval = false,
+                RemoveCount = removeCount,
+                KeepCount = keepCount,
+                QuorumRequired = quorum,
+                RemovalResolved = true,
+                RemovedImmediately = false
+            };
+        }
+        else
+        {
+            @event.IsPendingRemoval = false;
+            @event.RemovalVoteDeadline = null;
+            _eventRepository.Update(@event);
+
+            await _context.SaveChangesAsync(ct);
+
+            var cancelledLog = AuditLogBuilder.EventRemovalCancelled(@event, userId);
+            _auditLogRepository.Add(cancelledLog);
+            await _context.SaveChangesAsync(ct);
+
+            return new VoteEventResponse
+            {
+                EventId = @event.Id,
+                Status = @event.Status.ToString(),
+                ApprovalCount = 0,
+                EventApproved = false,
+                IsPendingRemoval = false,
+                RemoveCount = removeCount,
+                KeepCount = keepCount,
+                QuorumRequired = quorum,
+                RemovalResolved = true,
+                RemovedImmediately = false
+            };
+        }
+    }
+
+    private async Task RemoveEventAsync(Event @event, Guid performedByUserId, CancellationToken ct)
+    {
+        if (@event.Status == EventStatus.Approved)
+        {
+            var affectedMember = await _groupMemberRepository.GetByGroupAndUserAsync(@event.GroupId, @event.AffectedUserId);
+            if (affectedMember != null)
+            {
+                var revertPoints = @event.Type == EventType.Negative ? -@event.Points : @event.Points;
+                affectedMember.CurrentScore -= revertPoints;
+                _groupMemberRepository.Update(affectedMember);
+            }
+        }
+
+        _eventRepository.Remove(@event);
+        await _context.SaveChangesAsync(ct);
+
+        var revertedPoints = @event.Status == EventStatus.Approved
+            ? (@event.Type == EventType.Negative ? -@event.Points : @event.Points)
+            : 0;
+        var removedLog = AuditLogBuilder.EventRemovedByVote(@event, performedByUserId, revertedPoints);
+        _auditLogRepository.Add(removedLog);
+        await _context.SaveChangesAsync(ct);
     }
 
     private async Task UpdateAffectedUserScoreAsync(Guid groupId, Guid affectedUserId, EventType type, int points)

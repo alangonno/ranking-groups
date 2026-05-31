@@ -236,4 +236,155 @@ public class EventRemovalRulesTests
 
         act.Should().Throw<BusinessRuleException>().Which.Rule.Should().Be("removal_quorum_not_reached");
     }
+
+    [Fact]
+    public void IsBypassRemoval_AffectedUserRemovingPositiveEvent_ShouldReturnTrue()
+    {
+        var group = EntityFixtures.CreateGroup();
+        var creator = EntityFixtures.CreateUser("Creator");
+        var affectedUser = EntityFixtures.CreateUser("Affected");
+        var @event = EntityFixtures.CreatePositiveEvent(group, creator, affectedUser);
+
+        var result = EventRemovalRules.IsBypassRemoval(@event, affectedUser.Id);
+
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsBypassRemoval_AffectedUserRemovingNegativeEvent_ShouldReturnFalse()
+    {
+        var group = EntityFixtures.CreateGroup();
+        var creator = EntityFixtures.CreateUser("Creator");
+        var affectedUser = EntityFixtures.CreateUser("Affected");
+        var @event = EntityFixtures.CreateNegativeEvent(group, creator, affectedUser);
+        typeof(Event).GetProperty("Status")?.SetValue(@event, EventStatus.Approved);
+
+        var result = EventRemovalRules.IsBypassRemoval(@event, affectedUser.Id);
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsBypassRemoval_OtherUserRemovingPositiveEvent_ShouldReturnFalse()
+    {
+        var group = EntityFixtures.CreateGroup();
+        var creator = EntityFixtures.CreateUser("Creator");
+        var affectedUser = EntityFixtures.CreateUser("Affected");
+        var otherUser = EntityFixtures.CreateUser("Other");
+        var @event = EntityFixtures.CreatePositiveEvent(group, creator, affectedUser);
+
+        var result = EventRemovalRules.IsBypassRemoval(@event, otherUser.Id);
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ValidateVoteDeadline_BeforeDeadline_ShouldNotThrow()
+    {
+        var deadline = DateTime.UtcNow.AddHours(1);
+
+        var act = () => EventRemovalRules.ValidateVoteDeadline(deadline);
+
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void ValidateVoteDeadline_AfterDeadline_ShouldThrowBusinessRuleException()
+    {
+        var deadline = DateTime.UtcNow.AddHours(-1);
+
+        var act = () => EventRemovalRules.ValidateVoteDeadline(deadline);
+
+        act.Should().Throw<BusinessRuleException>().Which.Rule.Should().Be("removal_vote_deadline_expired");
+    }
+
+    [Fact]
+    public void ResolveExpiredRemovalVote_RemoveReachesQuorum_ShouldReturnRemove()
+    {
+        var group = EntityFixtures.CreateGroup();
+        var creator = EntityFixtures.CreateUser("Creator");
+        var affectedUser = EntityFixtures.CreateUser("Affected");
+        var voter1 = EntityFixtures.CreateUser("Voter1");
+        var voter2 = EntityFixtures.CreateUser("Voter2");
+        var voter3 = EntityFixtures.CreateUser("Voter3");
+        var voter4 = EntityFixtures.CreateUser("Voter4");
+        var groupMembers = new List<GroupMember>
+        {
+            EntityFixtures.CreateGroupMember(group, creator),
+            EntityFixtures.CreateGroupMember(group, affectedUser),
+            EntityFixtures.CreateGroupMember(group, voter1),
+            EntityFixtures.CreateGroupMember(group, voter2),
+            EntityFixtures.CreateGroupMember(group, voter3),
+            EntityFixtures.CreateGroupMember(group, voter4)
+        };
+        var @event = EntityFixtures.CreatePositiveEvent(group, creator, affectedUser);
+        var approvals = new List<EventApproval>
+        {
+            EntityFixtures.CreateApproval(@event, voter1, EventVoteType.Remove),
+            EntityFixtures.CreateApproval(@event, voter2, EventVoteType.Remove),
+            EntityFixtures.CreateApproval(@event, voter3, EventVoteType.Remove),
+            EntityFixtures.CreateApproval(@event, voter4, EventVoteType.Remove)
+        };
+
+        // 6 membros → quorum=2. Remove=4 >= 2 E 4 > 2 (creator+affectedUser não-votantes) → Remove vence
+        var result = EventRemovalRules.ResolveExpiredRemovalVote(@event, groupMembers, approvals);
+
+        result.Should().Be(RemovalResolution.Remove);
+    }
+
+    [Fact]
+    public void ResolveExpiredRemovalVote_NonVotersCountAsKeep_ShouldReturnKeep()
+    {
+        var group = EntityFixtures.CreateGroup();
+        var creator = EntityFixtures.CreateUser("Creator");
+        var affectedUser = EntityFixtures.CreateUser("Affected");
+        var voter1 = EntityFixtures.CreateUser("Voter1");
+        var nonVoter1 = EntityFixtures.CreateUser("NonVoter1");
+        var nonVoter2 = EntityFixtures.CreateUser("NonVoter2");
+        var groupMembers = new List<GroupMember>
+        {
+            EntityFixtures.CreateGroupMember(group, creator),
+            EntityFixtures.CreateGroupMember(group, affectedUser),
+            EntityFixtures.CreateGroupMember(group, voter1),
+            EntityFixtures.CreateGroupMember(group, nonVoter1),
+            EntityFixtures.CreateGroupMember(group, nonVoter2)
+        };
+        var @event = EntityFixtures.CreatePositiveEvent(group, creator, affectedUser);
+        var approvals = new List<EventApproval>
+        {
+            EntityFixtures.CreateApproval(@event, voter1, EventVoteType.Remove)
+        };
+
+        var result = EventRemovalRules.ResolveExpiredRemovalVote(@event, groupMembers, approvals);
+
+        // Remove=1, Keep=0+2=2 → Keep vence
+        result.Should().Be(RemovalResolution.Keep);
+    }
+
+    [Fact]
+    public void ResolveExpiredRemovalVote_Tie_ShouldReturnKeep()
+    {
+        var group = EntityFixtures.CreateGroup();
+        var creator = EntityFixtures.CreateUser("Creator");
+        var affectedUser = EntityFixtures.CreateUser("Affected");
+        var voter1 = EntityFixtures.CreateUser("Voter1");
+        var nonVoter = EntityFixtures.CreateUser("NonVoter");
+        var groupMembers = new List<GroupMember>
+        {
+            EntityFixtures.CreateGroupMember(group, creator),
+            EntityFixtures.CreateGroupMember(group, affectedUser),
+            EntityFixtures.CreateGroupMember(group, voter1),
+            EntityFixtures.CreateGroupMember(group, nonVoter)
+        };
+        var @event = EntityFixtures.CreatePositiveEvent(group, creator, affectedUser);
+        var approvals = new List<EventApproval>
+        {
+            EntityFixtures.CreateApproval(@event, voter1, EventVoteType.Remove)
+        };
+
+        var result = EventRemovalRules.ResolveExpiredRemovalVote(@event, groupMembers, approvals);
+
+        // Remove=1, Keep=0+1=1 → empate → Keep vence
+        result.Should().Be(RemovalResolution.Keep);
+    }
 }

@@ -1,6 +1,8 @@
-import { Users, ArrowUp, CheckCircle2, Clock } from "lucide-react";
+import { useState } from "react";
+import { Users, ArrowUp, CheckCircle2, Clock, LogOut } from "lucide-react";
 import { AppButton } from "../../ui/app-button";
-import { useJoinSharedEvent, useCloseSharedEvent } from "../../../hooks/use-shared-events";
+import { AppSpinner } from "../../ui/app-spinner";
+import { useJoinSharedEvent, useLeaveSharedEvent } from "../../../hooks/use-shared-events";
 import { getUserIdFromToken } from "../../../lib/auth-token";
 
 interface SharedEvent {
@@ -21,9 +23,11 @@ interface SharedEventCardProps {
 
 export function SharedEventCard({ event }: SharedEventCardProps) {
   const joinEvent = useJoinSharedEvent(event.id);
-  const closeEvent = useCloseSharedEvent(event.id);
+  const leaveEvent = useLeaveSharedEvent(event.id);
   const currentUserId = getUserIdFromToken();
   const isCreator = currentUserId === event.createdByUserId;
+  const [hasJoined, setHasJoined] = useState(event.hasCurrentUserJoined);
+  const [hasLeft, setHasLeft] = useState(false);
 
   function formatClosesAt(dateString: string) {
     const date = new Date(dateString);
@@ -34,6 +38,22 @@ export function SharedEventCard({ event }: SharedEventCardProps) {
       minute: "2-digit",
     });
   }
+
+  function handleJoin() {
+    if (hasJoined || joinEvent.isPending) return;
+    joinEvent.mutate(undefined, {
+      onSuccess: () => setHasJoined(true),
+    });
+  }
+
+  function handleLeave() {
+    if (hasLeft || leaveEvent.isPending) return;
+    leaveEvent.mutate(undefined, {
+      onSuccess: () => setHasLeft(true),
+    });
+  }
+
+  const isActionDisabled = hasJoined || hasLeft || joinEvent.isPending || leaveEvent.isPending;
 
   return (
     <div className="bg-surface-container-lowest shadow-sm rounded-2xl min-w-[260px] snap-start overflow-hidden border border-surface-container group cursor-pointer hover:border-outline-variant transition-colors">
@@ -79,31 +99,39 @@ export function SharedEventCard({ event }: SharedEventCardProps) {
             <span>{event.participantCount} confirmados</span>
           </div>
           <div className="flex gap-1.5">
-            {isCreator && !event.isClosed && (
+            {!event.isClosed && hasJoined && (
               <AppButton
                 size="xs"
                 color="light"
                 className="text-xs px-3 py-1.5"
-                onClick={() => closeEvent.mutate()}
-                disabled={closeEvent.isPending}
+                onClick={handleLeave}
+                disabled={isActionDisabled}
               >
-                {closeEvent.isPending ? "Finalizando..." : "Finalizar"}
+                {leaveEvent.isPending ? (
+                  <AppSpinner size="xs" />
+                ) : (
+                  <LogOut size={12} />
+                )}
+                {leaveEvent.isPending ? "Saindo..." : "Sair"}
               </AppButton>
             )}
-            {!event.isClosed && (
+            {!event.isClosed && !hasJoined && !hasLeft && (
               <AppButton
                 size="xs"
-                color="light"
+                color="primary"
                 className="text-xs px-3 py-1.5"
-                onClick={() => joinEvent.mutate()}
-                disabled={joinEvent.isPending || event.hasCurrentUserJoined}
+                onClick={handleJoin}
+                disabled={isActionDisabled}
               >
-                {joinEvent.isPending
-                  ? "Entrando..."
-                  : event.hasCurrentUserJoined
-                  ? "Participando"
-                  : "Participar"}
+                {joinEvent.isPending ? (
+                  <AppSpinner size="xs" />
+                ) : (
+                  "Participar"
+                )}
               </AppButton>
+            )}
+            {hasLeft && (
+              <span className="text-xs text-secondary">Removido</span>
             )}
           </div>
         </div>

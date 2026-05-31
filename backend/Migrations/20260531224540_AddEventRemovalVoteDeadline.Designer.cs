@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using backend.src.Data;
@@ -11,9 +12,11 @@ using backend.src.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260531224540_AddEventRemovalVoteDeadline")]
+    partial class AddEventRemovalVoteDeadline
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -442,14 +445,6 @@ namespace backend.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
-                    b.Property<bool>("IsPendingRemoval")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_pending_removal");
-
-                    b.Property<DateTime?>("RemovalVoteDeadline")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("removal_vote_deadline");
-
                     b.Property<Guid>("SharedEventId")
                         .HasColumnType("uuid")
                         .HasColumnName("shared_event_id");
@@ -463,8 +458,6 @@ namespace backend.Migrations
                         .HasColumnName("user_id");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IsPendingRemoval");
 
                     b.HasIndex("UserId");
 
@@ -472,49 +465,6 @@ namespace backend.Migrations
                         .IsUnique();
 
                     b.ToTable("shared_event_participants");
-                });
-
-            modelBuilder.Entity("backend.src.Entities.SharedEventParticipantRemovalVote", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<Guid>("ParticipantId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("participant_id");
-
-                    b.Property<Guid>("SharedEventId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("shared_event_id");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.Property<int>("VoteType")
-                        .HasColumnType("integer")
-                        .HasColumnName("vote_type");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ParticipantId");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("SharedEventId", "ParticipantId", "UserId")
-                        .IsUnique();
-
-                    b.ToTable("shared_event_participant_removal_votes");
                 });
 
             modelBuilder.Entity("backend.src.Entities.User", b =>
@@ -712,33 +662,6 @@ namespace backend.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("SharedEvent");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("backend.src.Entities.SharedEventParticipantRemovalVote", b =>
-                {
-                    b.HasOne("backend.src.Entities.SharedEventParticipant", "Participant")
-                        .WithMany()
-                        .HasForeignKey("ParticipantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("backend.src.Entities.SharedEvent", "SharedEvent")
-                        .WithMany()
-                        .HasForeignKey("SharedEventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("backend.src.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Participant");
 
                     b.Navigation("SharedEvent");
 

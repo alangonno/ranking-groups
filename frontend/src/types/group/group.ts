@@ -104,6 +104,16 @@ export interface TimelineItem {
   isClosed?: boolean;
   participantCount?: number;
   isPendingRemoval: boolean;
+  removalVoteDeadline?: string;
+  quorumRequired?: number;
+  removeCount?: number;
+  keepCount?: number;
+  approvals?: Array<{
+    userId: string;
+    userName: string;
+    voteType: string;
+    createdAt: string;
+  }>;
 }
 
 export interface GroupUserProfileResponse {

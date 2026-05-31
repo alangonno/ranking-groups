@@ -169,6 +169,8 @@ CurrentScore é atualizado automaticamente em:
 - saída de shared event
 - deleção de evento aprovado
 - edição de pontos de evento aprovado
+- remoção de evento aprovado por votação
+- remoção de participante de shared event por votação
 
 # ScoreBalance
 
@@ -426,6 +428,18 @@ Toda implementação deve considerar:
 - usuário afetado não pode votar na aprovação do evento
 - múltiplos votos do mesmo usuário são proibidos
 
+### Remoção de Evento Aprovado
+- apenas eventos aprovados podem ser removidos
+- afetado removendo evento **positivo** sobre si → remove imediatamente (bypass, sem votação)
+- demais casos → abre votação de remoção com prazo de 48h
+- quorum: 1/3 dos membros do grupo, arredondado para cima
+- criador auto-vota **Keep**, iniciador auto-vota **Remove**
+- durante prazo: quorum atingido → resolve imediatamente (remove ou mantém)
+- após prazo: não-votantes = **Keep**
+- Remove vence se: removeCount >= quorum AND removeCount > keepCount
+- Keep vence em caso de empate ou quorum não atingido
+- evento removido → impacto no CurrentScore do afetado é revertido
+
 ### Permissões
 - usuário afetado não pode editar ou excluir eventos negativos relacionados a ele
 - score só altera após aprovação mínima
@@ -491,6 +505,15 @@ Após criado, membros do grupo podem marcar participação nesse evento.
 - ao deletar shared event, os pontos de todos os participantes são revertidos
 - pontos são aplicados imediatamente ao participar, mesmo sem fechar o evento
 
+## Remoção de Participante
+
+- qualquer membro pode iniciar votação para remover qualquer participante
+- prazo: 48h, quorum: 1/3 dos membros do grupo
+- participante afetado auto-vota **Keep**
+- iniciador auto-vota **Remove** (se não for o participante)
+- aprovado → participante sai do evento, perde pontos, evento continua para os outros
+- rejeitado → participante permanece, votos são limpos
+
 ---
 
 # Eventos Negativos Compartilhados
@@ -531,8 +554,10 @@ Todo evento de criação, edição, deleção, votação, participação e saíd
 Ações auditadas:
 - event_created, event_updated, event_deleted
 - event_approved, event_rejected_deleted
+- event_removal_initiated, event_removed_by_vote, event_removal_cancelled
 - shared_event_created, shared_event_updated, shared_event_deleted
 - shared_event_joined, shared_event_left, shared_event_closed
+- shared_event_participant_removal_initiated, shared_event_participant_removed_by_vote, shared_event_participant_removal_cancelled
 - group_joined, group_left
 
 Cada log contém: action, entityName, entityId, performedByUserId, newValues (JSON estrutura A)
@@ -559,6 +584,7 @@ Cada log contém: action, entityName, entityId, performedByUserId, newValues (JS
 - PUT /api/events/{eventId}
 - DELETE /api/events/{eventId}
 - POST /api/events/{eventId}/vote
+- POST /api/events/{eventId}/request-removal
 
 ## Shared Events
 - POST /api/shared-events
@@ -569,6 +595,8 @@ Cada log contém: action, entityName, entityId, performedByUserId, newValues (JS
 - POST /api/shared-events/{sharedEventId}/join
 - POST /api/shared-events/{sharedEventId}/leave
 - POST /api/shared-events/{sharedEventId}/close
+- POST /api/shared-events/{sharedEventId}/participants/{participantId}/request-removal
+- POST /api/shared-events/{sharedEventId}/participants/{participantId}/vote
 
 ## Rankings
 - GET /api/rankings/group/{groupId}?fromDate=...&toDate=...

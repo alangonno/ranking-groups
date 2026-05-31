@@ -16,6 +16,7 @@ public class AppDbContext : DbContext
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<SharedEvent> SharedEvents => Set<SharedEvent>();
     public DbSet<SharedEventParticipant> SharedEventParticipants => Set<SharedEventParticipant>();
+    public DbSet<SharedEventParticipantRemovalVote> SharedEventParticipantRemovalVotes => Set<SharedEventParticipantRemovalVote>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)

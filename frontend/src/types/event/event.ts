@@ -49,6 +49,8 @@ export interface Event extends BaseEntity {
   affectedUser?: User;
   approvals?: EventApproval[];
   isPendingRemoval?: boolean;
+  removalVoteDeadline?: string;
+  quorumRequired?: number;
 }
 
 export interface EventWithScoreBalance extends Event {

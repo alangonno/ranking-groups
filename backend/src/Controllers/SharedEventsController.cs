@@ -18,6 +18,8 @@ public class SharedEventsController : ControllerBase
     private readonly IJoinSharedEventHandler _joinSharedEventHandler;
     private readonly ILeaveSharedEventHandler _leaveSharedEventHandler;
     private readonly ICloseSharedEventHandler _closeSharedEventHandler;
+    private readonly IRequestSharedEventParticipantRemovalHandler _requestRemovalHandler;
+    private readonly IVoteSharedEventParticipantRemovalHandler _voteRemovalHandler;
 
     public SharedEventsController(
         ICreateSharedEventHandler createSharedEventHandler,
@@ -27,7 +29,9 @@ public class SharedEventsController : ControllerBase
         IDeleteSharedEventHandler deleteSharedEventHandler,
         IJoinSharedEventHandler joinSharedEventHandler,
         ILeaveSharedEventHandler leaveSharedEventHandler,
-        ICloseSharedEventHandler closeSharedEventHandler)
+        ICloseSharedEventHandler closeSharedEventHandler,
+        IRequestSharedEventParticipantRemovalHandler requestRemovalHandler,
+        IVoteSharedEventParticipantRemovalHandler voteRemovalHandler)
     {
         _createSharedEventHandler = createSharedEventHandler;
         _getSharedEventHandler = getSharedEventHandler;
@@ -37,6 +41,8 @@ public class SharedEventsController : ControllerBase
         _joinSharedEventHandler = joinSharedEventHandler;
         _leaveSharedEventHandler = leaveSharedEventHandler;
         _closeSharedEventHandler = closeSharedEventHandler;
+        _requestRemovalHandler = requestRemovalHandler;
+        _voteRemovalHandler = voteRemovalHandler;
     }
 
     [HttpPost]
@@ -99,6 +105,27 @@ public class SharedEventsController : ControllerBase
     {
         var request = new CloseSharedEventRequest { SharedEventId = sharedEventId };
         var response = await _closeSharedEventHandler.HandleAsync(request, ct);
+        return Ok(response);
+    }
+
+    [HttpPost("{sharedEventId:guid}/participants/{participantId:guid}/request-removal")]
+    public async Task<IActionResult> RequestParticipantRemoval(Guid sharedEventId, Guid participantId, CancellationToken ct)
+    {
+        var request = new RequestSharedEventParticipantRemovalRequest
+        {
+            SharedEventId = sharedEventId,
+            ParticipantId = participantId
+        };
+        var response = await _requestRemovalHandler.HandleAsync(request, ct);
+        return Ok(response);
+    }
+
+    [HttpPost("{sharedEventId:guid}/participants/{participantId:guid}/vote")]
+    public async Task<IActionResult> VoteParticipantRemoval(Guid sharedEventId, Guid participantId, [FromBody] VoteSharedEventParticipantRemovalRequest request, CancellationToken ct)
+    {
+        request.SharedEventId = sharedEventId;
+        request.ParticipantId = participantId;
+        var response = await _voteRemovalHandler.HandleAsync(request, ct);
         return Ok(response);
     }
 }

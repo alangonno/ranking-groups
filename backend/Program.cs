@@ -37,6 +37,7 @@ builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IEventApprovalRepository, EventApprovalRepository>();
 builder.Services.AddScoped<ISharedEventRepository, SharedEventRepository>();
 builder.Services.AddScoped<ISharedEventParticipantRepository, SharedEventParticipantRepository>();
+builder.Services.AddScoped<ISharedEventParticipantRemovalVoteRepository, SharedEventParticipantRemovalVoteRepository>();
 builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 
 // Handlers
@@ -69,6 +70,8 @@ builder.Services.AddScoped<ILeaveSharedEventHandler, LeaveSharedEventHandler>();
 builder.Services.AddScoped<IUpdateSharedEventHandler, UpdateSharedEventHandler>();
 builder.Services.AddScoped<ICloseSharedEventHandler, CloseSharedEventHandler>();
 builder.Services.AddScoped<IDeleteSharedEventHandler, DeleteSharedEventHandler>();
+builder.Services.AddScoped<IRequestSharedEventParticipantRemovalHandler, RequestSharedEventParticipantRemovalHandler>();
+builder.Services.AddScoped<IVoteSharedEventParticipantRemovalHandler, VoteSharedEventParticipantRemovalHandler>();
 
 // Ranking and Feed Handlers
 builder.Services.AddScoped<IGetGroupRankingHandler, GetGroupRankingHandler>();

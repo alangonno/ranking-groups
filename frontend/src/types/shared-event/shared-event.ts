@@ -9,16 +9,19 @@ export interface SharedEventParticipant extends BaseEntity {
 
 export interface SharedEvent extends BaseEntity {
   groupId: string;
-  createdByUserId: string;
   title: string;
   description: string;
   points: number;
   isClosed: boolean;
   closesAt?: string;
-  createdByUser?: User;
-  participants?: SharedEventParticipant[];
+  createdByUserId: string;
   participantCount: number;
   hasCurrentUserJoined: boolean;
+  isPendingRemoval?: boolean;
+  removalVoteDeadline?: string;
+  quorumRequired?: number;
+  removeCount?: number;
+  keepCount?: number;
 }
 
 export interface CreateSharedEventRequest {

@@ -32,6 +32,10 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
         builder.HasIndex(e => e.CreatedByUserId);
         builder.HasIndex(e => e.Status);
         builder.HasIndex(e => e.CreatedAt);
+        builder.HasIndex(e => e.IsPendingRemoval);
+
+        builder.Property(e => e.RemovalVoteDeadline)
+            .IsRequired(false);
 
         builder.HasOne(e => e.Group)
             .WithMany(g => g.Events)

@@ -66,6 +66,16 @@ export function useUserProfile(groupId: string, userId: string) {
           isClosed?: boolean;
           participantCount?: number;
           isPendingRemoval: boolean;
+          removalVoteDeadline?: string;
+          quorumRequired?: number;
+          removeCount?: number;
+          keepCount?: number;
+          approvals?: Array<{
+            userId: string;
+            userName: string;
+            voteType: string;
+            createdAt: string;
+          }>;
         }>;
       }>(`/api/groups/${groupId}/members/${userId}`);
       return {
@@ -123,6 +133,11 @@ export function useUserProfile(groupId: string, userId: string) {
           isClosed: t.isClosed,
           participantCount: t.participantCount,
           isPendingRemoval: t.isPendingRemoval ?? false,
+          removalVoteDeadline: t.removalVoteDeadline,
+          quorumRequired: t.quorumRequired,
+          removeCount: t.removeCount,
+          keepCount: t.keepCount,
+          approvals: t.approvals,
         })),
       };
     },
