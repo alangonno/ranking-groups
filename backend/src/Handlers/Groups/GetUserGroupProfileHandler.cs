@@ -18,6 +18,27 @@ public class GetUserGroupProfileResponse
     public MemberProfileDto Member { get; set; } = null!;
     public List<UserEventHistoryDto> Events { get; set; } = new();
     public List<SharedEventParticipationDto> SharedEvents { get; set; } = new();
+    public List<TimelineItemDto> Timeline { get; set; } = new();
+}
+
+public class TimelineItemDto
+{
+    public Guid Id { get; set; }
+    public string ItemType { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public int Points { get; set; }
+    public string? Type { get; set; }
+    public string? Status { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public Guid CreatedByUserId { get; set; }
+    public string CreatedByUserName { get; set; } = string.Empty;
+    public Guid? AffectedUserId { get; set; }
+    public string? AffectedUserName { get; set; }
+    public int ScoreBalance { get; set; }
+    public bool? IsClosed { get; set; }
+    public int? ParticipantCount { get; set; }
+    public bool IsPendingRemoval { get; set; }
 }
 
 public class MemberProfileDto
@@ -168,11 +189,73 @@ public class GetUserGroupProfileHandler : IGetUserGroupProfileHandler
             UserRole = se.CreatedByUserId == request.UserId ? "organizer" : "participant"
         }).ToList();
 
+        var eventTimelineItems = userEvents.Select(e => new TimelineItemDto
+        {
+            Id = e.Id,
+            ItemType = "event",
+            Title = e.Title,
+            Description = e.Description,
+            Points = e.Points,
+            Type = e.Type.ToString(),
+            Status = e.Status.ToString(),
+            CreatedAt = e.CreatedAt,
+            CreatedByUserId = e.CreatedByUserId,
+            CreatedByUserName = e.CreatedByUser?.Name ?? string.Empty,
+            AffectedUserId = e.AffectedUserId,
+            AffectedUserName = e.AffectedUser?.Name ?? string.Empty,
+            IsClosed = null,
+            ParticipantCount = null,
+            IsPendingRemoval = e.IsPendingRemoval
+        });
+
+        var sharedTimelineItems = participatedSharedEvents.SelectMany(se =>
+            se.Participants
+                .Where(p => p.UserId == request.UserId)
+                .Select(p => new TimelineItemDto
+                {
+                    Id = se.Id,
+                    ItemType = "shared_event",
+                    Title = se.Title,
+                    Description = se.Description,
+                    Points = se.Points,
+                    Type = "Positive",
+                    Status = "Approved",
+                    CreatedAt = p.CreatedAt,
+                    CreatedByUserId = se.CreatedByUserId,
+                    CreatedByUserName = se.CreatedByUser?.Name ?? string.Empty,
+                    AffectedUserId = null,
+                    AffectedUserName = null,
+                    IsClosed = se.IsClosed,
+                    ParticipantCount = se.Participants?.Count ?? 0,
+                    IsPendingRemoval = false
+                })
+        );
+
+        var mergedTimeline = eventTimelineItems
+            .Concat(sharedTimelineItems)
+            .OrderBy(i => i.CreatedAt)
+            .ToList();
+
+        var runBalance = 0;
+        foreach (var item in mergedTimeline)
+        {
+            item.ScoreBalance = runBalance;
+
+            var impact = item.ItemType == "event"
+                ? (item.Status == "Approved"
+                    ? (item.Type == "Negative" ? -item.Points : item.Points)
+                    : 0)
+                : item.Points;
+
+            runBalance += impact;
+        }
+
         return new GetUserGroupProfileResponse
         {
             Member = memberDto,
             Events = eventDtos,
-            SharedEvents = sharedEventDtos
+            SharedEvents = sharedEventDtos,
+            Timeline = mergedTimeline
         };
     }
 }

@@ -7,6 +7,7 @@ import type {
   EventStatus,
   EventType,
   EventWithScoreBalance,
+  RequestEventRemovalResponse,
   UpdateEventRequest,
   UpdateEventResponse,
   VoteEventRequest,
@@ -38,6 +39,7 @@ function mapEventFromBackend(e: {
   affectedUserId: string;
   affectedUserName: string;
   approvalCount?: number;
+  isPendingRemoval?: boolean;
 }): Event {
   return {
     id: e.eventId,
@@ -52,6 +54,7 @@ function mapEventFromBackend(e: {
     createdAt: e.createdAt,
     createdByUser: { id: e.createdByUserId, name: e.createdByUserName, username: "", email: "" },
     affectedUser: { id: e.affectedUserId, name: e.affectedUserName, username: "", email: "" },
+    isPendingRemoval: e.isPendingRemoval ?? false,
   };
 }
 
@@ -140,6 +143,21 @@ export function useVoteEvent(eventId: string) {
   return useMutation({
     mutationFn: (payload: VoteEventRequest) =>
       postJson<VoteEventResponse>(`/api/events/${eventId}/vote`, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["events", eventId] });
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+      queryClient.invalidateQueries({ queryKey: ["ranking"] });
+      queryClient.invalidateQueries({ queryKey: ["feed"] });
+    },
+  });
+}
+
+export function useRequestEventRemoval(eventId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () =>
+      postJson<RequestEventRemovalResponse>(`/api/events/${eventId}/request-removal`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events", eventId] });
       queryClient.invalidateQueries({ queryKey: ["events"] });

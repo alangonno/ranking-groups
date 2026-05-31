@@ -20,6 +20,8 @@ export type EventType = (typeof EventType)[keyof typeof EventType];
 export const EventVoteType = {
   Approve: 1,
   Reject: 2,
+  Remove: 3,
+  Keep: 4,
 } as const;
 
 export type EventVoteType = (typeof EventVoteType)[keyof typeof EventVoteType];
@@ -46,6 +48,7 @@ export interface Event extends BaseEntity {
   createdByUser?: User;
   affectedUser?: User;
   approvals?: EventApproval[];
+  isPendingRemoval?: boolean;
 }
 
 export interface EventWithScoreBalance extends Event {
@@ -75,4 +78,22 @@ export interface VoteEventRequest {
   voteType: EventVoteType;
 }
 
-export type VoteEventResponse = EventApproval;
+export interface VoteEventResponse {
+  eventId: string;
+  status: string;
+  approvalCount: number;
+  eventApproved: boolean;
+  isPendingRemoval?: boolean;
+  removeCount?: number;
+  keepCount?: number;
+  quorumRequired?: number;
+  removalResolved?: boolean;
+}
+
+export interface RequestEventRemovalResponse {
+  eventId: string;
+  isPendingRemoval: boolean;
+  removeCount: number;
+  keepCount: number;
+  quorumRequired: number;
+}

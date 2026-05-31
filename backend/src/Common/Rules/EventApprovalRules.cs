@@ -16,14 +16,6 @@ public static class EventApprovalRules
             );
         }
 
-        if (approval.UserId == @event.CreatedByUserId)
-        {
-            throw new BusinessRuleException(
-                "creator_cannot_self_approve",
-                "O criador do evento não pode aprovar seu próprio evento."
-            );
-        }
-
         var isMember = groupMembers.Any(gm => gm.UserId == voter.Id);
         if (!isMember)
         {

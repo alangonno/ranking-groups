@@ -57,6 +57,7 @@ builder.Services.AddScoped<IListGroupEventsHandler, ListGroupEventsHandler>();
 builder.Services.AddScoped<IUpdateEventHandler, UpdateEventHandler>();
 builder.Services.AddScoped<IDeleteEventHandler, DeleteEventHandler>();
 builder.Services.AddScoped<IVoteEventHandler, VoteEventHandler>();
+builder.Services.AddScoped<IRequestEventRemovalHandler, RequestEventRemovalHandler>();
 builder.Services.AddScoped<IListUserGroupEventsHandler, ListUserGroupEventsHandler>();
 
 // Shared Event Handlers

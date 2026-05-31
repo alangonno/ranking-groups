@@ -87,10 +87,30 @@ export interface UserEventHistory {
   scoreBalance: number;
 }
 
+export interface TimelineItem {
+  id: string;
+  itemType: "event" | "shared_event";
+  title: string;
+  description: string;
+  points: number;
+  type?: string;
+  status?: string;
+  createdAt: string;
+  createdByUserId: string;
+  createdByUserName: string;
+  affectedUserId?: string;
+  affectedUserName?: string;
+  scoreBalance: number;
+  isClosed?: boolean;
+  participantCount?: number;
+  isPendingRemoval: boolean;
+}
+
 export interface GroupUserProfileResponse {
   member: GroupMemberProfile;
   events: UserEventHistory[];
   sharedEvents: UserSharedEvent[];
+  timeline: TimelineItem[];
 }
 
 export interface GroupDetailsResponse {

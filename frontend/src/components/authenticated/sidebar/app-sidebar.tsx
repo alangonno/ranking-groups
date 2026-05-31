@@ -8,7 +8,6 @@ import {
   Contact,
   LogOut,
   Plus,
-  Settings,
 } from "lucide-react";
 import { useLogout } from "../../../hooks/use-auth";
 import { useAuthContext } from "../../../providers/auth-provider";
@@ -136,13 +135,6 @@ export function AppSidebar() {
 
       {/* Bottom section */}
       <div className="mt-auto border-t border-surface-container pt-3 px-4 pb-6 space-y-1">
-        <button
-          type="button"
-          className="w-full flex items-center gap-3 px-4 py-2 rounded-xl text-label-bold font-label-bold text-secondary hover:bg-surface-container transition-all duration-200"
-        >
-          <Settings size={20} />
-          Settings
-        </button>
         <button
           type="button"
           onClick={handleLogout}

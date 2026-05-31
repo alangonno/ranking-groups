@@ -49,6 +49,24 @@ export function useUserProfile(groupId: string, userId: string) {
           participantCount: number;
           userRole: string;
         }>;
+        timeline: Array<{
+          id: string;
+          itemType: string;
+          title: string;
+          description: string;
+          points: number;
+          type?: string;
+          status?: string;
+          createdAt: string;
+          createdByUserId: string;
+          createdByUserName: string;
+          affectedUserId?: string;
+          affectedUserName?: string;
+          scoreBalance: number;
+          isClosed?: boolean;
+          participantCount?: number;
+          isPendingRemoval: boolean;
+        }>;
       }>(`/api/groups/${groupId}/members/${userId}`);
       return {
         member: {
@@ -87,6 +105,24 @@ export function useUserProfile(groupId: string, userId: string) {
           createdByUserName: se.createdByUserName,
           participantCount: se.participantCount,
           userRole: se.userRole as "organizer" | "participant",
+        })),
+        timeline: (response.timeline || []).map((t: any) => ({
+          id: t.id,
+          itemType: t.itemType as "event" | "shared_event",
+          title: t.title,
+          description: t.description,
+          points: t.points,
+          type: t.type,
+          status: t.status,
+          createdAt: t.createdAt,
+          createdByUserId: t.createdByUserId,
+          createdByUserName: t.createdByUserName,
+          affectedUserId: t.affectedUserId,
+          affectedUserName: t.affectedUserName,
+          scoreBalance: t.scoreBalance,
+          isClosed: t.isClosed,
+          participantCount: t.participantCount,
+          isPendingRemoval: t.isPendingRemoval ?? false,
         })),
       };
     },

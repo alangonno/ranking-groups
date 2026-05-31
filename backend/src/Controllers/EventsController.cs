@@ -17,6 +17,7 @@ public class EventsController : ControllerBase
     private readonly IUpdateEventHandler _updateEventHandler;
     private readonly IDeleteEventHandler _deleteEventHandler;
     private readonly IVoteEventHandler _voteEventHandler;
+    private readonly IRequestEventRemovalHandler _requestEventRemovalHandler;
 
     public EventsController(
         ICreateEventHandler createEventHandler,
@@ -25,7 +26,8 @@ public class EventsController : ControllerBase
         IListUserGroupEventsHandler listUserGroupEventsHandler,
         IUpdateEventHandler updateEventHandler,
         IDeleteEventHandler deleteEventHandler,
-        IVoteEventHandler voteEventHandler)
+        IVoteEventHandler voteEventHandler,
+        IRequestEventRemovalHandler requestEventRemovalHandler)
     {
         _createEventHandler = createEventHandler;
         _getEventHandler = getEventHandler;
@@ -34,6 +36,7 @@ public class EventsController : ControllerBase
         _updateEventHandler = updateEventHandler;
         _deleteEventHandler = deleteEventHandler;
         _voteEventHandler = voteEventHandler;
+        _requestEventRemovalHandler = requestEventRemovalHandler;
     }
 
     [HttpPost]
@@ -88,6 +91,14 @@ public class EventsController : ControllerBase
     {
         request.EventId = eventId;
         var response = await _voteEventHandler.HandleAsync(request, ct);
+        return Ok(response);
+    }
+
+    [HttpPost("{eventId:guid}/request-removal")]
+    public async Task<IActionResult> RequestRemoval(Guid eventId, CancellationToken ct)
+    {
+        var request = new RequestEventRemovalRequest { EventId = eventId };
+        var response = await _requestEventRemovalHandler.HandleAsync(request, ct);
         return Ok(response);
     }
 }

@@ -228,6 +228,70 @@ public static class AuditLogBuilder
         };
     }
 
+    public static AuditLog EventRemovalInitiated(Event @event, Guid performedByUserId)
+    {
+        var newValues = JsonSerializer.Serialize(new
+        {
+            eventName = @event.Title,
+            points = @event.Points,
+            type = @event.Type.ToString(),
+            affectedUser = @event.AffectedUser?.Name ?? string.Empty,
+            performedBy = performedByUserId
+        });
+
+        return new AuditLog
+        {
+            Action = "event_removal_initiated",
+            EntityName = "Event",
+            EntityId = @event.Id,
+            PerformedByUserId = performedByUserId,
+            NewValues = newValues
+        };
+    }
+
+    public static AuditLog EventRemovedByVote(Event @event, Guid performedByUserId, int revertedPoints)
+    {
+        var newValues = JsonSerializer.Serialize(new
+        {
+            eventName = @event.Title,
+            points = @event.Points,
+            type = @event.Type.ToString(),
+            revertedPoints = revertedPoints,
+            affectedUser = @event.AffectedUser?.Name ?? string.Empty,
+            performedBy = performedByUserId
+        });
+
+        return new AuditLog
+        {
+            Action = "event_removed_by_vote",
+            EntityName = "Event",
+            EntityId = @event.Id,
+            PerformedByUserId = performedByUserId,
+            NewValues = newValues
+        };
+    }
+
+    public static AuditLog EventRemovalCancelled(Event @event, Guid performedByUserId)
+    {
+        var newValues = JsonSerializer.Serialize(new
+        {
+            eventName = @event.Title,
+            points = @event.Points,
+            type = @event.Type.ToString(),
+            affectedUser = @event.AffectedUser?.Name ?? string.Empty,
+            performedBy = performedByUserId
+        });
+
+        return new AuditLog
+        {
+            Action = "event_removal_cancelled",
+            EntityName = "Event",
+            EntityId = @event.Id,
+            PerformedByUserId = performedByUserId,
+            NewValues = newValues
+        };
+    }
+
     public static AuditLog GroupJoined(Group group, Guid userId, string userName)
     {
         var newValues = JsonSerializer.Serialize(new

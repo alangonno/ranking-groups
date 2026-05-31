@@ -107,11 +107,31 @@ public class CreateEventHandler : ICreateEventHandler
         _eventRepository.Add(@event);
         await _context.SaveChangesAsync(ct);
 
-        if (status == EventStatus.Approved)
+        if (status == EventStatus.Pending)
+        {
+            _context.EventApprovals.Add(new EventApproval
+            {
+                EventId = @event.Id,
+                UserId = userId,
+                VoteType = EventVoteType.Approve
+            });
+
+            var totalMembers = members.Count();
+            var quorum = (int)Math.Ceiling(totalMembers / 3.0);
+
+            if (1 >= quorum)
+            {
+                @event.Status = EventStatus.Approved;
+                @event.ApprovedAt = DateTime.UtcNow;
+                await UpdateAffectedUserScoreAsync(request.GroupId, request.AffectedUserId, request.Type, request.Points);
+            }
+        }
+        else
         {
             await UpdateAffectedUserScoreAsync(request.GroupId, request.AffectedUserId, request.Type, request.Points);
-            await _context.SaveChangesAsync(ct);
         }
+
+        await _context.SaveChangesAsync(ct);
 
         var auditLog = AuditLogBuilder.EventCreated(@event, userId);
         _auditLogRepository.Add(auditLog);

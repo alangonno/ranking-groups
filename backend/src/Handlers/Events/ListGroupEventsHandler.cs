@@ -31,6 +31,9 @@ public class EventSummaryDto
     public Guid AffectedUserId { get; set; }
     public string AffectedUserName { get; set; } = string.Empty;
     public int ApprovalCount { get; set; }
+    public bool IsPendingRemoval { get; set; }
+    public int RemoveCount { get; set; }
+    public int KeepCount { get; set; }
 }
 
 public interface IListGroupEventsHandler
@@ -77,7 +80,10 @@ public class ListGroupEventsHandler : IListGroupEventsHandler
             CreatedByUserName = e.CreatedByUser?.Name ?? string.Empty,
             AffectedUserId = e.AffectedUserId,
             AffectedUserName = e.AffectedUser?.Name ?? string.Empty,
-            ApprovalCount = e.Approvals.Count(a => a.VoteType == EventVoteType.Approve)
+            ApprovalCount = e.Approvals.Count(a => a.VoteType == EventVoteType.Approve),
+            IsPendingRemoval = e.IsPendingRemoval,
+            RemoveCount = e.Approvals.Count(a => a.VoteType == EventVoteType.Remove),
+            KeepCount = e.Approvals.Count(a => a.VoteType == EventVoteType.Keep)
         }).ToList();
 
         return new ListGroupEventsResponse { Events = dtos };

@@ -49,8 +49,9 @@ export function EventsPage() {
   const filteredEvents = activeTab === "my" ? myEvents : allEvents;
 
   const displayEvents = [...filteredEvents].sort((a, b) => {
-    if (a.status === EventStatus.Pending && b.status !== EventStatus.Pending) return -1;
-    if (a.status !== EventStatus.Pending && b.status === EventStatus.Pending) return 1;
+    const aPriority = a.status === EventStatus.Pending || a.isPendingRemoval ? 0 : 1;
+    const bPriority = b.status === EventStatus.Pending || b.isPendingRemoval ? 0 : 1;
+    if (aPriority !== bPriority) return aPriority - bPriority;
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
@@ -149,7 +150,7 @@ export function EventsPage() {
           </div>
         ) : (
           displayEvents.map((event) =>
-            event.status === EventStatus.Pending ? (
+            event.status === EventStatus.Pending || event.isPendingRemoval ? (
               <VotingCard key={event.id} event={event} />
             ) : (
               <EventCard key={event.id} event={event} />

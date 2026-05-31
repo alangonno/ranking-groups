@@ -26,6 +26,7 @@ public class GetEventResponse
     public string CreatedByUserName { get; set; } = string.Empty;
     public Guid AffectedUserId { get; set; }
     public string AffectedUserName { get; set; } = string.Empty;
+    public bool IsPendingRemoval { get; set; }
     public List<EventApprovalDto> Approvals { get; set; } = new();
 }
 
@@ -86,6 +87,7 @@ public class GetEventHandler : IGetEventHandler
             CreatedByUserName = @event.CreatedByUser?.Name ?? string.Empty,
             AffectedUserId = @event.AffectedUserId,
             AffectedUserName = @event.AffectedUser?.Name ?? string.Empty,
+            IsPendingRemoval = @event.IsPendingRemoval,
             Approvals = @event.Approvals.Select(a => new EventApprovalDto
             {
                 UserId = a.UserId,

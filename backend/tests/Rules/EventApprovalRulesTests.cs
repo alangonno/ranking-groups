@@ -55,7 +55,7 @@ public class EventApprovalRulesTests
     }
 
     [Fact]
-    public void ValidateCanVote_CreatorVoting_ShouldThrowBusinessRuleException()
+    public void ValidateCanVote_CreatorVoting_ShouldNotThrow()
     {
         var group = EntityFixtures.CreateGroup();
         var creator = EntityFixtures.CreateUser("Creator");
@@ -72,7 +72,7 @@ public class EventApprovalRulesTests
             .Build();
 
         var act = () => EventApprovalRules.ValidateCanVote(approval, @event, creator, groupMembers);
-        act.Should().Throw<BusinessRuleException>();
+        act.Should().NotThrow();
     }
 
     [Fact]
