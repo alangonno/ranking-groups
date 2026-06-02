@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getJson } from "../lib/api";
 import type { GroupUserProfileResponse } from "../types/group/group";
 import type { GroupRole } from "../types/group/group";
-import type { User } from "../types/auth/user";
+
 
 const ROLE_MAP: Record<string, GroupRole> = {
   Owner: 1,
@@ -109,6 +109,7 @@ export function useUserProfile(groupId: string, userId: string) {
           description: se.description,
           points: se.points,
           isClosed: se.isClosed,
+          hasCurrentUserJoined: false,
           createdAt: "",
           groupId: "",
           createdByUserId: "",

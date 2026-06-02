@@ -4,7 +4,6 @@ import { useParams } from "react-router-dom";
 import { ArrowUp, Calendar, Trash2, ShieldAlert } from "lucide-react";
 import { useUserProfile } from "../../hooks/use-user-profile";
 import { useGroup } from "../../hooks/use-groups";
-import { useAuthContext } from "../../providers/auth-provider";
 import { GroupRole } from "../../types/group/group";
 import { AppBadge } from "../../components/ui/app-badge";
 import { AppSpinner } from "../../components/ui/app-spinner";
@@ -38,7 +37,7 @@ export function ProfilePage() {
   const { groupId, userId } = useParams<{ groupId: string; userId: string }>();
   const { data: group } = useGroup(groupId || "");
   const { data: profile, isLoading } = useUserProfile(groupId || "", userId || "");
-  const { user: currentUser } = useAuthContext();
+
 
   const member = profile?.member;
   const timeline = profile?.timeline || [];
