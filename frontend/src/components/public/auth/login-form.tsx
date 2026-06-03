@@ -10,26 +10,26 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ onSubmit, isPending, error }: LoginFormProps) {
-  const [email, setEmail] = useState("");
+  const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    onSubmit({ email, password });
+    onSubmit({ email: login, password });
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-text-secondary mb-1.5">
-          Email
+        <label htmlFor="login" className="block text-sm font-medium text-text-secondary mb-1.5">
+          Email ou usuário
         </label>
         <AppInput
-          id="email"
-          type="email"
-          placeholder="seu@email.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          id="login"
+          type="text"
+          placeholder="seu@email.com ou usuário"
+          value={login}
+          onChange={(e) => setLogin(e.target.value)}
           required
           disabled={isPending}
           sizing="lg"

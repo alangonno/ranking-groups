@@ -14,16 +14,35 @@ import { RankingPage } from "../pages/authenticated/ranking-page";
 import { EventsPage } from "../pages/authenticated/events-page";
 import { MembersPage } from "../pages/authenticated/members-page";
 import { ProfilePage } from "../pages/authenticated/profile-page";
-import { authStore } from "../store/auth-store";
+import { useAuthContext } from "../providers/auth-provider";
+import { AppSpinner } from "../components/ui/app-spinner";
+
+function FullPageSpinner() {
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <AppSpinner className="w-10 h-10" />
+    </div>
+  );
+}
 
 function AuthGuard() {
-  const token = authStore.getAccessToken();
-  return token ? <Outlet /> : <Navigate to="/login" replace />;
+  const { isAuthenticated, isLoading } = useAuthContext();
+
+  if (isLoading) {
+    return <FullPageSpinner />;
+  }
+
+  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 }
 
 function PublicGuard() {
-  const token = authStore.getAccessToken();
-  return token ? <Navigate to="/groups" replace /> : <Outlet />;
+  const { isAuthenticated, isLoading } = useAuthContext();
+
+  if (isLoading) {
+    return <FullPageSpinner />;
+  }
+
+  return isAuthenticated ? <Navigate to="/groups" replace /> : <Outlet />;
 }
 
 export const router = createBrowserRouter([
