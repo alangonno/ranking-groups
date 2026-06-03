@@ -69,7 +69,7 @@ src/
  ├── lib/
  │    ├── api.ts                       ← Cliente axios + wrappers HTTP (consolidado)
  │    ├── query-client.ts             ← Configuração do TanStack Query
- │    ├── auth-token.ts               ← get/set/remove token, getUserIdFromToken
+ │    ├── auth-token.ts               ← funções puras: decodeTokenPayload, getUserIdFromToken, getUserFromToken, isTokenExpiringSoon
  │    ├── group-storage.ts            ← get/set/remove lastGroupId (localStorage)
  │    ├── use-group-context.ts        ← Hook: extrai groupId da URL em tempo real
  │    ├── mock-data.ts                ← Dados mockados para desenvolvimento
@@ -78,6 +78,7 @@ src/
  │    └── validations/
  │
  ├── providers/
+ │    ├── auth-provider.tsx            ← AuthProvider + useAuthContext (refresh silencioso no mount)
  │    └── query-provider.tsx           ← QueryClientProvider + Devtools
  │
  ├── layouts/
@@ -392,10 +393,33 @@ Funções HTTP devem:
 - retornar JSON tipado
 - lançar erros padronizados (ApiError)
 - centralizar headers
-- centralizar autenticação (Bearer token via localStorage)
+- centralizar autenticação (Bearer token via `authStore` em memória)
 - centralizar tratamento de token
+- usar `withCredentials: true` para enviar cookies cross-origin
 
 ---
+
+# Autenticação e Tokens
+
+## Arquitetura
+
+- **Access Token**: JWT de 15 min guardado em `authStore` (memória JS, não localStorage). Morre no F5.
+- **Refresh Token**: JWT de 7 dias enviado pelo backend como cookie `HttpOnly`, `Secure`, `SameSite`.
+- **Persistência de sessão**: Apenas o cookie do refresh token persiste. O access token é restaurado via silent refresh no mount do `AuthProvider`.
+
+## Fluxo
+
+1. **Login/Register**: Backend seta cookie `refresh_token` + retorna `accessToken` no body. Frontend salva access token na `authStore`.
+2. **F5 / Reload**: `AuthProvider` monta → verifica `authStore` vazio → faz `POST /api/auth/refresh-token` (cookie enviado auto) → restaura access token.
+3. **Access Token Expirado (401)**: Axios interceptor detecta 401 → pausa fila de requests → chama `/api/auth/refresh-token` → atualiza access token → retry requests.
+4. **Refresh Token Expirado/Inválido (403)**: Interceptor detecta 403 → limpa auth → redireciona `/login`.
+5. **Logout**: Chama `POST /api/auth/logout` (limpa cookie no backend) + limpa access token + redireciona `/login`.
+
+## Regras
+
+- Nunca salvar access token no localStorage
+- Nunca salvar refresh token no frontend (cookie HttpOnly é inacessível ao JS)
+- O axios deve ter `withCredentials: true`
 
 # Exemplo de Uso
 

@@ -568,6 +568,7 @@ Cada log contém: action, entityName, entityId, performedByUserId, newValues (JS
 - POST /api/auth/register
 - POST /api/auth/login
 - POST /api/auth/refresh-token
+- POST /api/auth/logout
 
 ## Groups
 - POST /api/groups

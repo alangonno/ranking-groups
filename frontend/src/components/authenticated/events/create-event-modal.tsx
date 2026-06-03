@@ -33,7 +33,7 @@ export function CreateEventModal({ isOpen, onClose, groupId }: CreateEventModalP
     e.preventDefault();
 
     const pointsNum = Number(points);
-    if (!title.trim() || !description.trim() || pointsNum <= 0 || !affectedUserId) {
+    if (!title.trim() || pointsNum <= 0 || !affectedUserId) {
       setError("Preencha todos os campos obrigatórios.");
       return;
     }
@@ -67,7 +67,6 @@ export function CreateEventModal({ isOpen, onClose, groupId }: CreateEventModalP
 
   const isValid =
     title.trim() &&
-    description.trim() &&
     Number(points) > 0 &&
     affectedUserId;
 
@@ -111,10 +110,9 @@ export function CreateEventModal({ isOpen, onClose, groupId }: CreateEventModalP
             </label>
             <AppTextarea
               id="event-description"
-              placeholder="Descreva o que aconteceu..."
+              placeholder="Descreva o que aconteceu... (opcional)"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              required
               disabled={createEvent.isPending}
               rows={3}
               className="w-full"

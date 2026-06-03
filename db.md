@@ -282,29 +282,6 @@ public class AuditLog : Entity
 
 ---
 
-# RefreshToken
-
-```csharp
-using Api.Entities.Base;
-
-namespace Api.Entities;
-
-public class RefreshToken : Entity
-{
-    public Guid UserId { get; set; }
-
-    public User User { get; set; } = null!;
-
-    public string Token { get; set; } = string.Empty;
-
-    public DateTime ExpiresAt { get; set; }
-
-    public bool IsRevoked { get; set; }
-}
-```
-
----
-
 # Notification
 
 ```csharp
@@ -340,7 +317,6 @@ Relacionamentos:
 - affected events
 - approvals
 - notifications
-- refresh tokens
 
 ---
 

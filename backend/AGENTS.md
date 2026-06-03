@@ -419,6 +419,25 @@ O agente deve:
 
 ---
 
+# Autenticação
+
+## Tokens
+
+- **Access Token**: JWT assinado com `JWT_SECRET`, expira em 15 min, claims completos (`sub`, `name`, `email`, `username`).
+- **Refresh Token**: JWT assinado com `JWT_REFRESH_SECRET`, expira em 7 dias, claims mínimos (`sub` apenas).
+- **Persistência**: Nenhuma. Refresh tokens são **stateless** — não há tabela no banco.
+
+## Cookies
+
+- Login/Register retornam access token no body + setam cookie `refresh_token` (`HttpOnly`, `Secure`, `SameSite=None` em prod, `SameSite=Lax` em dev).
+- Refresh endpoint (`POST /api/auth/refresh-token`) lê o cookie automaticamente.
+- Logout (`POST /api/auth/logout`) limpa o cookie.
+
+## Erros de Refresh
+
+- Refresh token inválido/expirado → `403 Forbidden` (não 400).
+- Access token expirado → `401 Unauthorized` (padrão do middleware JWT).
+
 # Regras de Segurança
 
 Obrigatório:

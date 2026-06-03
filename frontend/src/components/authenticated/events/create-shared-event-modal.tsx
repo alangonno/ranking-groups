@@ -28,7 +28,7 @@ export function CreateSharedEventModal({ isOpen, onClose, groupId }: CreateShare
     e.preventDefault();
 
     const pointsNum = Number(points);
-    if (!title.trim() || !description.trim() || pointsNum <= 0) {
+    if (!title.trim() || pointsNum <= 0) {
       setError("Preencha todos os campos obrigatórios.");
       return;
     }
@@ -60,7 +60,6 @@ export function CreateSharedEventModal({ isOpen, onClose, groupId }: CreateShare
 
   const isValid =
     title.trim() &&
-    description.trim() &&
     Number(points) > 0;
 
   return (
@@ -103,10 +102,9 @@ export function CreateSharedEventModal({ isOpen, onClose, groupId }: CreateShare
             </label>
             <AppTextarea
               id="shared-description"
-              placeholder="Descreva a atividade..."
+              placeholder="Descreva a atividade... (opcional)"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              required
               disabled={createSharedEvent.isPending}
               rows={3}
               className="w-full"
