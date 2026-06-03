@@ -1,11 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { postJson } from "../lib/api";
-import {
-  getAccessToken,
-  getUserIdFromToken,
-  removeAccessToken,
-  setAccessToken,
-} from "../lib/auth-token";
+import { getUserIdFromToken } from "../lib/auth-token";
+import { authStore } from "../store/auth-store";
 import { queryClient } from "../lib/query-client";
 import { useAuthContext } from "../providers/auth-provider";
 import type { LoginRequest, LoginResponse } from "../types/auth/user";
@@ -33,7 +29,7 @@ export function useLogin() {
     mutationFn: (payload: LoginRequest) =>
       postJson<LoginResponse>("/api/auth/login", payload),
     onSuccess: (data) => {
-      setAccessToken(data.accessToken);
+      authStore.setAccessToken(data.accessToken);
       queryClient.setQueryData(AUTH_KEY, mapToUser(data));
       setUser({
         id: data.userId,
@@ -52,7 +48,7 @@ export function useRegister() {
     mutationFn: (payload: RegisterRequest) =>
       postJson<RegisterResponse>("/api/auth/register", payload),
     onSuccess: (data) => {
-      setAccessToken(data.accessToken);
+      authStore.setAccessToken(data.accessToken);
       queryClient.setQueryData(AUTH_KEY, mapToUser(data));
       setUser({
         id: data.userId,
@@ -69,7 +65,8 @@ export function useLogout() {
 
   return useMutation({
     mutationFn: async () => {
-      removeAccessToken();
+      await postJson<unknown>("/api/auth/logout");
+      authStore.clearAccessToken();
       queryClient.clear();
     },
     onSuccess: () => {
@@ -93,5 +90,7 @@ export function useCurrentUser() {
 }
 
 export function getCurrentUserId(): string | null {
-  return getUserIdFromToken();
+  const token = authStore.getAccessToken();
+  if (!token) return null;
+  return getUserIdFromToken(token);
 }

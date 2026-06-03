@@ -12,7 +12,7 @@ public class AppDbContext : DbContext
     public DbSet<Event> Events => Set<Event>();
     public DbSet<EventApproval> EventApprovals => Set<EventApproval>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
-    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<SharedEvent> SharedEvents => Set<SharedEvent>();
     public DbSet<SharedEventParticipant> SharedEventParticipants => Set<SharedEventParticipant>();

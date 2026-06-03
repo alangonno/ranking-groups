@@ -1,4 +1,3 @@
-import { AppTooltip } from "../../ui/app-tooltip";
 import { ArrowUp, ArrowDown, ThumbsUp, MessageCircle } from "lucide-react";
 import { EventType } from "../../../types/event/event";
 import type { Event } from "../../../types/event/event";
@@ -12,14 +11,6 @@ export function EventCard({ event }: EventCardProps) {
   const isPositive = event.type === EventType.Positive;
   const affected = event.affectedUser;
   const creator = event.createdByUser;
-  const initials = affected?.name
-    ? affected.name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2)
-    : "??";
 
   return (
     <div className="bg-surface-container-lowest rounded-xl p-5 shadow-sm border border-surface-container hover:scale-[0.99] transition-transform duration-200">

@@ -5,13 +5,16 @@ import {
   Plus,
   Users,
   Contact,
+  LogOut,
 } from "lucide-react";
 import { useCurrentGroupId } from "../../../lib/use-group-context";
+import { useLogout } from "../../../hooks/use-auth";
 
 export function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const groupId = useCurrentGroupId();
+  const logout = useLogout();
 
   const isInGroup = !!groupId;
   const isGroupsPage = location.pathname === "/groups";
@@ -20,9 +23,15 @@ export function BottomNav() {
     return null;
   }
 
+  function handleLogout() {
+    logout.mutate(undefined, {
+      onSuccess: () => navigate("/login"),
+    });
+  }
+
   if (isGroupsPage && !isInGroup) {
     return (
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-surface-container-lowest border-t border-surface-container-highest z-50 h-16 flex items-center justify-center shadow-[0_-4px_12px_rgba(0,0,0,0.05)] rounded-t-xl">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-surface-container-lowest border-t border-surface-container-highest z-50 h-16 flex items-center justify-around shadow-[0_-4px_12px_rgba(0,0,0,0.05)] rounded-t-xl">
         <NavLink
           to="/groups"
           className="flex flex-col items-center justify-center gap-0.5 w-20 h-full text-primary"
@@ -30,6 +39,15 @@ export function BottomNav() {
           <Users size={22} strokeWidth={2.5} />
           <span className="text-[10px] font-label-bold">Grupos</span>
         </NavLink>
+        <button
+          type="button"
+          onClick={handleLogout}
+          disabled={logout.isPending}
+          className="flex flex-col items-center justify-center gap-0.5 w-20 h-full text-secondary disabled:opacity-50"
+        >
+          <LogOut size={22} />
+          <span className="text-[10px] font-label-bold">Sair</span>
+        </button>
       </nav>
     );
   }
@@ -40,6 +58,7 @@ export function BottomNav() {
     { path: `/group/${groupId}/events`, label: "Novo", icon: Plus, isFab: true },
     { path: `/group/${groupId}/members`, label: "Membros", icon: Contact },
     { path: "/groups", label: "Grupos", icon: Users },
+    { path: "", label: "Sair", icon: LogOut, isLogout: true },
   ];
 
   return (
@@ -47,10 +66,27 @@ export function BottomNav() {
       {navItems.map((item) => {
         const Icon = item.icon;
         const isActive =
-          item.path !== "/groups"
-            ? location.pathname === item.path ||
-              (item.path !== "/" && location.pathname.startsWith(item.path))
-            : location.pathname === "/groups";
+          item.isLogout
+            ? false
+            : item.path !== "/groups"
+              ? location.pathname === item.path ||
+                (item.path !== "/" && location.pathname.startsWith(item.path))
+              : location.pathname === "/groups";
+
+        if (item.isLogout) {
+          return (
+            <button
+              key="logout"
+              type="button"
+              onClick={handleLogout}
+              disabled={logout.isPending}
+              className="flex flex-col items-center justify-center gap-0.5 py-1 text-secondary disabled:opacity-50"
+            >
+              <Icon size={22} />
+              <span className="text-[10px] font-label-bold">{item.label}</span>
+            </button>
+          );
+        }
 
         if (item.isFab) {
           return (

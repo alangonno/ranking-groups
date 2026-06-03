@@ -44,9 +44,21 @@ public class ExceptionHandlingMiddleware
         }
     }
 
+    private static readonly HashSet<string> ForbiddenRules = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "invalid_refresh_token",
+        "expired_refresh_token",
+        "revoked_refresh_token",
+        "refresh_token_required"
+    };
+
     private static Task HandleBusinessRuleExceptionAsync(HttpContext context, BusinessRuleException exception)
     {
-        context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+        var statusCode = ForbiddenRules.Contains(exception.Rule)
+            ? HttpStatusCode.Forbidden
+            : HttpStatusCode.BadRequest;
+
+        context.Response.StatusCode = (int)statusCode;
         context.Response.ContentType = "application/json";
 
         var response = new ErrorResponse
@@ -54,7 +66,7 @@ public class ExceptionHandlingMiddleware
             Type = "business_rule_error",
             Message = exception.Message,
             Rule = exception.Rule,
-            StatusCode = (int)HttpStatusCode.BadRequest
+            StatusCode = (int)statusCode
         };
 
         return context.Response.WriteAsync(JsonSerializer.Serialize(response));

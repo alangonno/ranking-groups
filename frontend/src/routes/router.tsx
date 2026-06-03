@@ -14,15 +14,15 @@ import { RankingPage } from "../pages/authenticated/ranking-page";
 import { EventsPage } from "../pages/authenticated/events-page";
 import { MembersPage } from "../pages/authenticated/members-page";
 import { ProfilePage } from "../pages/authenticated/profile-page";
-import { getAccessToken } from "../lib/auth-token";
+import { authStore } from "../store/auth-store";
 
 function AuthGuard() {
-  const token = getAccessToken();
+  const token = authStore.getAccessToken();
   return token ? <Outlet /> : <Navigate to="/login" replace />;
 }
 
 function PublicGuard() {
-  const token = getAccessToken();
+  const token = authStore.getAccessToken();
   return token ? <Navigate to="/groups" replace /> : <Outlet />;
 }
 

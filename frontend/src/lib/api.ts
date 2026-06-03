@@ -1,4 +1,6 @@
 import axios from "axios";
+import type { RefreshTokenResponse } from "../types/auth/user";
+import { authStore } from "../store/auth-store";
 
 export class ApiError extends Error {
   statusCode: number;
@@ -27,10 +29,28 @@ const apiClient = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true,
 });
 
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (value: string) => void;
+  reject: (reason?: unknown) => void;
+}> = [];
+
+function processQueue(error: unknown | null, token: string | null = null) {
+  failedQueue.forEach((prom) => {
+    if (error || !token) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+}
+
 apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem("access_token");
+  const token = authStore.getAccessToken();
   if (token) {
     config.headers.set("Authorization", `Bearer ${token}`);
   }
@@ -39,7 +59,48 @@ apiClient.interceptors.request.use((config) => {
 
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (
+      axios.isAxiosError(error) &&
+      error.response?.status === 401 &&
+      originalRequest &&
+      !originalRequest._retry
+    ) {
+      if (isRefreshing) {
+        return new Promise<string>((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            originalRequest.headers.set("Authorization", `Bearer ${token}`);
+            return apiClient(originalRequest);
+          })
+          .catch((err) => Promise.reject(err));
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const response = await apiClient.post<RefreshTokenResponse>(
+          "/api/auth/refresh-token"
+        );
+        const { accessToken } = response.data;
+        authStore.setAccessToken(accessToken);
+        processQueue(null, accessToken);
+        originalRequest.headers.set("Authorization", `Bearer ${accessToken}`);
+        return apiClient(originalRequest);
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+        authStore.clearAccessToken();
+        window.location.href = "/login";
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
     if (axios.isAxiosError(error)) {
       const data = error.response?.data as Record<string, unknown> | undefined;
       const message =
@@ -51,6 +112,7 @@ apiClient.interceptors.response.use(
       const rule = data?.Rule as string | undefined;
       return Promise.reject(new ApiError(message, statusCode, data, type, rule));
     }
+
     return Promise.reject(error);
   }
 );
@@ -89,7 +151,7 @@ export async function postJson<TResponse>(
 
 export async function patchJson<TResponse>(
   url: string,
-  body?: unknown 
+  body?: unknown
 ): Promise<TResponse> {
   try {
     const response = await apiClient.patch<TResponse>(url, body);

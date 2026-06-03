@@ -1,53 +1,44 @@
-const ACCESS_TOKEN_KEY = "access_token";
-
-export function getAccessToken(): string | null {
-  return localStorage.getItem(ACCESS_TOKEN_KEY);
-}
-
-export function setAccessToken(token: string): void {
-  localStorage.setItem(ACCESS_TOKEN_KEY, token);
-}
-
-export function removeAccessToken(): void {
-  localStorage.removeItem(ACCESS_TOKEN_KEY);
-}
-
-export function getUserIdFromToken(): string | null {
-  const token = getAccessToken();
-  if (!token) return null;
-
+export function decodeTokenPayload(token: string): Record<string, unknown> | null {
   try {
     const payload = token.split(".")[1];
     if (!payload) return null;
-
-    const decoded = JSON.parse(atob(payload));
-    return decoded.sub || decoded.userId || decoded.id || null;
+    return JSON.parse(atob(payload));
   } catch {
     return null;
   }
 }
 
-export function getUserFromToken(): {
+export function getUserIdFromToken(token: string): string | null {
+  const decoded = decodeTokenPayload(token);
+  if (!decoded) return null;
+  return (decoded.sub as string) || (decoded.userId as string) || (decoded.id as string) || null;
+}
+
+export function getUserFromToken(token: string): {
   id: string;
   name: string;
   email: string;
   username: string;
 } | null {
-  const token = getAccessToken();
-  if (!token) return null;
+  const decoded = decodeTokenPayload(token);
+  if (!decoded) return null;
 
-  try {
-    const payload = token.split(".")[1];
-    if (!payload) return null;
+  return {
+    id: (decoded.sub as string) || (decoded.userId as string) || (decoded.id as string) || "",
+    name: (decoded.name as string) || "",
+    email: (decoded.email as string) || "",
+    username: (decoded.username as string) || "",
+  };
+}
 
-    const decoded = JSON.parse(atob(payload));
-    return {
-      id: decoded.sub || decoded.userId || decoded.id || "",
-      name: decoded.name || "",
-      email: decoded.email || "",
-      username: decoded.username || "",
-    };
-  } catch {
-    return null;
-  }
+export function isTokenExpiringSoon(token: string, seconds: number = 60): boolean {
+  const decoded = decodeTokenPayload(token);
+  if (!decoded) return true;
+
+  const exp = decoded.exp as number | undefined;
+  if (!exp) return true;
+
+  const expiresAt = exp * 1000;
+  const now = Date.now();
+  return expiresAt - now < seconds * 1000;
 }

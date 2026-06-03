@@ -18,6 +18,6 @@ public class User : Entity
     public ICollection<SharedEvent> CreatedSharedEvents { get; set; } = new List<SharedEvent>();
     public ICollection<SharedEventParticipant> SharedEventParticipations { get; set; } = new List<SharedEventParticipant>();
     public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
-    public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
+
     public ICollection<AuditLog> AuditLogs { get; set; } = new List<AuditLog>();
 }

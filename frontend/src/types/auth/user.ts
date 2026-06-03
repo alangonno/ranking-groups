@@ -15,7 +15,6 @@ export interface LoginRequest {
 export interface LoginResponse {
   userId: string;
   accessToken: string;
-  refreshToken: string;
   name: string;
   username: string;
   email: string;
@@ -32,18 +31,12 @@ export interface RegisterRequest {
 export interface RegisterResponse {
   userId: string;
   accessToken: string;
-  refreshToken: string;
   name: string;
   username: string;
   email: string;
   avatarUrl?: string;
 }
 
-export interface RefreshTokenRequest {
-  refreshToken: string;
-}
-
 export interface RefreshTokenResponse {
   accessToken: string;
-  refreshToken: string;
 }

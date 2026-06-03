@@ -3,8 +3,6 @@ import { Users, ArrowUp, CheckCircle2, Clock, LogOut } from "lucide-react";
 import { AppButton } from "../../ui/app-button";
 import { AppSpinner } from "../../ui/app-spinner";
 import { useJoinSharedEvent, useLeaveSharedEvent } from "../../../hooks/use-shared-events";
-import { getUserIdFromToken } from "../../../lib/auth-token";
-
 interface SharedEvent {
   id: string;
   title: string;
@@ -24,8 +22,6 @@ interface SharedEventCardProps {
 export function SharedEventCard({ event }: SharedEventCardProps) {
   const joinEvent = useJoinSharedEvent(event.id);
   const leaveEvent = useLeaveSharedEvent(event.id);
-  const currentUserId = getUserIdFromToken();
-  const isCreator = currentUserId === event.createdByUserId;
   const [hasJoined, setHasJoined] = useState(event.hasCurrentUserJoined);
   const [hasLeft, setHasLeft] = useState(false);
 

@@ -9,6 +9,7 @@ import { AppBadge } from "../../components/ui/app-badge";
 import { AppSpinner } from "../../components/ui/app-spinner";
 import { postJson } from "../../lib/api";
 import { getUserIdFromToken } from "../../lib/auth-token";
+import { authStore } from "../../store/auth-store";
 import type { EventVoteType } from "../../types/event/event";
 
 function roleLabel(role: GroupRole): string {
@@ -42,7 +43,7 @@ export function ProfilePage() {
   const member = profile?.member;
   const timeline = profile?.timeline || [];
   const sharedEvents = profile?.sharedEvents || [];
-  const currentUserId = getUserIdFromToken() || "";
+  const currentUserId = getUserIdFromToken(authStore.getAccessToken() || "") || "";
   const isOwnProfile = currentUserId === userId;
 
   const queryClient = useQueryClient();

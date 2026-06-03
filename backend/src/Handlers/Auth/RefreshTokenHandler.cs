@@ -1,5 +1,4 @@
 using backend.src.Common.Exceptions;
-using backend.src.Data;
 using backend.src.Repositories;
 using backend.src.Services;
 
@@ -14,9 +13,7 @@ public class RefreshTokenRequest
 // 2. Response
 public class RefreshTokenResponse
 {
-    public Guid UserId { get; set; }
-    public string Token { get; set; } = string.Empty;
-    public string RefreshToken { get; set; } = string.Empty;
+    public string AccessToken { get; set; } = string.Empty;
 }
 
 // 3. Interface
@@ -28,64 +25,38 @@ public interface IRefreshTokenHandler
 // 4. Implementação
 public class RefreshTokenHandler : IRefreshTokenHandler
 {
-    private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IJwtService _jwtService;
-    private readonly AppDbContext _context;
+    private readonly IUserRepository _userRepository;
 
     public RefreshTokenHandler(
-        IRefreshTokenRepository refreshTokenRepository,
         IJwtService jwtService,
-        AppDbContext context)
+        IUserRepository userRepository)
     {
-        _refreshTokenRepository = refreshTokenRepository;
         _jwtService = jwtService;
-        _context = context;
+        _userRepository = userRepository;
     }
 
     public async Task<RefreshTokenResponse> HandleAsync(RefreshTokenRequest request, CancellationToken ct)
     {
         RefreshTokenRequestValidator.Validate(request);
 
-        var refreshToken = await _refreshTokenRepository.GetByTokenAsync(request.RefreshToken);
-        if (refreshToken == null)
+        var userId = _jwtService.ValidateRefreshToken(request.RefreshToken);
+        if (userId == null)
         {
-            throw new BusinessRuleException("invalid_refresh_token", "Refresh token inválido.");
+            throw new BusinessRuleException("invalid_refresh_token", "Refresh token inválido ou expirado.");
         }
 
-        if (refreshToken.IsRevoked)
+        var user = await _userRepository.GetByIdAsync(userId.Value);
+        if (user == null)
         {
-            throw new BusinessRuleException("revoked_refresh_token", "Refresh token foi revogado.");
+            throw new BusinessRuleException("invalid_refresh_token", "Refresh token inválido ou expirado.");
         }
 
-        if (refreshToken.ExpiresAt <= DateTime.UtcNow)
-        {
-            throw new BusinessRuleException("expired_refresh_token", "Refresh token expirado.");
-        }
-
-        var token = _jwtService.GenerateToken(
-            refreshToken.UserId,
-            refreshToken.User.Name,
-            refreshToken.User.Email,
-            refreshToken.User.Username
-        );
-        var newRefreshTokenValue = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
-
-        var newRefreshToken = new backend.src.Entities.RefreshToken
-        {
-            UserId = refreshToken.UserId,
-            Token = newRefreshTokenValue,
-            ExpiresAt = DateTime.UtcNow.AddDays(30),
-            IsRevoked = false
-        };
-
-        _refreshTokenRepository.Add(newRefreshToken);
-        await _context.SaveChangesAsync(ct);
+        var accessToken = _jwtService.GenerateAccessToken(user.Id, user.Name, user.Email, user.Username);
 
         return new RefreshTokenResponse
         {
-            UserId = refreshToken.UserId,
-            Token = token,
-            RefreshToken = newRefreshTokenValue
+            AccessToken = accessToken
         };
     }
 }

@@ -69,8 +69,8 @@ function mapEventFromBackend(e: {
     type: EVENT_TYPE_MAP[e.type] ?? 1,
     status: EVENT_STATUS_MAP[e.status] ?? 1,
     createdAt: e.createdAt,
-    createdByUser: { id: e.createdByUserId, name: e.createdByUserName, username: "", email: "" },
-    affectedUser: { id: e.affectedUserId, name: e.affectedUserName, username: "", email: "" },
+    createdByUser: { id: e.createdByUserId, name: e.createdByUserName, username: "", email: "", createdAt: "", updatedAt: "" },
+    affectedUser: { id: e.affectedUserId, name: e.affectedUserName, username: "", email: "", createdAt: "", updatedAt: "" },
     isPendingRemoval: e.isPendingRemoval ?? false,
     removalVoteDeadline: e.removalVoteDeadline ?? undefined,
     quorumRequired: e.quorumRequired,
@@ -78,8 +78,8 @@ function mapEventFromBackend(e: {
       id: "", // não usado na listagem
       eventId: e.eventId,
       userId: a.userId,
-      user: { id: a.userId, name: a.userName, username: "", email: "" },
-      voteType: voteTypeMap[a.voteType] ?? 1,
+      user: { id: a.userId, name: a.userName, username: "", email: "", createdAt: "", updatedAt: "" },
+      voteType: (voteTypeMap[a.voteType] ?? 1) as import("../types/event/event").EventVoteType,
       createdAt: a.createdAt,
     })),
   };

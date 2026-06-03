@@ -118,6 +118,7 @@ export interface TimelineItem {
 
 export interface GroupUserProfileResponse {
   member: GroupMemberProfile;
+  currentScore?: number;
   events: UserEventHistory[];
   sharedEvents: UserSharedEvent[];
   timeline: TimelineItem[];

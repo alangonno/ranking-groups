@@ -4,6 +4,7 @@ import { ArrowDown, ClipboardList, Trash2, Clock } from "lucide-react";
 import type { Event, EventVoteType } from "../../../types/event/event";
 import { useVoteEvent } from "../../../hooks/use-events";
 import { getUserIdFromToken } from "../../../lib/auth-token";
+import { authStore } from "../../../store/auth-store";
 
 interface VotingCardProps {
   event: Event;
@@ -17,7 +18,7 @@ export function VotingCard({ event, compact = false }: VotingCardProps) {
 
   const affectedUser = event.affectedUser;
   const creator = event.createdByUser;
-  const currentUserId = getUserIdFromToken() || "";
+  const currentUserId = getUserIdFromToken(authStore.getAccessToken() || "") || "";
   const isAffected = affectedUser?.id === currentUserId;
 
   // Verifica se usuário já votou olhando para o array de approvals
