@@ -10,8 +10,7 @@ public class EventApprovalConfiguration : IEntityTypeConfiguration<EventApproval
     {
         builder.HasKey(ea => ea.Id);
 
-        builder.HasIndex(ea => new { ea.EventId, ea.UserId })
-            .IsUnique();
+        builder.HasIndex(ea => new { ea.EventId, ea.UserId });
 
         builder.HasOne(ea => ea.Event)
             .WithMany(e => e.Approvals)

@@ -28,12 +28,15 @@ public static class EventApprovalRules
 
     public static void ValidateNoDuplicateVote(Guid userId, Guid eventId, IEnumerable<EventApproval> existingApprovals)
     {
-        var alreadyVoted = existingApprovals.Any(a => a.UserId == userId && a.EventId == eventId);
-        if (alreadyVoted)
+        var alreadyVotedApproval = existingApprovals.Any(a =>
+            a.UserId == userId &&
+            a.EventId == eventId &&
+            (a.VoteType == EventVoteType.Approve || a.VoteType == EventVoteType.Reject));
+        if (alreadyVotedApproval)
         {
             throw new BusinessRuleException(
                 "duplicate_vote_not_allowed",
-                "O usuário já votou neste evento."
+                "O usuário já votou na aprovação deste evento."
             );
         }
     }

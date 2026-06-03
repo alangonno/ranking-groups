@@ -59,12 +59,15 @@ public static class EventRemovalRules
             );
         }
 
-        var alreadyVoted = existingApprovals.Any(a => a.UserId == userId && a.EventId == @event.Id);
-        if (alreadyVoted)
+        var alreadyVotedRemoval = existingApprovals.Any(a =>
+            a.UserId == userId &&
+            a.EventId == @event.Id &&
+            (a.VoteType == EventVoteType.Remove || a.VoteType == EventVoteType.Keep));
+        if (alreadyVotedRemoval)
         {
             throw new BusinessRuleException(
                 "duplicate_vote_not_allowed",
-                "O usuário já votou neste evento."
+                "O usuário já votou na remoção deste evento."
             );
         }
     }
