@@ -1,11 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { deleteJson, getJson, postJson, putJson } from "../lib/api";
+import { mapStringToEventStatus, mapStringToEventType } from "../lib/utils/event-mappers";
 import type {
   CreateEventRequest,
   CreateEventResponse,
   Event,
-  EventStatus,
-  EventType,
   EventWithScoreBalance,
   RequestEventRemovalResponse,
   UpdateEventRequest,
@@ -13,18 +12,6 @@ import type {
   VoteEventRequest,
   VoteEventResponse,
 } from "../types/event/event";
-
-const EVENT_STATUS_MAP: Record<string, EventStatus> = {
-  Pending: 1,
-  Approved: 2,
-  Rejected: 3,
-  Cancelled: 4,
-};
-
-const EVENT_TYPE_MAP: Record<string, EventType> = {
-  Positive: 1,
-  Negative: 2,
-};
 
 function mapEventFromBackend(e: {
   eventId: string;
@@ -66,8 +53,8 @@ function mapEventFromBackend(e: {
     title: e.title,
     description: e.description,
     points: e.points,
-    type: EVENT_TYPE_MAP[e.type] ?? 1,
-    status: EVENT_STATUS_MAP[e.status] ?? 1,
+    type: mapStringToEventType(e.type),
+    status: mapStringToEventStatus(e.status),
     createdAt: e.createdAt,
     createdByUser: { id: e.createdByUserId, name: e.createdByUserName, username: "", email: "", createdAt: "", updatedAt: "" },
     affectedUser: { id: e.affectedUserId, name: e.affectedUserName, username: "", email: "", createdAt: "", updatedAt: "" },

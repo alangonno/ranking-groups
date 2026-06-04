@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { getJson } from "../lib/api";
-import type { RankingEntry, RankingQueryParams } from "../types/ranking/ranking";
+import type { RankingEntry, RankingQueryParams, FeedItem } from "../types/ranking/ranking";
 import type { User } from "../types/auth/user";
 
 export function useRanking(groupId: string, params?: RankingQueryParams) {
@@ -20,14 +20,14 @@ export function useRanking(groupId: string, params?: RankingQueryParams) {
 }
 
 export function useFeed(groupId: string, limit?: number) {
-  return useQuery<unknown[]>({
+  return useQuery<FeedItem[]>({
     queryKey: ["feed", groupId, limit],
     queryFn: async () => {
-      const response = await getJson<{ feed: unknown[] }>(
+      const response = await getJson<{ items: FeedItem[] }>(
         `/api/rankings/group/${groupId}/feed`,
         { limit } as Record<string, unknown>
       );
-      return response.feed || [];
+      return response.items || [];
     },
     enabled: !!groupId,
   });

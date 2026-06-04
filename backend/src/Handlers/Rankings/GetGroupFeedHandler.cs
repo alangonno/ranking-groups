@@ -32,10 +32,12 @@ public class FeedItemDto
     public Guid? AffectedUserId { get; set; }
     public string? AffectedUserName { get; set; }
     public string? EventStatus { get; set; }
+    public string? EventType { get; set; }
     public int? ScoreBalance { get; set; }
 
     public int? ParticipantCount { get; set; }
     public bool? IsClosed { get; set; }
+    public bool? HasCurrentUserJoined { get; set; }
 }
 
 public interface IGetGroupFeedHandler
@@ -88,6 +90,7 @@ public class GetGroupFeedHandler : IGetGroupFeedHandler
             AffectedUserId = e.AffectedUserId,
             AffectedUserName = e.AffectedUser?.Name ?? string.Empty,
             EventStatus = e.Status.ToString(),
+            EventType = e.Type.ToString(),
             ScoreBalance = e.Status == EventStatus.Approved
                 ? (e.Type == EventType.Negative ? -e.Points : e.Points)
                 : 0
@@ -104,7 +107,8 @@ public class GetGroupFeedHandler : IGetGroupFeedHandler
             CreatedByUserId = se.CreatedByUserId,
             CreatedByUserName = se.CreatedByUser?.Name ?? string.Empty,
             ParticipantCount = se.Participants.Count,
-            IsClosed = se.IsClosed
+            IsClosed = se.IsClosed,
+            HasCurrentUserJoined = se.Participants.Any(p => p.UserId == userId)
         });
 
         var allItems = eventItems
