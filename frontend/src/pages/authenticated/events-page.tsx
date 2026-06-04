@@ -48,7 +48,9 @@ export function EventsPage() {
 
   const filteredEvents = activeTab === "my" ? myEvents : allEvents;
 
-  const displayEvents = [...filteredEvents].sort((a, b) => {
+  const displayEvents = [...filteredEvents]
+    .filter((event, index, self) => index === self.findIndex((e) => e.id === event.id))
+    .sort((a, b) => {
     const aPriority = a.status === EventStatus.Pending || a.isPendingRemoval ? 0 : 1;
     const bPriority = b.status === EventStatus.Pending || b.isPendingRemoval ? 0 : 1;
     if (aPriority !== bPriority) return aPriority - bPriority;

@@ -12,7 +12,7 @@ interface VotingCardProps {
 }
 
 export function VotingCard({ event, compact = false }: VotingCardProps) {
-  const vote = useVoteEvent(event.id);
+  const vote = useVoteEvent(event.id, event.groupId);
 
   const isRemovalVote = event.isPendingRemoval === true;
 

@@ -51,11 +51,12 @@ export function ProfilePage() {
   const requestRemoval = useMutation({
     mutationFn: (eventId: string) =>
       postJson(`/api/events/${eventId}/request-removal`),
-    onSuccess: () => {
+    onSuccess: (_data, eventId) => {
+      queryClient.invalidateQueries({ queryKey: ["events", eventId] });
+      queryClient.invalidateQueries({ queryKey: ["events", "group", groupId] });
+      queryClient.invalidateQueries({ queryKey: ["ranking", groupId] });
+      queryClient.invalidateQueries({ queryKey: ["feed", groupId] });
       queryClient.invalidateQueries({ queryKey: ["user-profile"] });
-      queryClient.invalidateQueries({ queryKey: ["events"] });
-      queryClient.invalidateQueries({ queryKey: ["ranking"] });
-      queryClient.invalidateQueries({ queryKey: ["feed"] });
     },
   });
 
@@ -64,10 +65,13 @@ export function ProfilePage() {
   const voteEvent = useMutation({
     mutationFn: ({ eventId, voteType }: { eventId: string; voteType: EventVoteType }) =>
       postJson(`/api/events/${eventId}/vote`, { voteType }),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       setVoteError(null);
+      queryClient.invalidateQueries({ queryKey: ["events", variables.eventId] });
+      queryClient.invalidateQueries({ queryKey: ["events", "group", groupId] });
+      queryClient.invalidateQueries({ queryKey: ["ranking", groupId] });
+      queryClient.invalidateQueries({ queryKey: ["feed", groupId] });
       queryClient.invalidateQueries({ queryKey: ["user-profile"] });
-      queryClient.invalidateQueries({ queryKey: ["events"] });
     },
     onError: (error: any) => {
       if (error?.rule === "duplicate_vote_not_allowed" || error?.message?.includes("já votou")) {

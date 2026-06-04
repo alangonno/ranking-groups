@@ -68,7 +68,15 @@ export function useDashboardData(groupId: string | undefined) {
       .filter((item) => item.feedItemType === "shared_event")
       .map((item) => ({ type: "shared_event", item }));
 
-    return [...approved, ...shared].sort((a, b) => {
+    const deduped = new Map<string, DashboardFeedEntry>();
+    [...approved, ...shared].forEach((entry) => {
+      const id = entry.type === "event" ? entry.event.id : entry.item.id;
+      if (!deduped.has(id)) {
+        deduped.set(id, entry);
+      }
+    });
+
+    return Array.from(deduped.values()).sort((a, b) => {
       const dateA =
         a.type === "event"
           ? new Date(a.event.createdAt).getTime()

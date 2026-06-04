@@ -138,20 +138,22 @@ export function useUpdateEvent(eventId: string) {
   });
 }
 
-export function useDeleteEvent(eventId: string) {
+export function useDeleteEvent(eventId: string, groupId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: () => deleteJson<void>(`/api/events/${eventId}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["events"] });
-      queryClient.invalidateQueries({ queryKey: ["ranking"] });
-      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      queryClient.removeQueries({ queryKey: ["events", eventId] });
+      queryClient.invalidateQueries({ queryKey: ["events", "group", groupId] });
+      queryClient.invalidateQueries({ queryKey: ["ranking", groupId] });
+      queryClient.invalidateQueries({ queryKey: ["feed", groupId] });
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
     },
   });
 }
 
-export function useVoteEvent(eventId: string) {
+export function useVoteEvent(eventId: string, groupId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -159,15 +161,15 @@ export function useVoteEvent(eventId: string) {
       postJson<VoteEventResponse>(`/api/events/${eventId}/vote`, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events", eventId] });
-      queryClient.invalidateQueries({ queryKey: ["events"] });
-      queryClient.invalidateQueries({ queryKey: ["ranking"] });
-      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      queryClient.invalidateQueries({ queryKey: ["events", "group", groupId] });
+      queryClient.invalidateQueries({ queryKey: ["ranking", groupId] });
+      queryClient.invalidateQueries({ queryKey: ["feed", groupId] });
       queryClient.invalidateQueries({ queryKey: ["user-profile"] });
     },
   });
 }
 
-export function useRequestEventRemoval(eventId: string) {
+export function useRequestEventRemoval(eventId: string, groupId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -175,9 +177,9 @@ export function useRequestEventRemoval(eventId: string) {
       postJson<RequestEventRemovalResponse>(`/api/events/${eventId}/request-removal`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events", eventId] });
-      queryClient.invalidateQueries({ queryKey: ["events"] });
-      queryClient.invalidateQueries({ queryKey: ["ranking"] });
-      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      queryClient.invalidateQueries({ queryKey: ["events", "group", groupId] });
+      queryClient.invalidateQueries({ queryKey: ["ranking", groupId] });
+      queryClient.invalidateQueries({ queryKey: ["feed", groupId] });
       queryClient.invalidateQueries({ queryKey: ["user-profile"] });
     },
   });

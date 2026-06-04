@@ -91,7 +91,7 @@ export function BottomNav() {
         if (item.isFab) {
           return (
             <button
-              key={item.path}
+              key="fab-new-event"
               type="button"
               onClick={() => navigate(item.path, { state: { createEvent: true } })}
               className="relative flex flex-col items-center -top-4"
