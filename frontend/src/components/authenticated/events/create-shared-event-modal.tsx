@@ -81,9 +81,10 @@ export function CreateSharedEventModal({ isOpen, onClose, groupId }: CreateShare
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="flex min-h-full items-start sm:items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/40" onClick={onClose} />
+        <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 my-4">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-text-primary">
             Novo Evento Compartilhado
@@ -98,53 +99,74 @@ export function CreateSharedEventModal({ isOpen, onClose, groupId }: CreateShare
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label htmlFor="shared-title" className="block text-sm font-medium text-text-secondary mb-1.5">
-              Título
-            </label>
-            <AppInput
-              id="shared-title"
-              placeholder="Ex: Churrasco do Grupo"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-              disabled={createSharedEvent.isPending}
-              sizing="md"
-              className="w-full"
-            />
-          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-5">
+              <div>
+                <label htmlFor="shared-title" className="block text-sm font-medium text-text-secondary mb-1.5">
+                  Título
+                </label>
+                <AppInput
+                  id="shared-title"
+                  placeholder="Ex: Churrasco do Grupo"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  required
+                  disabled={createSharedEvent.isPending}
+                  sizing="md"
+                  className="w-full"
+                />
+              </div>
 
-          <div>
-            <label htmlFor="shared-description" className="block text-sm font-medium text-text-secondary mb-1.5">
-              Descrição
-            </label>
-            <AppTextarea
-              id="shared-description"
-              placeholder="Descreva a atividade... (opcional)"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              disabled={createSharedEvent.isPending}
-              rows={3}
-              className="w-full"
-            />
-          </div>
+              <div>
+                <label htmlFor="shared-description" className="block text-sm font-medium text-text-secondary mb-1.5">
+                  Descrição
+                </label>
+                <AppTextarea
+                  id="shared-description"
+                  placeholder="Descreva a atividade... (opcional)"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  disabled={createSharedEvent.isPending}
+                  rows={3}
+                  className="w-full"
+                />
+              </div>
+            </div>
 
-          <div>
-            <label htmlFor="shared-points" className="block text-sm font-medium text-text-secondary mb-1.5">
-              Pontos por participante
-            </label>
-            <AppInput
-              id="shared-points"
-              type="number"
-              min={1}
-              placeholder="15"
-              value={points}
-              onChange={(e) => setPoints(e.target.value)}
-              required
-              disabled={createSharedEvent.isPending}
-              sizing="md"
-              className="w-full"
-            />
+            <div className="space-y-5">
+              <div>
+                <label htmlFor="shared-points" className="block text-sm font-medium text-text-secondary mb-1.5">
+                  Pontos por participante
+                </label>
+                <AppInput
+                  id="shared-points"
+                  type="number"
+                  min={1}
+                  placeholder="15"
+                  value={points}
+                  onChange={(e) => setPoints(e.target.value)}
+                  required
+                  disabled={createSharedEvent.isPending}
+                  sizing="md"
+                  className="w-full"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="shared-closes-at" className="block text-sm font-medium text-text-secondary mb-1.5">
+                  Data de fechamento <span className="text-text-muted">(opcional)</span>
+                </label>
+                <AppInput
+                  id="shared-closes-at"
+                  type="datetime-local"
+                  value={closesAt}
+                  onChange={(e) => setClosesAt(e.target.value)}
+                  disabled={createSharedEvent.isPending}
+                  sizing="md"
+                  className="w-full"
+                />
+              </div>
+            </div>
           </div>
 
           <div>
@@ -195,21 +217,6 @@ export function CreateSharedEventModal({ isOpen, onClose, groupId }: CreateShare
             )}
           </div>
 
-          <div>
-            <label htmlFor="shared-closes-at" className="block text-sm font-medium text-text-secondary mb-1.5">
-              Data de fechamento <span className="text-text-muted">(opcional)</span>
-            </label>
-            <AppInput
-              id="shared-closes-at"
-              type="datetime-local"
-              value={closesAt}
-              onChange={(e) => setClosesAt(e.target.value)}
-              disabled={createSharedEvent.isPending}
-              sizing="md"
-              className="w-full"
-            />
-          </div>
-
           {error && (
             <div className="text-sm text-danger bg-red-50 rounded-lg px-4 py-2.5">
               {error}
@@ -233,5 +240,6 @@ export function CreateSharedEventModal({ isOpen, onClose, groupId }: CreateShare
         </form>
       </div>
     </div>
+  </div>
   );
 }

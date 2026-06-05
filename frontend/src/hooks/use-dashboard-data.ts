@@ -95,6 +95,38 @@ export function useDashboardData(groupId: string | undefined) {
   const totalEvents = approvedEvents.length + pendingEvents.length;
   const activeMembersCount = ranking.length;
 
+  const currentUserScore = useMemo(() => {
+    if (profile?.member?.currentScore !== undefined) {
+      return profile.member.currentScore;
+    }
+    const userEntry = ranking.find((r) => r.user?.id === user?.id);
+    return userEntry?.score ?? 0;
+  }, [profile?.member?.currentScore, ranking, user?.id]);
+
+  const todayDelta = useMemo(() => {
+    if (!profile?.timeline || profile.timeline.length === 0) return 0;
+
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+
+    return profile.timeline.reduce((sum, item) => {
+      const itemDate = new Date(item.createdAt);
+      if (itemDate < startOfToday || itemDate >= endOfToday) return sum;
+
+      if (item.itemType === "shared_event") {
+        return sum + item.points;
+      }
+
+      if (item.itemType === "event") {
+        if (item.status !== "Approved") return sum;
+        return item.type === "Negative" ? sum - item.points : sum + item.points;
+      }
+
+      return sum;
+    }, 0);
+  }, [profile?.timeline]);
+
   return {
     user,
     userInitials,
@@ -107,6 +139,8 @@ export function useDashboardData(groupId: string | undefined) {
     totalEvents,
     activeMembersCount,
     profile,
+    todayDelta,
+    currentUserScore,
     hasMoreFeed: feedQuery.hasNextPage,
     fetchMoreFeed: feedQuery.fetchNextPage,
     isFetchingMoreFeed: feedQuery.isFetchingNextPage,

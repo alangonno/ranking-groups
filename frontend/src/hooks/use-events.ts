@@ -148,6 +148,7 @@ export function useCreateEvent() {
       invalidateFirstPage(queryClient, ["events", "group", variables.groupId]);
       queryClient.invalidateQueries({ queryKey: ["ranking", variables.groupId] });
       invalidateFirstPage(queryClient, ["feed", variables.groupId]);
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
     },
   });
 }
@@ -163,6 +164,7 @@ export function useUpdateEvent(eventId: string) {
       invalidateAllFirstPages(queryClient, ["events"]);
       invalidateAllFirstPages(queryClient, ["ranking"]);
       invalidateAllFirstPages(queryClient, ["feed"]);
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
     },
   });
 }

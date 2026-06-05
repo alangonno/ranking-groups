@@ -90,9 +90,10 @@ export function CreateEventModal({ isOpen, onClose, groupId }: CreateEventModalP
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="flex min-h-full items-start sm:items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/40" onClick={onClose} />
+        <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 my-4">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-text-primary">
             Novo Evento
@@ -107,70 +108,94 @@ export function CreateEventModal({ isOpen, onClose, groupId }: CreateEventModalP
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label htmlFor="event-title" className="block text-sm font-medium text-text-secondary mb-1.5">
-              Título
-            </label>
-            <AppInput
-              id="event-title"
-              placeholder="Ex: Organizou o churrasco"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-              disabled={createEvent.isPending}
-              sizing="md"
-              className="w-full"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="event-description" className="block text-sm font-medium text-text-secondary mb-1.5">
-              Descrição
-            </label>
-            <AppTextarea
-              id="event-description"
-              placeholder="Descreva o que aconteceu... (opcional)"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              disabled={createEvent.isPending}
-              rows={3}
-              className="w-full"
-            />
-          </div>
-
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="event-points" className="block text-sm font-medium text-text-secondary mb-1.5">
-                Pontos
-              </label>
-              <AppInput
-                id="event-points"
-                type="number"
-                min={1}
-                placeholder="20"
-                value={points}
-                onChange={(e) => setPoints(e.target.value)}
-                required
-                disabled={createEvent.isPending}
-                sizing="md"
-                className="w-full"
-              />
+            <div className="space-y-5">
+              <div>
+                <label htmlFor="event-title" className="block text-sm font-medium text-text-secondary mb-1.5">
+                  Título
+                </label>
+                <AppInput
+                  id="event-title"
+                  placeholder="Ex: Organizou o churrasco"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  required
+                  disabled={createEvent.isPending}
+                  sizing="md"
+                  className="w-full"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="event-description" className="block text-sm font-medium text-text-secondary mb-1.5">
+                  Descrição
+                </label>
+                <AppTextarea
+                  id="event-description"
+                  placeholder="Descreva o que aconteceu... (opcional)"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  disabled={createEvent.isPending}
+                  rows={3}
+                  className="w-full"
+                />
+              </div>
             </div>
 
-            <div>
-              <label htmlFor="event-type" className="block text-sm font-medium text-text-secondary mb-1.5">
-                Tipo
-              </label>
-              <AppSelect
-                id="event-type"
-                value={type}
-                onChange={(e) => setType(e.target.value)}
-                disabled={createEvent.isPending}
-                className="w-full"
-              >
-                <option value={EventType.Positive}>Positivo</option>
-                <option value={EventType.Negative}>Negativo</option>
-              </AppSelect>
+            <div className="space-y-5">
+              <div>
+                <label htmlFor="event-points" className="block text-sm font-medium text-text-secondary mb-1.5">
+                  Pontos
+                </label>
+                <AppInput
+                  id="event-points"
+                  type="number"
+                  min={1}
+                  placeholder="20"
+                  value={points}
+                  onChange={(e) => setPoints(e.target.value)}
+                  required
+                  disabled={createEvent.isPending}
+                  sizing="md"
+                  className="w-full"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="event-type" className="block text-sm font-medium text-text-secondary mb-1.5">
+                  Tipo
+                </label>
+                <AppSelect
+                  id="event-type"
+                  value={type}
+                  onChange={(e) => setType(e.target.value)}
+                  disabled={createEvent.isPending}
+                  className="w-full"
+                >
+                  <option value={EventType.Positive}>Positivo</option>
+                  <option value={EventType.Negative}>Negativo</option>
+                </AppSelect>
+              </div>
+
+              <div>
+                <label htmlFor="event-affected-user" className="block text-sm font-medium text-text-secondary mb-1.5">
+                  Usuário afetado
+                </label>
+                <AppSelect
+                  id="event-affected-user"
+                  value={affectedUserId}
+                  onChange={(e) => setAffectedUserId(e.target.value)}
+                  disabled={createEvent.isPending}
+                  className="w-full"
+                >
+                  <option value="">Selecione um membro</option>
+                  {members.map((m) => (
+                    <option key={m.userId} value={m.userId}>
+                      {m.name}
+                    </option>
+                  ))}
+                </AppSelect>
+              </div>
             </div>
           </div>
 
@@ -222,26 +247,6 @@ export function CreateEventModal({ isOpen, onClose, groupId }: CreateEventModalP
             )}
           </div>
 
-          <div>
-            <label htmlFor="event-affected-user" className="block text-sm font-medium text-text-secondary mb-1.5">
-              Usuário afetado
-            </label>
-            <AppSelect
-              id="event-affected-user"
-              value={affectedUserId}
-              onChange={(e) => setAffectedUserId(e.target.value)}
-              disabled={createEvent.isPending}
-              className="w-full"
-            >
-              <option value="">Selecione um membro</option>
-              {members.map((m) => (
-                <option key={m.userId} value={m.userId}>
-                  {m.name}
-                </option>
-              ))}
-            </AppSelect>
-          </div>
-
           {error && (
             <div className="text-sm text-danger bg-red-50 rounded-lg px-4 py-2.5">
               {error}
@@ -265,5 +270,6 @@ export function CreateEventModal({ isOpen, onClose, groupId }: CreateEventModalP
         </form>
       </div>
     </div>
+  </div>
   );
 }

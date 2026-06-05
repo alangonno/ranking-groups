@@ -9,6 +9,7 @@ import { CreateEventModal } from "../../components/authenticated/events/create-e
 import { CreateSharedEventModal } from "../../components/authenticated/events/create-shared-event-modal";
 import { NotificationDropdown } from "../../components/authenticated/notifications/notification-dropdown";
 import { EventStatus } from "../../types/event/event";
+import type { Event } from "../../types/event/event";
 import { useGroupEvents } from "../../hooks/use-events";
 import { useGroup } from "../../hooks/use-groups";
 import { useGroupSharedEvents } from "../../hooks/use-shared-events";
@@ -19,7 +20,7 @@ export function EventsPage() {
   const { groupId } = useParams<{ groupId: string }>();
   const location = useLocation();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"all" | "my">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "my" | "voting">("all");
   const { user } = useAuthContext();
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [showCreateSharedEvent, setShowCreateSharedEvent] = useState(false);
@@ -51,22 +52,31 @@ export function EventsPage() {
     isLoading: isFetchingNextPage,
   });
 
+  const isPendingEvent = (e: Event) =>
+    e.status === EventStatus.Pending || e.isPendingRemoval;
+
   const myEvents = allEvents.filter(
     (e) => e.createdByUserId === user?.id || e.affectedUserId === user?.id
   );
 
-  const filteredEvents = activeTab === "my" ? myEvents : allEvents;
+  const votingEvents = allEvents.filter(isPendingEvent);
 
-  const displayEvents = [...filteredEvents]
+  const sourceEvents =
+    activeTab === "voting"
+      ? votingEvents
+      : activeTab === "my"
+        ? myEvents.filter((e) => !isPendingEvent(e))
+        : allEvents.filter((e) => !isPendingEvent(e));
+
+  const displayEvents = [...sourceEvents]
     .filter((event, index, self) => index === self.findIndex((e) => e.id === event.id))
-    .sort((a, b) => {
-    const aPriority = a.status === EventStatus.Pending || a.isPendingRemoval ? 0 : 1;
-    const bPriority = b.status === EventStatus.Pending || b.isPendingRemoval ? 0 : 1;
-    if (aPriority !== bPriority) return aPriority - bPriority;
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-  });
+    .sort((a, b) =>
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
 
-  const sharedEventsForCarousel = sharedEvents.map((se) => ({
+  const sharedEventsForCarousel = sharedEvents
+    .filter((se) => !se.isClosed)
+    .map((se) => ({
     id: se.id,
     title: se.title,
     points: se.points,
@@ -147,9 +157,10 @@ export function EventsPage() {
       <div className="mb-4">
         <div className="flex gap-2 flex-wrap">
           {[
-          { key: "all" as const, label: "Todos" },
-          { key: "my" as const, label: "Seus Eventos" },
-        ].map((tab) => (
+            { key: "all" as const, label: "Todos" },
+            { key: "my" as const, label: "Seus Eventos" },
+            { key: "voting" as const, label: "Votação" },
+          ].map((tab) => (
           <button
             key={tab.key}
             type="button"
@@ -161,6 +172,11 @@ export function EventsPage() {
             }`}
           >
             {tab.label}
+            {tab.key === "voting" && votingEvents.length > 0 && (
+              <span className="ml-1.5 inline-flex items-center text-white justify-center w-5 h-5 bg-primary text-on-primary rounded-full text-[10px] font-bold">
+                {votingEvents.length}
+              </span>
+            )}
           </button>
         ))}
         </div>
@@ -171,12 +187,14 @@ export function EventsPage() {
         {displayEvents.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-text-secondary text-sm mb-4">
-              Nenhum evento nesta categoria
+              {activeTab === "voting"
+                ? "Nenhuma votação no momento"
+                : "Nenhum evento nesta categoria"}
             </p>
           </div>
         ) : (
           displayEvents.map((event) =>
-            event.status === EventStatus.Pending || event.isPendingRemoval ? (
+            activeTab === "voting" ? (
               <VotingCard key={event.id} event={event} />
             ) : (
               <EventCard key={event.id} event={event} />

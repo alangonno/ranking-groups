@@ -18,7 +18,7 @@ export function FeedTabs({ activeTab, onTabChange, pendingCount = 0 }: FeedTabsP
             : "text-secondary hover:text-on-surface"
         }`}
       >
-        Todos
+        Eventos
       </button>
       <button
         type="button"
@@ -29,7 +29,7 @@ export function FeedTabs({ activeTab, onTabChange, pendingCount = 0 }: FeedTabsP
             : "text-secondary hover:text-on-surface"
         }`}
       >
-        Pendentes
+        Votação
         {pendingCount > 0 && (
           <span className="ml-1.5 inline-flex items-center text-white justify-center w-5 h-5 bg-primary text-on-primary rounded-full text-[10px] font-bold">
             {pendingCount}

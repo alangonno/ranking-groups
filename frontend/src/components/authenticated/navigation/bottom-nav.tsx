@@ -5,28 +5,18 @@ import {
   Plus,
   Users,
   Contact,
-  LogOut,
 } from "lucide-react";
 import { useCurrentGroupId } from "../../../lib/use-group-context";
-import { useLogout } from "../../../hooks/use-auth";
 
 export function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const groupId = useCurrentGroupId();
-  const logout = useLogout();
-
   const isInGroup = !!groupId;
   const isGroupsPage = location.pathname === "/groups";
 
   if (!isInGroup && !isGroupsPage) {
     return null;
-  }
-
-  function handleLogout() {
-    logout.mutate(undefined, {
-      onSuccess: () => navigate("/login"),
-    });
   }
 
   if (isGroupsPage && !isInGroup) {
@@ -39,51 +29,22 @@ export function BottomNav() {
           <Users size={22} strokeWidth={2.5} />
           <span className="text-[10px] font-label-bold">Grupos</span>
         </NavLink>
-        <button
-          type="button"
-          onClick={handleLogout}
-          disabled={logout.isPending}
-          className="flex flex-col items-center justify-center gap-0.5 w-20 h-full text-secondary disabled:opacity-50"
-        >
-          <LogOut size={22} />
-          <span className="text-[10px] font-label-bold">Sair</span>
-        </button>
       </nav>
     );
   }
-
   const navItems = [
     { path: `/group/${groupId}`, label: "Início", icon: Home },
     { path: `/group/${groupId}/events`, label: "Eventos", icon: Calendar },
     { path: `/group/${groupId}/events`, label: "Novo", icon: Plus, isFab: true },
     { path: `/group/${groupId}/members`, label: "Membros", icon: Contact },
     { path: "/groups", label: "Grupos", icon: Users },
-    { path: "", label: "Sair", icon: LogOut, isLogout: true },
   ];
 
   return (
     <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-surface-container-lowest z-50 flex items-center justify-around px-2 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] rounded-t-xl border-t border-surface-container-highest h-16">
       {navItems.map((item) => {
         const Icon = item.icon;
-        const isActive =
-          item.isLogout
-            ? false
-            : location.pathname === item.path;
-
-        if (item.isLogout) {
-          return (
-            <button
-              key="logout"
-              type="button"
-              onClick={handleLogout}
-              disabled={logout.isPending}
-              className="flex flex-col items-center justify-center gap-0.5 py-1 text-secondary disabled:opacity-50"
-            >
-              <Icon size={22} />
-              <span className="text-[10px] font-label-bold">{item.label}</span>
-            </button>
-          );
-        }
+        const isActive = location.pathname === item.path;
 
         if (item.isFab) {
           return (

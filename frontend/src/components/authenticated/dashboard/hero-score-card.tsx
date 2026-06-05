@@ -1,4 +1,4 @@
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, Minus } from "lucide-react";
 
 interface HeroScoreCardProps {
   score: number;
@@ -7,6 +7,17 @@ interface HeroScoreCardProps {
 
 export function HeroScoreCard({ score, delta }: HeroScoreCardProps) {
   const formattedScore = score >= 1000 ? `${(score / 1000).toFixed(1)}k` : String(score);
+
+  const isPositive = delta > 0;
+  const isNegative = delta < 0;
+  const isZero = delta === 0;
+
+  const sign = isPositive ? "+" : "";
+  const icon = isNegative
+    ? <ArrowDownRight size={14} />
+    : isZero
+    ? <Minus size={14} />
+    : <ArrowUpRight size={14} />;
 
   return (
     <div className="bg-primary rounded-2xl p-5 text-white">
@@ -18,8 +29,8 @@ export function HeroScoreCard({ score, delta }: HeroScoreCardProps) {
 
         <div className="mt-3 flex items-center">
           <span className="inline-flex items-center gap-1 bg-white/20 text-white text-xs font-medium px-2.5 py-1 rounded-full">
-            <ArrowUpRight size={14} />
-            +{delta} hj
+            {icon}
+            {sign}{delta} hj
           </span>
         </div>
       </div>

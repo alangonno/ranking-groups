@@ -82,6 +82,7 @@ export function useCreateSharedEvent() {
       invalidateFirstPage(queryClient, ["shared-events", "group", variables.groupId]);
       queryClient.invalidateQueries({ queryKey: ["ranking", variables.groupId] });
       invalidateFirstPage(queryClient, ["feed", variables.groupId]);
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
     },
   });
 }
@@ -97,6 +98,7 @@ export function useUpdateSharedEvent(id: string) {
       invalidateAllFirstPages(queryClient, ["shared-events"]);
       invalidateAllFirstPages(queryClient, ["ranking"]);
       invalidateAllFirstPages(queryClient, ["feed"]);
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
     },
   });
 }
@@ -110,6 +112,7 @@ export function useDeleteSharedEvent(id: string) {
       invalidateAllFirstPages(queryClient, ["shared-events"]);
       invalidateAllFirstPages(queryClient, ["ranking"]);
       invalidateAllFirstPages(queryClient, ["feed"]);
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
     },
   });
 }
@@ -123,6 +126,7 @@ export function useJoinSharedEvent(id: string) {
       invalidateAllFirstPages(queryClient, ["shared-events"]);
       invalidateAllFirstPages(queryClient, ["ranking"]);
       invalidateAllFirstPages(queryClient, ["feed"]);
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
     },
   });
 }
@@ -136,6 +140,7 @@ export function useLeaveSharedEvent(id: string) {
       invalidateAllFirstPages(queryClient, ["shared-events"]);
       invalidateAllFirstPages(queryClient, ["ranking"]);
       invalidateAllFirstPages(queryClient, ["feed"]);
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
     },
   });
 }

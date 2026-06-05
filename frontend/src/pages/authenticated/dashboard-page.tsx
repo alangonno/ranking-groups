@@ -7,7 +7,7 @@ import { VotingCard } from "../../components/authenticated/events/voting-card";
 import { SharedEventCard } from "../../components/authenticated/events/shared-event-card";
 import { TopMembersWidget } from "../../components/authenticated/ranking/top-members-widget";
 import { HeroScoreCard } from "../../components/authenticated/dashboard/hero-score-card";
-import { PendingVotesSection } from "../../components/authenticated/dashboard/pending-votes-section";
+
 import { FeedTabs } from "../../components/authenticated/dashboard/feed-tabs";
 import { CreateEventModal } from "../../components/authenticated/events/create-event-modal";
 import { NotificationDropdown } from "../../components/authenticated/notifications/notification-dropdown";
@@ -30,6 +30,8 @@ export function DashboardPage() {
     totalEvents,
     activeMembersCount,
     profile,
+    todayDelta,
+    currentUserScore,
     hasMoreFeed,
     fetchMoreFeed,
     isFetchingMoreFeed,
@@ -110,8 +112,7 @@ export function DashboardPage() {
 
       {/* Mobile: Hero Score + Pendentes + Feed */}
       <div className="lg:hidden space-y-5">
-        <HeroScoreCard score={profile?.currentScore || 0} delta={0} />
-        <PendingVotesSection events={pendingEvents} />
+        <HeroScoreCard score={currentUserScore} delta={todayDelta} />
         <FeedTabs
           activeTab={activeTab}
           onTabChange={setActiveTab}
@@ -177,13 +178,6 @@ export function DashboardPage() {
             onTabChange={setActiveTab}
             pendingCount={pendingEvents.length}
           />
-          {pendingEvents.length > 0 && activeTab === "all" && (
-            <div className="space-y-3">
-              {pendingEvents.map((event) => (
-                <VotingCard key={event.id} event={event} />
-              ))}
-            </div>
-          )}
           <div className="space-y-3">
             {activeTab === "all" ? (
               allFeedItems.length === 0 ? (
