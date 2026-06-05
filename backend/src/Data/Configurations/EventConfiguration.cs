@@ -37,6 +37,11 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
         builder.Property(e => e.RemovalVoteDeadline)
             .IsRequired(false);
 
+        builder.Property(e => e.ApprovalDeadline)
+            .IsRequired(false);
+
+        builder.HasIndex(e => e.ApprovalDeadline);
+
         builder.HasOne(e => e.Group)
             .WithMany(g => g.Events)
             .HasForeignKey(e => e.GroupId)

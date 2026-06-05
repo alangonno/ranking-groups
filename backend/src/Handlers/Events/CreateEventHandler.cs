@@ -104,7 +104,8 @@ public class CreateEventHandler : ICreateEventHandler
             Description = request.Description,
             Points = request.Points,
             Type = request.Type,
-            Status = status
+            Status = status,
+            ApprovalDeadline = status == EventStatus.Pending ? DateTime.UtcNow.AddHours(72) : null
         };
 
         _eventRepository.Add(@event);
@@ -126,6 +127,7 @@ public class CreateEventHandler : ICreateEventHandler
             {
                 @event.Status = EventStatus.Approved;
                 @event.ApprovedAt = DateTime.UtcNow;
+                @event.ApprovalDeadline = null;
                 await UpdateAffectedUserScoreAsync(request.GroupId, request.AffectedUserId, request.Type, request.Points);
             }
         }

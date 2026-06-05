@@ -195,6 +195,7 @@ public class VoteEventHandler : IVoteEventHandler
                 EventApprovalRules.ValidateApprovalQuorum(approvalCount, totalMembersCreate);
                 @event.Status = EventStatus.Approved;
                 @event.ApprovedAt = DateTime.UtcNow;
+                @event.ApprovalDeadline = null;
                 _eventRepository.Update(@event);
 
                 await UpdateAffectedUserScoreAsync(@event.GroupId, @event.AffectedUserId, @event.Type, @event.Points);

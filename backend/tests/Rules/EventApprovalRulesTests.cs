@@ -190,4 +190,46 @@ public class EventApprovalRulesTests
         var act = () => EventApprovalRules.ValidateApprovalQuorum(approvalCount: 1, totalMembers: 4);
         act.Should().Throw<BusinessRuleException>();
     }
+
+    [Fact]
+    public void ResolveExpiredApprovalVote_3Members_2Approves_ShouldApprove()
+    {
+        var result = EventApprovalRules.ResolveExpiredApprovalVote(totalMembers: 3, approveCount: 2, rejectCount: 0);
+        result.Should().Be(ApprovalResolution.Approve);
+    }
+
+    [Fact]
+    public void ResolveExpiredApprovalVote_3Members_2Rejects_ShouldReject()
+    {
+        var result = EventApprovalRules.ResolveExpiredApprovalVote(totalMembers: 3, approveCount: 0, rejectCount: 2);
+        result.Should().Be(ApprovalResolution.Reject);
+    }
+
+    [Fact]
+    public void ResolveExpiredApprovalVote_5Members_1Approve_0Reject_ShouldReject()
+    {
+        var result = EventApprovalRules.ResolveExpiredApprovalVote(totalMembers: 5, approveCount: 1, rejectCount: 0);
+        result.Should().Be(ApprovalResolution.Reject);
+    }
+
+    [Fact]
+    public void ResolveExpiredApprovalVote_5Members_1Approve_1Reject_ShouldReject()
+    {
+        var result = EventApprovalRules.ResolveExpiredApprovalVote(totalMembers: 5, approveCount: 1, rejectCount: 1);
+        result.Should().Be(ApprovalResolution.Reject);
+    }
+
+    [Fact]
+    public void ResolveExpiredApprovalVote_5Members_2Approves_1Reject_ShouldApprove()
+    {
+        var result = EventApprovalRules.ResolveExpiredApprovalVote(totalMembers: 5, approveCount: 2, rejectCount: 1);
+        result.Should().Be(ApprovalResolution.Approve);
+    }
+
+    [Fact]
+    public void ResolveExpiredApprovalVote_5Members_2Approves_2Rejects_ShouldReject()
+    {
+        var result = EventApprovalRules.ResolveExpiredApprovalVote(totalMembers: 5, approveCount: 2, rejectCount: 2);
+        result.Should().Be(ApprovalResolution.Reject);
+    }
 }

@@ -21,6 +21,7 @@ public class Event : Entity
     public DateTime? CancelledAt { get; set; }
     public bool IsPendingRemoval { get; set; }
     public DateTime? RemovalVoteDeadline { get; set; }
+    public DateTime? ApprovalDeadline { get; set; }
 
     public ICollection<EventApproval> Approvals { get; set; } = new List<EventApproval>();
 }

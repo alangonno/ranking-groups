@@ -64,4 +64,23 @@ public static class EventApprovalRules
             );
         }
     }
+
+    public static ApprovalResolution ResolveExpiredApprovalVote(int totalMembers, int approveCount, int rejectCount)
+    {
+        var quorum = (int)Math.Ceiling(totalMembers / 3.0);
+
+        if (approveCount >= quorum && approveCount > rejectCount)
+        {
+            return ApprovalResolution.Approve;
+        }
+
+        // Rejeita se quorum de rejeição atingido ou se nenhum quorum foi atingido
+        return ApprovalResolution.Reject;
+    }
+}
+
+public enum ApprovalResolution
+{
+    Approve,
+    Reject
 }

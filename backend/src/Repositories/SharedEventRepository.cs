@@ -9,6 +9,7 @@ public interface ISharedEventRepository
 {
     Task<SharedEvent?> GetByIdAsync(Guid id);
     Task<CursorPagedResult<SharedEvent>> GetByGroupAsync(Guid groupId, string? cursor = null, int pageSize = CursorPagination.DefaultPageSize);
+    Task<IEnumerable<SharedEvent>> GetOpenSharedEventsWithExpiredClosesAtAsync(DateTime cutoff);
     void Add(SharedEvent sharedEvent);
     void Update(SharedEvent sharedEvent);
     void Remove(SharedEvent sharedEvent);
@@ -42,6 +43,17 @@ public class SharedEventRepository : ISharedEventRepository
             .Where(se => se.GroupId == groupId);
 
         return Task.FromResult(CursorPagination.Apply(query, cursor, pageSize));
+    }
+
+    public async Task<IEnumerable<SharedEvent>> GetOpenSharedEventsWithExpiredClosesAtAsync(DateTime cutoff)
+    {
+        return await _context.SharedEvents
+            .Include(se => se.Group)
+            .Include(se => se.CreatedByUser)
+            .Include(se => se.Participants)
+            .ThenInclude(p => p.User)
+            .Where(se => !se.IsClosed && se.ClosesAt < cutoff)
+            .ToListAsync();
     }
 
     public void Add(SharedEvent sharedEvent)

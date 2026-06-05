@@ -292,6 +292,44 @@ public static class AuditLogBuilder
         };
     }
 
+    public static AuditLog SharedEventParticipantRemovedByVote(SharedEvent sharedEvent, Guid userId, string userName)
+    {
+        var newValues = JsonSerializer.Serialize(new
+        {
+            eventName = sharedEvent.Title,
+            points = sharedEvent.Points,
+            participant = userName
+        });
+
+        return new AuditLog
+        {
+            Action = "shared_event_participant_removed_by_vote",
+            EntityName = "SharedEventParticipant",
+            EntityId = sharedEvent.Id,
+            PerformedByUserId = userId,
+            NewValues = newValues
+        };
+    }
+
+    public static AuditLog SharedEventParticipantRemovalCancelled(SharedEvent sharedEvent, Guid userId, string userName)
+    {
+        var newValues = JsonSerializer.Serialize(new
+        {
+            eventName = sharedEvent.Title,
+            points = sharedEvent.Points,
+            participant = userName
+        });
+
+        return new AuditLog
+        {
+            Action = "shared_event_participant_removal_cancelled",
+            EntityName = "SharedEventParticipant",
+            EntityId = sharedEvent.Id,
+            PerformedByUserId = userId,
+            NewValues = newValues
+        };
+    }
+
     public static AuditLog GroupJoined(Group group, Guid userId, string userName)
     {
         var newValues = JsonSerializer.Serialize(new

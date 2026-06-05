@@ -68,5 +68,11 @@ public class SharedEventBuilder
         return this;
     }
 
+    public SharedEventBuilder WithClosesAt(DateTime? closesAt)
+    {
+        _sharedEvent.ClosesAt = closesAt;
+        return this;
+    }
+
     public SharedEvent Build() => _sharedEvent;
 }

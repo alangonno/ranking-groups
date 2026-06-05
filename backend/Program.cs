@@ -7,6 +7,8 @@ using backend.src.Handlers.Groups;
 using backend.src.Handlers.Rankings;
 using backend.src.Handlers.Notifications;
 using backend.src.Handlers.SharedEvents;
+using backend.src.Handlers.Jobs;
+using backend.src.Jobs;
 using backend.src.Middleware;
 using backend.src.Repositories;
 using backend.src.Services;
@@ -14,6 +16,7 @@ using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Quartz;
 using System.Text;
 
 if (File.Exists("../.env"))
@@ -93,6 +96,24 @@ builder.Services.AddScoped<IGetGroupFeedHandler, GetGroupFeedHandler>();
 builder.Services.AddScoped<IGetNotificationsHandler, GetNotificationsHandler>();
 builder.Services.AddScoped<IMarkNotificationAsReadHandler, MarkNotificationAsReadHandler>();
 builder.Services.AddScoped<IMarkAllNotificationsAsReadHandler, MarkAllNotificationsAsReadHandler>();
+
+// Job Handlers
+builder.Services.AddScoped<IResolveExpiredVotesJobHandler, ResolveExpiredVotesJobHandler>();
+builder.Services.AddScoped<ICloseExpiredSharedEventsJobHandler, CloseExpiredSharedEventsJobHandler>();
+
+// Quartz
+var quartzCron = Environment.GetEnvironmentVariable("QUARTZ_CRON") ?? "0 0 0 * * ?";
+builder.Services.AddQuartz(q =>
+{
+    var jobKey = new JobKey("NightlyCleanupJob");
+    q.AddJob<NightlyCleanupJob>(jobKey);
+    q.AddTrigger(trigger =>
+    {
+        trigger.ForJob(jobKey)
+               .WithCronSchedule(quartzCron);
+    });
+});
+builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
 // Database
 var connectionString = ConnectionStringBuilder.BuildFromEnvironment();
