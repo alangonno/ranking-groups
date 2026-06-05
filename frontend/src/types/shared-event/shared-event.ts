@@ -23,6 +23,7 @@ export interface SharedEvent extends BaseEntity {
     removeCount?: number;
     keepCount?: number;
     commentCount?: number;
+    imageUrl?: string;
 }
 
 export interface CreateSharedEventRequest {
@@ -31,6 +32,7 @@ export interface CreateSharedEventRequest {
   description: string;
   points: number;
   closesAt?: string;
+  imageUrl?: string;
 }
 
 export type CreateSharedEventResponse = SharedEvent;

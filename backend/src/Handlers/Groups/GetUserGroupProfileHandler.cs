@@ -41,6 +41,7 @@ public class TimelineItemDto
     public int ScoreBalance { get; set; }
     public bool? IsClosed { get; set; }
     public int? ParticipantCount { get; set; }
+    public string? ImageUrl { get; set; }
     public bool IsPendingRemoval { get; set; }
     public DateTime? RemovalVoteDeadline { get; set; }
     public int QuorumRequired { get; set; }
@@ -83,6 +84,7 @@ public class UserEventHistoryDto
     public Guid AffectedUserId { get; set; }
     public string AffectedUserName { get; set; } = string.Empty;
     public int ScoreBalance { get; set; }
+    public string? ImageUrl { get; set; }
 }
 
 public class SharedEventParticipationDto
@@ -95,6 +97,7 @@ public class SharedEventParticipationDto
     public string CreatedByUserName { get; set; } = string.Empty;
     public int ParticipantCount { get; set; }
     public string UserRole { get; set; } = string.Empty;
+    public string? ImageUrl { get; set; }
 }
 
 public interface IGetUserGroupProfileHandler
@@ -193,7 +196,8 @@ public class GetUserGroupProfileHandler : IGetUserGroupProfileHandler
                 CreatedByUserName = @event.CreatedByUser?.Name ?? string.Empty,
                 AffectedUserId = @event.AffectedUserId,
                 AffectedUserName = @event.AffectedUser?.Name ?? string.Empty,
-                ScoreBalance = runningBalance
+                ScoreBalance = runningBalance,
+                ImageUrl = @event.ImageUrl
             });
 
             runningBalance += impact;
@@ -213,7 +217,8 @@ public class GetUserGroupProfileHandler : IGetUserGroupProfileHandler
             IsClosed = se.IsClosed,
             CreatedByUserName = se.CreatedByUser?.Name ?? string.Empty,
             ParticipantCount = se.Participants?.Count ?? 0,
-            UserRole = se.CreatedByUserId == request.UserId ? "organizer" : "participant"
+            UserRole = se.CreatedByUserId == request.UserId ? "organizer" : "participant",
+            ImageUrl = se.ImageUrl
         }).ToList();
 
         var totalMembers = members.Count();
@@ -235,6 +240,7 @@ public class GetUserGroupProfileHandler : IGetUserGroupProfileHandler
             AffectedUserName = e.AffectedUser?.Name ?? string.Empty,
             IsClosed = null,
             ParticipantCount = null,
+            ImageUrl = e.ImageUrl,
             IsPendingRemoval = e.IsPendingRemoval,
             RemovalVoteDeadline = e.RemovalVoteDeadline,
             QuorumRequired = quorum,
@@ -268,6 +274,7 @@ public class GetUserGroupProfileHandler : IGetUserGroupProfileHandler
                     AffectedUserName = null,
                     IsClosed = se.IsClosed,
                     ParticipantCount = se.Participants?.Count ?? 0,
+                    ImageUrl = se.ImageUrl,
                     IsPendingRemoval = false
                 })
         );

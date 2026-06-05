@@ -42,6 +42,9 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
 
         builder.HasIndex(e => e.ApprovalDeadline);
 
+        builder.Property(e => e.ImageUrl)
+            .HasMaxLength(500);
+
         builder.HasOne(e => e.Group)
             .WithMany(g => g.Events)
             .HasForeignKey(e => e.GroupId)

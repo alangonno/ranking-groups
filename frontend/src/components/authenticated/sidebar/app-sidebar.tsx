@@ -54,10 +54,18 @@ export function AppSidebar() {
       {/* User Profile */}
       <div className="px-6 mb-6">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-primary-light flex items-center justify-center text-primary font-bold text-lg flex-shrink-0">
-              {user?.name?.charAt(0).toUpperCase() || "U"}
-            </div>
+            <div className="flex items-center gap-3">
+            {user?.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt={user.name}
+                className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-full bg-primary-light flex items-center justify-center text-primary font-bold text-lg flex-shrink-0">
+                {user?.name?.charAt(0).toUpperCase() || "U"}
+              </div>
+            )}
             <div className="min-w-0">
               <p className="text-label-bold font-label-bold text-on-surface truncate">
                 {user?.name || "Usuário"}

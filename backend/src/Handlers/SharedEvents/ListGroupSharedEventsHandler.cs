@@ -33,6 +33,7 @@ public class SharedEventSummaryDto
     public int ParticipantCount { get; set; }
     public bool HasCurrentUserJoined { get; set; }
     public int CommentCount { get; set; }
+    public string? ImageUrl { get; set; }
 }
 
 public interface IListGroupSharedEventsHandler
@@ -86,7 +87,8 @@ public class ListGroupSharedEventsHandler : IListGroupSharedEventsHandler
                 CreatedByUserName = se.CreatedByUser?.Name ?? string.Empty,
                 ParticipantCount = se.Participants.Count,
                 HasCurrentUserJoined = se.Participants.Any(p => p.UserId == userId),
-                CommentCount = commentCount
+                CommentCount = commentCount,
+                ImageUrl = se.ImageUrl
             });
         }
 

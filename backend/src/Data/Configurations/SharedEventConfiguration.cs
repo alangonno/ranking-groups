@@ -28,6 +28,9 @@ public class SharedEventConfiguration : IEntityTypeConfiguration<SharedEvent>
         builder.HasIndex(se => se.CreatedAt);
         builder.HasIndex(se => se.IsClosed);
 
+        builder.Property(se => se.ImageUrl)
+            .HasMaxLength(500);
+
         builder.HasOne(se => se.Group)
             .WithMany(g => g.SharedEvents)
             .HasForeignKey(se => se.GroupId)

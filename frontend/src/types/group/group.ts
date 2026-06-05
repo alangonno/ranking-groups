@@ -33,6 +33,7 @@ export interface GroupMemberProfile {
   username: string;
   email: string;
   avatar: string;
+  avatarUrl?: string;
   role: GroupRole;
   currentScore: number;
   rankPosition: number;

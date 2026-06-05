@@ -7,6 +7,7 @@ using backend.src.Handlers.Groups;
 using backend.src.Handlers.Rankings;
 using backend.src.Handlers.Notifications;
 using backend.src.Handlers.SharedEvents;
+using backend.src.Handlers.Users;
 using backend.src.Handlers.Jobs;
 using backend.src.Jobs;
 using backend.src.Middleware;
@@ -35,6 +36,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();
 builder.Services.AddSingleton<IJwtService, JwtService>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddSingleton<ISupabaseStorageService, SupabaseStorageService>();
 
 // Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -54,6 +56,7 @@ builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 builder.Services.AddScoped<IRegisterHandler, RegisterHandler>();
 builder.Services.AddScoped<ILoginHandler, LoginHandler>();
 builder.Services.AddScoped<IRefreshTokenHandler, RefreshTokenHandler>();
+builder.Services.AddScoped<IUpdateAvatarHandler, UpdateAvatarHandler>();
 builder.Services.AddScoped<ICreateGroupHandler, CreateGroupHandler>();
 builder.Services.AddScoped<IJoinGroupHandler, JoinGroupHandler>();
 builder.Services.AddScoped<IListUserGroupsHandler, ListUserGroupsHandler>();

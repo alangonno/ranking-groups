@@ -59,9 +59,17 @@ export function MemberCard({ member, groupId }: MemberCardProps) {
     >
       <div className="flex items-start gap-4">
         {/* Avatar */}
-        <div className="w-14 h-14 rounded-full bg-primary-light flex items-center justify-center text-primary font-bold text-lg shrink-0">
-          {member.avatar}
-        </div>
+        {member.avatarUrl ? (
+          <img
+            src={member.avatarUrl}
+            alt={member.name}
+            className="w-14 h-14 rounded-full object-cover shrink-0"
+          />
+        ) : (
+          <div className="w-14 h-14 rounded-full bg-primary-light flex items-center justify-center text-primary font-bold text-lg shrink-0">
+            {member.avatar}
+          </div>
+        )}
 
         {/* Info */}
         <div className="flex-1 min-w-0">

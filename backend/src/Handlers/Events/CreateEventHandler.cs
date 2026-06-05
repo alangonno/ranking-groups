@@ -17,6 +17,7 @@ public class CreateEventRequest
     public int Points { get; set; }
     public EventType Type { get; set; }
     public Guid AffectedUserId { get; set; }
+    public string? ImageUrl { get; set; }
 }
 
 public class CreateEventResponse
@@ -28,6 +29,7 @@ public class CreateEventResponse
     public string Type { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
+    public string? ImageUrl { get; set; }
 }
 
 public interface ICreateEventHandler
@@ -105,7 +107,7 @@ public class CreateEventHandler : ICreateEventHandler
             Points = request.Points,
             Type = request.Type,
             Status = status,
-            ApprovalDeadline = status == EventStatus.Pending ? DateTime.UtcNow.AddHours(72) : null
+            ImageUrl = request.ImageUrl
         };
 
         _eventRepository.Add(@event);
@@ -154,7 +156,8 @@ public class CreateEventHandler : ICreateEventHandler
             Points = @event.Points,
             Type = @event.Type.ToString(),
             Status = @event.Status.ToString(),
-            CreatedAt = @event.CreatedAt
+            CreatedAt = @event.CreatedAt,
+            ImageUrl = @event.ImageUrl
         };
     }
 

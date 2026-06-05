@@ -23,6 +23,7 @@ public class RankingMemberDto
 {
     public Guid UserId { get; set; }
     public string Name { get; set; } = string.Empty;
+    public string? AvatarUrl { get; set; }
     public int Score { get; set; }
     public int Position { get; set; }
 }
@@ -83,6 +84,7 @@ public class GetGroupRankingHandler : IGetGroupRankingHandler
             {
                 UserId = m.UserId,
                 Name = m.User?.Name ?? string.Empty,
+                AvatarUrl = m.User?.AvatarUrl,
                 Score = score
             };
         });

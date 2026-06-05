@@ -2,7 +2,7 @@ interface RankingListItemProps {
   position: number;
   name: string;
   points: number;
-  avatar: string;
+  avatarUrl?: string;
   maxPoints: number;
   isCurrentUser?: boolean;
 }
@@ -11,10 +11,11 @@ export function RankingListItem({
   position,
   name,
   points,
-  avatar,
+  avatarUrl,
   maxPoints,
   isCurrentUser = false,
 }: RankingListItemProps) {
+  const fallbackAvatar = name.charAt(0).toUpperCase();
   const progress = Math.round((points / maxPoints) * 100);
 
   return (
@@ -33,9 +34,17 @@ export function RankingListItem({
         {position}
       </span>
 
-      <div className="w-11 h-11 rounded-full bg-surface-container flex items-center justify-center text-secondary font-bold text-sm flex-shrink-0">
-        {avatar}
-      </div>
+      {avatarUrl ? (
+        <img
+          src={avatarUrl}
+          alt={name}
+          className="w-11 h-11 rounded-full object-cover flex-shrink-0"
+        />
+      ) : (
+        <div className="w-11 h-11 rounded-full bg-surface-container flex items-center justify-center text-secondary font-bold text-sm flex-shrink-0">
+          {fallbackAvatar}
+        </div>
+      )}
 
       <div className="flex-1 min-w-0">
         <p className="text-body-md font-body-md font-bold text-on-surface">

@@ -56,7 +56,7 @@ export function useDashboardData(groupId: string | undefined) {
         position: index + 1,
         name: entry.user?.name || "",
         points: entry.score,
-        avatar: getUserInitials(entry.user?.name),
+        avatarUrl: entry.user?.avatarUrl,
       })),
     [ranking]
   );

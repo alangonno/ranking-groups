@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { AppButton } from "../../ui/app-button";
 import { AppInput } from "../../ui/app-input";
 import { AppTextarea } from "../../ui/app-textarea";
 import { AppSelect } from "../../ui/app-select";
 import { AppSpinner } from "../../ui/app-spinner";
-import { X } from "lucide-react";
+import { X, ImagePlus } from "lucide-react";
 import { useCreateEvent } from "../../../hooks/use-events";
 import { useMembers } from "../../../hooks/use-members";
+import { useImageUpload } from "../../../hooks/use-image-upload";
 import { EventType } from "../../../types/event/event";
 import { ApiError } from "../../../lib/api";
 
@@ -22,9 +23,12 @@ export function CreateEventModal({ isOpen, onClose, groupId }: CreateEventModalP
   const [points, setPoints] = useState("");
   const [type, setType] = useState<string>("" + EventType.Positive);
   const [affectedUserId, setAffectedUserId] = useState("");
+  const [eventImageUrl, setEventImageUrl] = useState<string | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const createEvent = useCreateEvent();
+  const { uploadImage, isUploading: isUploadingImage } = useImageUpload();
   const { data: membersData } = useMembers(groupId);
   const members = membersData?.flattened ?? [];
 
@@ -49,6 +53,7 @@ export function CreateEventModal({ isOpen, onClose, groupId }: CreateEventModalP
         points: pointsNum,
         type: Number(type) as EventType,
         affectedUserId,
+        imageUrl: eventImageUrl,
       },
       {
         onSuccess: () => {
@@ -70,6 +75,17 @@ export function CreateEventModal({ isOpen, onClose, groupId }: CreateEventModalP
     title.trim() &&
     Number(points) > 0 &&
     affectedUserId;
+
+  async function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const result = await uploadImage(file, "event-images");
+      setEventImageUrl(result.path);
+    } catch {
+      // error handled by hook
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -157,6 +173,51 @@ export function CreateEventModal({ isOpen, onClose, groupId }: CreateEventModalP
           </div>
 
           <div>
+            <label className="block text-sm font-medium text-text-secondary mb-1.5">
+              Imagem do evento <span className="text-text-muted">(opcional)</span>
+            </label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleImageSelect}
+              className="hidden"
+            />
+            {eventImageUrl ? (
+              <div className="relative w-full h-32 rounded-lg overflow-hidden">
+                <img
+                  src={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/${eventImageUrl}`}
+                  alt="Preview"
+                  className="w-full h-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => setEventImageUrl(undefined)}
+                  className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1 hover:bg-black/70 transition-colors"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploadingImage}
+                className="w-full h-32 rounded-lg border-2 border-dashed border-surface-container flex flex-col items-center justify-center text-secondary hover:border-primary hover:text-primary transition-colors disabled:opacity-50"
+              >
+                {isUploadingImage ? (
+                  <AppSpinner size="sm" />
+                ) : (
+                  <>
+                    <ImagePlus size={24} />
+                    <span className="text-sm mt-1">Adicionar imagem</span>
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+
+          <div>
             <label htmlFor="event-affected-user" className="block text-sm font-medium text-text-secondary mb-1.5">
               Usuário afetado
             </label>
@@ -185,7 +246,7 @@ export function CreateEventModal({ isOpen, onClose, groupId }: CreateEventModalP
           <AppButton
             type="submit"
             className="w-full bg-primary hover:bg-primary-hover text-white focus:ring-primary-light focus:ring-2 disabled:opacity-50"
-            disabled={createEvent.isPending || !isValid}
+            disabled={createEvent.isPending || isUploadingImage || !isValid}
           >
             {createEvent.isPending ? (
               <span className="flex items-center justify-center gap-2">

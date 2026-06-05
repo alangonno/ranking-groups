@@ -43,6 +43,7 @@ public class EventSummaryDto
     public int RemoveCount { get; set; }
     public int KeepCount { get; set; }
     public int CommentCount { get; set; }
+    public string? ImageUrl { get; set; }
     public List<EventApprovalSummaryDto> Approvals { get; set; } = new();
 }
 
@@ -127,6 +128,7 @@ public class ListGroupEventsHandler : IListGroupEventsHandler
                 RemoveCount = e.Approvals.Count(a => a.VoteType == EventVoteType.Remove),
                 KeepCount = e.Approvals.Count(a => a.VoteType == EventVoteType.Keep),
                 CommentCount = commentCount,
+                ImageUrl = e.ImageUrl,
                 Approvals = e.Approvals.Select(a => new EventApprovalSummaryDto
                 {
                     UserId = a.UserId,

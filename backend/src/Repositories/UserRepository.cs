@@ -12,6 +12,7 @@ public interface IUserRepository
     Task<bool> ExistsEmailAsync(string email);
     Task<bool> ExistsUsernameAsync(string username);
     void Add(User user);
+    void Update(User user);
 }
 
 public class UserRepository : BaseRepository<User>, IUserRepository

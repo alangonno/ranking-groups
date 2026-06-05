@@ -15,6 +15,7 @@ public class CreateSharedEventRequest
     public string Description { get; set; } = string.Empty;
     public int Points { get; set; }
     public DateTime? ClosesAt { get; set; }
+    public string? ImageUrl { get; set; }
 }
 
 public class CreateSharedEventResponse
@@ -25,6 +26,7 @@ public class CreateSharedEventResponse
     public int Points { get; set; }
     public bool IsClosed { get; set; }
     public DateTime CreatedAt { get; set; }
+    public string? ImageUrl { get; set; }
 }
 
 public interface ICreateSharedEventHandler
@@ -86,7 +88,8 @@ public class CreateSharedEventHandler : ICreateSharedEventHandler
             Description = request.Description,
             Points = request.Points,
             IsClosed = false,
-            ClosesAt = request.ClosesAt
+            ClosesAt = request.ClosesAt,
+            ImageUrl = request.ImageUrl
         };
 
         _sharedEventRepository.Add(sharedEvent);
@@ -107,7 +110,8 @@ public class CreateSharedEventHandler : ICreateSharedEventHandler
             Description = sharedEvent.Description,
             Points = sharedEvent.Points,
             IsClosed = sharedEvent.IsClosed,
-            CreatedAt = sharedEvent.CreatedAt
+            CreatedAt = sharedEvent.CreatedAt,
+            ImageUrl = sharedEvent.ImageUrl
         };
     }
 }

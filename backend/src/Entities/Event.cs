@@ -22,6 +22,7 @@ public class Event : Entity
     public bool IsPendingRemoval { get; set; }
     public DateTime? RemovalVoteDeadline { get; set; }
     public DateTime? ApprovalDeadline { get; set; }
+    public string? ImageUrl { get; set; }
 
     public ICollection<EventApproval> Approvals { get; set; } = new List<EventApproval>();
 }

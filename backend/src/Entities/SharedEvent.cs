@@ -13,5 +13,7 @@ public class SharedEvent : Entity
     public int Points { get; set; }
     public bool IsClosed { get; set; }
     public DateTime? ClosesAt { get; set; }
+    public string? ImageUrl { get; set; }
+
     public ICollection<SharedEventParticipant> Participants { get; set; } = new List<SharedEventParticipant>();
 }

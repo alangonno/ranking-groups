@@ -24,6 +24,7 @@ public class GetSharedEventResponse
     public string CreatedByUserName { get; set; } = string.Empty;
     public List<SharedEventParticipantDto> Participants { get; set; } = new();
     public int CommentCount { get; set; }
+    public string? ImageUrl { get; set; }
 }
 
 public class SharedEventParticipantDto
@@ -85,6 +86,7 @@ public class GetSharedEventHandler : IGetSharedEventHandler
             CreatedByUserId = sharedEvent.CreatedByUserId,
             CreatedByUserName = sharedEvent.CreatedByUser?.Name ?? string.Empty,
             CommentCount = commentCount,
+            ImageUrl = sharedEvent.ImageUrl,
             Participants = sharedEvent.Participants.Select(p => new SharedEventParticipantDto
             {
                 UserId = p.UserId,

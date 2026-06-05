@@ -42,6 +42,7 @@ public class FeedItemDto
     public bool? IsClosed { get; set; }
     public bool? HasCurrentUserJoined { get; set; }
     public int? CommentCount { get; set; }
+    public string? ImageUrl { get; set; }
 }
 
 public interface IGetGroupFeedHandler
@@ -106,7 +107,8 @@ public class GetGroupFeedHandler : IGetGroupFeedHandler
                 ScoreBalance = e.Status == EventStatus.Approved
                     ? (e.Type == EventType.Negative ? -e.Points : e.Points)
                     : 0,
-                CommentCount = commentCount
+                CommentCount = commentCount,
+                ImageUrl = e.ImageUrl
             });
         }
 
@@ -127,7 +129,8 @@ public class GetGroupFeedHandler : IGetGroupFeedHandler
                 ParticipantCount = se.Participants.Count,
                 IsClosed = se.IsClosed,
                 HasCurrentUserJoined = se.Participants.Any(p => p.UserId == userId),
-                CommentCount = commentCount
+                CommentCount = commentCount,
+                ImageUrl = se.ImageUrl
             });
         }
 

@@ -85,6 +85,7 @@ export function useUserProfile(groupId: string, userId: string) {
           username: response.member.username,
           email: response.member.email,
           avatar: response.member.avatarUrl || response.member.name.charAt(0).toUpperCase(),
+          avatarUrl: response.member.avatarUrl,
           role: ROLE_MAP[response.member.role] ?? 3,
           currentScore: response.member.currentScore,
           rankPosition: response.member.rankPosition,

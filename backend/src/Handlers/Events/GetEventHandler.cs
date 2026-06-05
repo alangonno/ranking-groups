@@ -34,6 +34,7 @@ public class GetEventResponse
     public int RemoveCount { get; set; }
     public int KeepCount { get; set; }
     public int CommentCount { get; set; }
+    public string? ImageUrl { get; set; }
     public List<EventApprovalDto> Approvals { get; set; } = new();
 }
 
@@ -135,6 +136,7 @@ public class GetEventHandler : IGetEventHandler
             RemoveCount = removeCount,
             KeepCount = keepCount,
             CommentCount = commentCount,
+            ImageUrl = @event.ImageUrl,
             Approvals = approvals.Select(a => new EventApprovalDto
             {
                 UserId = a.UserId,

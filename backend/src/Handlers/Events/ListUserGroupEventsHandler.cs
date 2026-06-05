@@ -33,9 +33,10 @@ public class ListUserGroupEventsResponse
         public Guid CreatedByUserId { get; set; }
         public string CreatedByUserName { get; set; } = string.Empty;
         public Guid AffectedUserId { get; set; }
-        public string AffectedUserName { get; set; } = string.Empty;
-        public int ScoreBalance { get; set; }
-        public int CommentCount { get; set; }
+    public string AffectedUserName { get; set; } = string.Empty;
+    public int ScoreBalance { get; set; }
+    public int CommentCount { get; set; }
+    public string? ImageUrl { get; set; }
     }
 
 public interface IListUserGroupEventsHandler
@@ -105,7 +106,8 @@ public class ListUserGroupEventsHandler : IListUserGroupEventsHandler
                 AffectedUserId = @event.AffectedUserId,
                 AffectedUserName = @event.AffectedUser?.Name ?? string.Empty,
                 ScoreBalance = runningBalance,
-                CommentCount = commentCount
+                CommentCount = commentCount,
+                ImageUrl = @event.ImageUrl
             });
 
             runningBalance += impact;

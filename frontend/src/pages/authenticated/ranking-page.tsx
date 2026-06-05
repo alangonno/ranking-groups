@@ -100,12 +100,7 @@ export function RankingPage() {
             position={1}
             name={top1.user.name}
             points={top1.score}
-            avatar={top1.user.name
-              .split(" ")
-              .map((n) => n[0])
-              .join("")
-              .toUpperCase()
-              .slice(0, 2)}
+            avatarUrl={top1.user.avatarUrl}
           />
         )}
         {top2 && (
@@ -113,12 +108,7 @@ export function RankingPage() {
             position={2}
             name={top2.user.name}
             points={top2.score}
-            avatar={top2.user.name
-              .split(" ")
-              .map((n) => n[0])
-              .join("")
-              .toUpperCase()
-              .slice(0, 2)}
+            avatarUrl={top2.user.avatarUrl}
             growth={450}
           />
         )}
@@ -132,12 +122,7 @@ export function RankingPage() {
             position={index + 3}
             name={member.user.name}
             points={member.score}
-            avatar={member.user.name
-              .split(" ")
-              .map((n) => n[0])
-              .join("")
-              .toUpperCase()
-              .slice(0, 2)}
+            avatarUrl={member.user.avatarUrl}
             maxPoints={maxPoints}
             isCurrentUser={member.user.id === currentUserId}
           />

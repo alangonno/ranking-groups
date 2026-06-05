@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
-import { ArrowUp, Calendar, Trash2, ShieldAlert } from "lucide-react";
+import { ArrowUp, Calendar, Trash2, ShieldAlert, Camera } from "lucide-react";
 import { useUserProfile } from "../../hooks/use-user-profile";
 import { useGroup } from "../../hooks/use-groups";
+import { useImageUpload } from "../../hooks/use-image-upload";
+import { useUpdateAvatar } from "../../hooks/use-update-avatar";
 import { GroupRole } from "../../types/group/group";
 import { AppBadge } from "../../components/ui/app-badge";
 import { AppSpinner } from "../../components/ui/app-spinner";
@@ -46,6 +48,10 @@ export function ProfilePage() {
   const sharedEvents = profile?.sharedEvents || [];
   const currentUserId = getUserIdFromToken(authStore.getAccessToken() || "") || "";
   const isOwnProfile = currentUserId === userId;
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { uploadImage, isUploading: isUploadingImage } = useImageUpload();
+  const updateAvatar = useUpdateAvatar();
 
   const queryClient = useQueryClient();
 
@@ -140,12 +146,50 @@ export function ProfilePage() {
         <div className="flex-1 bg-white rounded-xl border border-border shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5">
           <div className="flex items-center gap-4">
             <div className="relative">
-              <div className="w-20 h-20 rounded-full bg-primary-light flex items-center justify-center text-primary font-bold text-2xl">
-                {member.avatar}
-              </div>
-              <div className="absolute -bottom-1 -right-1 bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md">
-                LVL {Math.max(1, Math.floor(member.currentScore / 100))}
-              </div>
+              {member.avatarUrl ? (
+                <img
+                  src={member.avatarUrl}
+                  alt={member.name}
+                  className="w-20 h-20 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-20 h-20 rounded-full bg-primary-light flex items-center justify-center text-primary font-bold text-2xl">
+                  {member.avatar}
+                </div>
+              )}
+
+              {isOwnProfile && (
+                <>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      try {
+                        const result = await uploadImage(file, "avatars");
+                        await updateAvatar.mutateAsync(result.path);
+                      } catch {
+                        // errors handled by hooks
+                      }
+                    }}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploadingImage || updateAvatar.isPending}
+                    className="absolute bottom-0 right-0 bg-surface text-on-surface rounded-full p-1.5 shadow-sm border border-surface-container hover:bg-surface-container transition-colors disabled:opacity-50"
+                  >
+                    {isUploadingImage || updateAvatar.isPending ? (
+                      <AppSpinner size="xs" />
+                    ) : (
+                      <Camera size={14} />
+                    )}
+                  </button>
+                </>
+              )}
             </div>
             <div className="flex-1 min-w-0">
               <h1 className="text-xl font-bold text-text-primary truncate">

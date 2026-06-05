@@ -31,6 +31,15 @@ export function EventCard({ event }: EventCardProps) {
 
   return (
     <div className="bg-surface-container-lowest rounded-xl p-5 shadow-sm border border-surface-container hover:scale-[0.99] transition-transform duration-200">
+      {event.imageUrl && (
+        <div className="mb-4 rounded-xl overflow-hidden">
+          <img
+            src={event.imageUrl}
+            alt={event.title}
+            className="w-full h-48 object-cover"
+          />
+        </div>
+      )}
       <div className="flex items-start gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">

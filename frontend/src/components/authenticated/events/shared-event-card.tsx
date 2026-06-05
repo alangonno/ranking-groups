@@ -16,7 +16,7 @@ interface SharedEvent {
   createdByUserId: string;
   hasCurrentUserJoined: boolean;
   closesAt?: string;
-  image?: string;
+  imageUrl?: string;
   commentCount?: number;
 }
 
@@ -65,8 +65,13 @@ export function SharedEventCard({ event }: SharedEventCardProps) {
 
   return (
     <div className="bg-surface-container-lowest shadow-sm rounded-2xl min-w-[260px] snap-start overflow-hidden border border-surface-container group cursor-pointer hover:border-outline-variant transition-colors">
-      {event.image ? (
-        <div className="h-24 bg-gradient-to-r from-blue-400 to-purple-500 relative">
+      {event.imageUrl ? (
+        <div className="h-24 relative">
+          <img
+            src={event.imageUrl}
+            alt={event.title}
+            className="w-full h-full object-cover"
+          />
           <span className="absolute top-2 left-2 bg-surface/90 backdrop-blur-sm text-on-surface text-[10px] font-bold px-2 py-1 rounded-full">
             Em breve
           </span>

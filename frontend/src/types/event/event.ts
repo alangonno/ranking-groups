@@ -52,6 +52,7 @@ export interface Event extends BaseEntity {
     removalVoteDeadline?: string;
     quorumRequired?: number;
     commentCount?: number;
+    imageUrl?: string;
 }
 
 export interface EventWithScoreBalance extends Event {
@@ -65,6 +66,7 @@ export interface CreateEventRequest {
   description: string;
   points: number;
   type: EventType;
+  imageUrl?: string;
 }
 
 export type CreateEventResponse = Event;

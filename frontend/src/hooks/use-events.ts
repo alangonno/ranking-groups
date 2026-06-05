@@ -33,6 +33,7 @@ function mapEventFromBackend(e: {
     removeCount?: number;
     keepCount?: number;
     commentCount?: number;
+    imageUrl?: string;
     approvals?: Array<{
       userId: string;
       userName: string;
@@ -64,6 +65,7 @@ function mapEventFromBackend(e: {
         removalVoteDeadline: e.removalVoteDeadline ?? undefined,
         quorumRequired: e.quorumRequired,
         commentCount: e.commentCount ?? 0,
+        imageUrl: e.imageUrl,
         approvals: e.approvals?.map(a => ({
       id: "", // não usado na listagem
       eventId: e.eventId,

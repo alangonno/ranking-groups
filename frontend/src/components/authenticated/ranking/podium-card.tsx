@@ -2,7 +2,7 @@ interface PodiumCardProps {
   position: number;
   name: string;
   points: number;
-  avatar: string;
+  avatarUrl?: string;
   growth?: number;
   badges?: string[];
 }
@@ -11,10 +11,11 @@ export function PodiumCard({
   position,
   name,
   points,
-  avatar,
+  avatarUrl,
   growth,
   badges = [],
 }: PodiumCardProps) {
+  const fallbackAvatar = name.charAt(0).toUpperCase();
   const isFirst = position === 1;
 
   if (isFirst) {
@@ -27,9 +28,17 @@ export function PodiumCard({
 
         <div className="flex-shrink-0 relative">
           <div className="w-28 h-28 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-yellow-400 via-primary to-red-600 p-1">
-            <div className="w-full h-full rounded-full bg-surface-container-lowest flex items-center justify-center text-3xl font-bold text-on-surface">
-              {avatar}
-            </div>
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt={name}
+                className="w-full h-full rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full rounded-full bg-surface-container-lowest flex items-center justify-center text-3xl font-bold text-on-surface">
+                {fallbackAvatar}
+              </div>
+            )}
           </div>
           <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-primary text-on-primary px-3 py-1 rounded-full text-label-bold font-label-bold shadow-md border-2 border-surface-container-lowest whitespace-nowrap">
             #1
@@ -67,9 +76,17 @@ export function PodiumCard({
     <div className="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-surface-container flex flex-col items-center text-center transition-transform duration-200 hover:scale-[0.98] cursor-pointer md:col-span-4">
       <div className="relative mb-4">
         <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-gray-300 to-gray-500 p-1">
-          <div className="w-full h-full rounded-full bg-surface-container-lowest flex items-center justify-center text-2xl font-bold text-on-surface">
-            {avatar}
-          </div>
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt={name}
+              className="w-full h-full rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full rounded-full bg-surface-container-lowest flex items-center justify-center text-2xl font-bold text-on-surface">
+              {fallbackAvatar}
+            </div>
+          )}
         </div>
         <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-surface-dim text-on-surface px-3 py-1 rounded-full text-label-bold font-label-bold border-2 border-surface-container-lowest whitespace-nowrap">
           #2

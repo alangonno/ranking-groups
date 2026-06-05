@@ -2,7 +2,7 @@ interface TopMember {
   position: number;
   name: string;
   points: number;
-  avatar: string;
+  avatarUrl?: string;
 }
 
 interface TopMembersWidgetProps {
@@ -31,9 +31,17 @@ export function TopMembersWidget({ members }: TopMembersWidgetProps) {
             >
               {member.position}
             </span>
-            <div className="w-8 h-8 rounded-full bg-primary-light flex items-center justify-center text-primary font-bold text-xs">
-              {member.avatar}
-            </div>
+            {member.avatarUrl ? (
+              <img
+                src={member.avatarUrl}
+                alt={member.name}
+                className="w-8 h-8 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-primary-light flex items-center justify-center text-primary font-bold text-xs">
+                {member.name.charAt(0).toUpperCase()}
+              </div>
+            )}
             <span className="flex-1 text-body-md font-body-md font-semibold text-on-surface truncate">
               {member.name}
             </span>

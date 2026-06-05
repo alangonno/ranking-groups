@@ -33,6 +33,7 @@ export interface FeedItem {
     isClosed?: boolean;
     hasCurrentUserJoined?: boolean;
     commentCount?: number;
+    imageUrl?: string;
 }
 
 export type DashboardFeedEntry =
@@ -43,5 +44,5 @@ export interface TopMemberEntry {
   position: number;
   name: string;
   points: number;
-  avatar: string;
+  avatarUrl?: string;
 }

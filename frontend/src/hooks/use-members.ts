@@ -19,6 +19,7 @@ export function useMembers(groupId: string) {
           name: string;
           role: string;
           currentScore: number;
+          avatarUrl?: string;
         }>;
         membersHasMore: boolean;
         membersNextCursor: string | null;
@@ -38,6 +39,7 @@ export function useMembers(groupId: string) {
         username: "",
         email: "",
         avatar: m.name.charAt(0).toUpperCase(),
+        avatarUrl: m.avatarUrl,
         role: ROLE_MAP[m.role] ?? 3,
         currentScore: m.currentScore,
         rankPosition: positionMap.get(m.userId) ?? 0,

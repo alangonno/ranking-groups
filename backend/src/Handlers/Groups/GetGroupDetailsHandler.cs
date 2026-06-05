@@ -31,6 +31,7 @@ public class GroupMemberDto
     public string Name { get; set; } = string.Empty;
     public string Role { get; set; } = string.Empty;
     public int CurrentScore { get; set; }
+    public string? AvatarUrl { get; set; }
 }
 
 public class RankingDto
@@ -39,6 +40,7 @@ public class RankingDto
     public string Name { get; set; } = string.Empty;
     public int Score { get; set; }
     public int Position { get; set; }
+    public string? AvatarUrl { get; set; }
 }
 
 public interface IGetGroupDetailsHandler
@@ -82,7 +84,8 @@ public class GetGroupDetailsHandler : IGetGroupDetailsHandler
             UserId = m.UserId,
             Name = m.User?.Name ?? string.Empty,
             Role = m.Role.ToString(),
-            CurrentScore = m.CurrentScore
+            CurrentScore = m.CurrentScore,
+            AvatarUrl = m.User?.AvatarUrl
         }).ToList();
 
         var ranking = memberDtos
@@ -92,7 +95,8 @@ public class GetGroupDetailsHandler : IGetGroupDetailsHandler
                 UserId = m.UserId,
                 Name = m.Name,
                 Score = m.CurrentScore,
-                Position = index + 1
+                Position = index + 1,
+                AvatarUrl = m.AvatarUrl
             }).ToList();
 
         return new GetGroupDetailsResponse

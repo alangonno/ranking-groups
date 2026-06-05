@@ -29,6 +29,7 @@ export function useGroupSharedEvents(groupId: string) {
           participantCount: number;
           hasCurrentUserJoined: boolean;
           commentCount?: number;
+          imageUrl?: string;
         }>;
         hasMore: boolean;
         nextCursor: string | null;
@@ -47,6 +48,7 @@ export function useGroupSharedEvents(groupId: string) {
           participantCount: se.participantCount,
           hasCurrentUserJoined: se.hasCurrentUserJoined,
           commentCount: se.commentCount ?? 0,
+          imageUrl: se.imageUrl,
         })),
         hasMore: response.hasMore,
         nextCursor: response.nextCursor,
