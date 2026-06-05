@@ -96,17 +96,26 @@ public class RequestEventRemovalHandler : IRequestEventRemovalHandler
         @event.RemovalVoteDeadline = DateTime.UtcNow.AddHours(48);
         _eventRepository.Update(@event);
 
-        // Criador auto-vota Keep
-        _context.EventApprovals.Add(new EventApproval
+        if (userId == @event.CreatedByUserId)
         {
-            EventId = @event.Id,
-            UserId = @event.CreatedByUserId,
-            VoteType = EventVoteType.Keep
-        });
+            // Criador iniciando remoção do próprio evento → vota Remove
+            _context.EventApprovals.Add(new EventApproval
+            {
+                EventId = @event.Id,
+                UserId = userId,
+                VoteType = EventVoteType.Remove
+            });
+        }
+        else
+        {
+            // Outro membro iniciando remoção → criador defende com Keep, iniciador vota Remove
+            _context.EventApprovals.Add(new EventApproval
+            {
+                EventId = @event.Id,
+                UserId = @event.CreatedByUserId,
+                VoteType = EventVoteType.Keep
+            });
 
-        // Iniciador vota Remove (se não for o criador)
-        if (userId != @event.CreatedByUserId)
-        {
             _context.EventApprovals.Add(new EventApproval
             {
                 EventId = @event.Id,

@@ -41,7 +41,7 @@ export function useDashboardData(groupId: string | undefined) {
   const userInitials = getUserInitials(user?.name);
 
   const pendingEvents = useMemo(
-    () => groupEvents.filter((e) => e.status === EventStatus.Pending),
+    () => groupEvents.filter((e) => e.status === EventStatus.Pending || e.isPendingRemoval),
     [groupEvents]
   );
 

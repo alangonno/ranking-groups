@@ -19,7 +19,7 @@ export function StatsWidget({ weeklyEvents, activeMembers }: StatsWidgetProps) {
         <p className="text-3xl font-bold text-text-primary">{weeklyEvents}</p>
       </AppCard>
 
-      <AppCard className="shadow-[0_1px_3px_rgba(0,0,0,0.05)] bg-gray-100 p-5 flex flex-col items-center justify-center text-center">
+      <AppCard className="shadow-[0_1px_3px_rgba(0,0,0,0.05)] bg-surface-container-low dark:bg-surface-container p-5 flex flex-col items-center justify-center text-center">
         <div className="flex items-center gap-2 mb-3">
           <Users size={18} className="text-text-secondary" />
           <span className="text-xs font-medium text-text-secondary">

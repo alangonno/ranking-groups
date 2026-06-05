@@ -38,7 +38,7 @@ export function GroupCard({ group, memberCount, isHighlighted = false }: GroupCa
     <div className="bg-surface-container-lowest rounded-xl p-5 shadow-sm border border-surface-container hover:scale-[0.99] transition-transform duration-200 cursor-pointer flex items-center justify-between gap-4">
       <Link to={`/group/${group.id}`} className="flex items-center gap-3 flex-1 min-w-0">
         <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg flex-shrink-0 ${
-          isHighlighted ? "bg-primary text-white" : "bg-gray-100 text-text-secondary"
+          isHighlighted ? "bg-primary text-on-primary" : "bg-surface-container-low dark:bg-surface-container text-text-secondary"
         }`}>
           {initials}
         </div>
@@ -64,12 +64,12 @@ export function GroupCard({ group, memberCount, isHighlighted = false }: GroupCa
           Código
         </span>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-mono text-text-secondary bg-gray-100 px-2 py-1 rounded">
+          <span className="text-xs font-mono text-text-secondary bg-surface-container-low dark:bg-surface-container px-2 py-1 rounded">
             {group.inviteCode}
           </span>
           <button
             onClick={handleCopy}
-            className="p-1.5 rounded-md hover:bg-gray-100 transition-colors"
+            className="p-1.5 rounded-md hover:bg-surface-container-low dark:bg-surface-container transition-colors"
             title="Copiar código"
           >
             {hasCopied ? (

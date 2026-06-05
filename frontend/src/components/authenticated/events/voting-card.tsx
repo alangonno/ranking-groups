@@ -120,7 +120,7 @@ export function VotingCard({ event, compact = false }: VotingCardProps) {
                     </button>
                     <button
                       type="button"
-                      className="flex-1 text-xs py-1.5 px-3 rounded-lg bg-error text-on-primary hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 text-xs py-1.5 px-3 rounded-lg bg-error text-on-error hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                       onClick={() => handleVote("remove")}
                       disabled={!canVote || vote.isPending}
                     >
@@ -239,7 +239,7 @@ export function VotingCard({ event, compact = false }: VotingCardProps) {
                   : `Validação Pendente (${votesCount}/${quorumRequired} votos)`}
               </span>
               {isRemovalVote && timeRemaining && (
-                <span className="text-caption font-caption text-amber-600 flex items-center gap-1">
+                <span className="text-caption font-caption text-warning flex items-center gap-1">
                   <Clock size={12} />
                   {timeRemaining}
                 </span>

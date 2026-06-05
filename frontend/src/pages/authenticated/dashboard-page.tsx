@@ -22,14 +22,12 @@ export function DashboardPage() {
 
   const {
     user,
-    userInitials,
     group,
     pendingEvents,
     allFeedItems,
     topMembers,
     totalEvents,
     activeMembersCount,
-    profile,
     todayDelta,
     currentUserScore,
     hasMoreFeed,
@@ -78,10 +76,10 @@ export function DashboardPage() {
               <img
                 src={user.avatarUrl}
                 alt={user.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full rounded-full object-cover flex-shrink-0"
               />
             ) : (
-              <div className="w-full h-full bg-primary-light flex items-center justify-center text-primary font-bold text-sm">
+              <div className="w-full h-full rounded-full bg-primary-light flex items-center justify-center text-primary font-bold text-sm">
                 {user?.name?.charAt(0).toUpperCase() || "U"}
               </div>
             )}

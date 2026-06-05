@@ -9,6 +9,31 @@ import { NotificationDropdown } from "../../components/authenticated/notificatio
 import { useRanking } from "../../hooks/use-ranking";
 import { useGroup } from "../../hooks/use-groups";
 import { useAuthContext } from "../../providers/auth-provider";
+import type { RankingQueryParams } from "../../types/ranking/ranking";
+
+function getRankingQueryParams(filter: string): RankingQueryParams {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  switch (filter) {
+    case "month": {
+      const start = new Date(today.getFullYear(), today.getMonth(), 1);
+      return { fromDate: start.toISOString(), toDate: today.toISOString() };
+    }
+    case "last-month": {
+      const start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const end = new Date(today.getFullYear(), today.getMonth(), 0);
+      return { fromDate: start.toISOString(), toDate: end.toISOString() };
+    }
+    case "last-year": {
+      const start = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
+      return { fromDate: start.toISOString(), toDate: today.toISOString() };
+    }
+    case "all":
+    default:
+      return {};
+  }
+}
 
 export function RankingPage() {
   const { groupId } = useParams<{ groupId: string }>();
@@ -20,8 +45,10 @@ export function RankingPage() {
 
   const [userAvatarError, setUserAvatarError] = useState(false);
 
+  const queryParams = useMemo(() => getRankingQueryParams(filter), [filter]);
+
   const { data: group } = useGroup(groupId || "");
-  const { data: ranking = [] } = useRanking(groupId || "");
+  const { data: ranking = [] } = useRanking(groupId || "", queryParams);
 
   const filteredRanking = useMemo(() => {
     let data = [...ranking];
@@ -65,11 +92,11 @@ export function RankingPage() {
               <img
                 src={user.avatarUrl}
                 alt={user.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full rounded-full object-cover flex-shrink-0"
                 onError={() => setUserAvatarError(true)}
               />
             ) : (
-              <div className="w-full h-full bg-primary-light flex items-center justify-center text-primary font-bold text-sm">
+              <div className="w-full h-full rounded-full bg-primary-light flex items-center justify-center text-primary font-bold text-sm">
                 {user?.name?.charAt(0).toUpperCase() || "U"}
               </div>
             )}
@@ -144,7 +171,7 @@ export function RankingPage() {
 
       {/* Sticky User Row - Mobile */}
       {currentUserData && currentUserPosition >= 5 && (
-        <div className="lg:hidden fixed bottom-20 left-4 right-4 bg-white rounded-xl shadow-lg border border-border p-3 z-40">
+        <div className="lg:hidden fixed bottom-20 left-4 right-4 bg-surface-container-lowest dark:bg-surface rounded-xl shadow-lg border border-border p-3 z-40">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-sm font-bold text-primary">
@@ -155,7 +182,7 @@ export function RankingPage() {
                   <img
                     src={currentUserData.user.avatarUrl}
                     alt={currentUserData.user.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full rounded-full object-cover flex-shrink-0"
                   />
                 ) : (
                   currentUserData.user.name

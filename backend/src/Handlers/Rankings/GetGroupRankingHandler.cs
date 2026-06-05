@@ -98,6 +98,7 @@ public class GetGroupRankingHandler : IGetGroupRankingHandler
             {
                 UserId = m.UserId,
                 Name = m.Name,
+                AvatarUrl = m.AvatarUrl,
                 Score = m.Score,
                 Position = index + 1
             })

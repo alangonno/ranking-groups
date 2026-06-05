@@ -108,11 +108,11 @@ export function EventsPage() {
               <img
                 src={user.avatarUrl}
                 alt={user.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full rounded-full object-cover flex-shrink-0"
                 onError={() => setUserAvatarError(true)}
               />
             ) : (
-              <div className="w-full h-full bg-primary-light flex items-center justify-center text-primary font-bold text-sm">
+              <div className="w-full h-full rounded-full bg-primary-light flex items-center justify-center text-primary font-bold text-sm">
                 {user?.name?.charAt(0).toUpperCase() || "U"}
               </div>
             )}
@@ -167,8 +167,8 @@ export function EventsPage() {
             onClick={() => setActiveTab(tab.key)}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-1.5 ${
               activeTab === tab.key
-                ? "bg-white text-text-primary shadow-sm border border-border"
-                : "bg-gray-100 text-text-secondary hover:bg-gray-200"
+                ? "bg-surface-container-lowest text-text-primary shadow-sm border border-border dark:bg-surface dark:border-surface-container-high"
+                : "bg-surface-container-low text-text-secondary hover:bg-surface-container dark:bg-surface-container dark:hover:bg-surface-container-high"
             }`}
           >
             {tab.label}

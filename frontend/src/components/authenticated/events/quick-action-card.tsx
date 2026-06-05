@@ -14,7 +14,7 @@ export function QuickActionCards({
       <button
         type="button"
         onClick={onCreateEvent}
-        className="bg-white rounded-2xl p-6 shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-md transition-shadow text-center group"
+        className="bg-surface-container-lowest dark:bg-surface rounded-2xl p-6 shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-md transition-shadow text-center group"
       >
         <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
           <Plus size={28} className="text-blue-500" />
@@ -30,7 +30,7 @@ export function QuickActionCards({
       <button
         type="button"
         onClick={onCreateShared}
-        className="bg-white rounded-2xl p-6 shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-md transition-shadow text-center group"
+        className="bg-surface-container-lowest dark:bg-surface rounded-2xl p-6 shadow-[0_1px_3px_rgba(0,0,0,0.05)] hover:shadow-md transition-shadow text-center group"
       >
         <div className="w-14 h-14 rounded-full bg-purple-50 flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
           <Users size={28} className="text-purple-500" />

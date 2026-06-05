@@ -8,6 +8,7 @@ interface RankingFilterProps {
 const options = [
   { value: "month", label: "Este Mês" },
   { value: "last-month", label: "Último Mês" },
+  { value: "last-year", label: "Último Ano" },
   { value: "all", label: "Todo Período" },
 ];
 
@@ -17,7 +18,7 @@ export function RankingFilter({ value, onChange }: RankingFilterProps) {
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="appearance-none bg-gray-100 text-text-primary text-sm font-medium pl-4 pr-10 py-2 rounded-full border-0 focus:ring-2 focus:ring-primary/30 cursor-pointer"
+        className="appearance-none bg-surface-container-low dark:bg-surface-container text-text-primary text-sm font-medium pl-4 pr-10 py-2 rounded-full border-0 focus:ring-2 focus:ring-primary/30 cursor-pointer"
       >
         {options.map((opt) => (
           <option key={opt.value} value={opt.value}>

@@ -64,7 +64,7 @@ export function NotificationDropdown() {
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-surface-container z-50 max-h-96 overflow-hidden lg:left-1/2 lg:-translate-x-1/2 lg:right-auto">
+          <div className="absolute right-0 mt-2 w-80 bg-surface-container-lowest dark:bg-surface rounded-xl shadow-lg border border-surface-container z-50 max-h-96 overflow-hidden lg:left-1/2 lg:-translate-x-1/2 lg:right-auto">
             <div className="flex items-center justify-between px-4 py-3 border-b border-surface-container">
               <h3 className="text-label-bold font-label-bold text-on-surface">
                 Notificações

@@ -9,7 +9,7 @@ interface PendingVotesSectionProps {
 export function PendingVotesSection({ events }: PendingVotesSectionProps) {
   if (events.length === 0) {
     return (
-      <div className="bg-gray-100 rounded-xl p-4 text-center">
+      <div className="bg-surface-container-low dark:bg-surface-container rounded-xl p-4 text-center">
         <p className="text-sm font-medium text-text-primary">
           Nenhuma validação pendente!
         </p>

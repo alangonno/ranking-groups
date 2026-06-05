@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
-import { ArrowUp, Calendar, Trash2, ShieldAlert, Camera } from "lucide-react";
+import { ArrowUp, Calendar, Trash2, ShieldAlert, Camera, Users } from "lucide-react";
 import { useUserProfile } from "../../hooks/use-user-profile";
 import { useGroup } from "../../hooks/use-groups";
 import { useImageUpload } from "../../hooks/use-image-upload";
@@ -96,16 +96,16 @@ export function ProfilePage() {
       <div className="p-4 lg:p-8 max-w-5xl mx-auto">
         <div className="animate-pulse space-y-6">
           <div className="flex gap-4">
-            <div className="w-20 h-20 rounded-full bg-gray-200" />
+            <div className="w-20 h-20 rounded-full bg-surface-container" />
             <div className="flex-1 space-y-2">
-              <div className="h-6 bg-gray-200 rounded w-1/3" />
-              <div className="h-4 bg-gray-200 rounded w-1/4" />
+              <div className="h-6 bg-surface-container rounded w-1/3" />
+              <div className="h-4 bg-surface-container rounded w-1/4" />
             </div>
           </div>
-          <div className="h-32 bg-gray-200 rounded-xl" />
+          <div className="h-32 bg-surface-container rounded-xl" />
           <div className="space-y-3">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-16 bg-gray-200 rounded-lg" />
+              <div key={i} className="h-16 bg-surface-container rounded-lg" />
             ))}
           </div>
         </div>
@@ -145,7 +145,7 @@ export function ProfilePage() {
       {/* Hero Section */}
       <div className="flex flex-col lg:flex-row gap-4 mb-8">
         {/* User Card */}
-        <div className="flex-1 bg-white rounded-xl border border-border shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5">
+        <div className="flex-1 bg-surface-container-lowest dark:bg-surface rounded-xl border border-border shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5">
           <div className="flex items-center gap-4">
             <div className="relative">
               {member.avatarUrl ? (
@@ -236,7 +236,7 @@ export function ProfilePage() {
           <h2 className="text-lg font-bold text-text-primary mb-4">
             Score Timeline
           </h2>
-          <div className="bg-white rounded-xl border border-border shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5">
+          <div className="bg-surface-container-lowest dark:bg-surface rounded-xl border border-border shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5">
             {voteError && (
               <div className="mb-4 p-3 bg-error/10 border border-error/20 rounded-lg">
                 <p className="text-xs text-error font-medium">{voteError}</p>
@@ -262,19 +262,19 @@ export function ProfilePage() {
                       const quorum = item.quorumRequired ?? 5;
                       return (
                         <div key={item.id} className="relative flex gap-4">
-                          <div className="w-4 h-4 rounded-full shrink-0 mt-1 bg-amber-500" />
-                          <div className="flex-1 min-w-0 bg-amber-50 rounded-lg p-3 border border-amber-200">
+                          <div className="w-4 h-4 rounded-full shrink-0 mt-1 bg-warning" />
+                          <div className="flex-1 min-w-0 bg-warning/10 rounded-lg p-3 border border-warning/30">
                             <div className="flex items-start justify-between gap-2">
                               <div>
                                 <p className="text-sm font-medium text-text-primary">
                                   {item.title}
                                 </p>
-                                <p className="text-xs text-amber-700 mt-0.5 flex items-center gap-1">
+                                <p className="text-xs text-warning mt-0.5 flex items-center gap-1">
                                   <ShieldAlert size={12} />
                                   Remoção em votação ({removeCount}/{quorum} remover, {keepCount}/{quorum} manter)
                                 </p>
                               </div>
-                              <span className="text-sm font-bold shrink-0 text-amber-700">
+                              <span className="text-sm font-bold shrink-0 text-warning">
                                 {item.points}pts
                               </span>
                             </div>
@@ -283,7 +283,7 @@ export function ProfilePage() {
                               <p className="text-xs text-success mt-2 font-medium">Voto registrado com sucesso!</p>
                             )}
                             {!canVote && !hasVoted && (
-                              <p className="text-xs text-amber-600 mt-2">
+                              <p className="text-xs text-warning mt-2">
                                 {isAffected ? "Usuário afetado não pode votar" : "Você não pode votar neste evento"}
                               </p>
                             )}
@@ -291,7 +291,7 @@ export function ProfilePage() {
                             <div className="flex gap-2 mt-2">
                               <button
                                 type="button"
-                                className="flex-1 text-xs py-1.5 px-3 rounded-lg border border-amber-300 text-amber-800 bg-white hover:bg-amber-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-100"
+                                className="flex-1 text-xs py-1.5 px-3 rounded-lg border border-warning text-warning bg-surface-container-lowest dark:bg-surface hover:bg-warning/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-surface-container"
                                 onClick={() => voteEvent.mutate({ eventId: item.id, voteType: 4 })}
                                 disabled={!canVote || voteEvent.isPending}
                               >
@@ -299,7 +299,7 @@ export function ProfilePage() {
                               </button>
                               <button
                                 type="button"
-                                className="flex-1 text-xs py-1.5 px-3 rounded-lg bg-error text-white hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400"
+                                className="flex-1 text-xs py-1.5 px-3 rounded-lg bg-error text-on-error hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-surface-container-high"
                                 onClick={() => voteEvent.mutate({ eventId: item.id, voteType: 3 })}
                                 disabled={!canVote || voteEvent.isPending}
                               >
@@ -334,11 +334,11 @@ export function ProfilePage() {
                                   {formatDate(item.createdAt)}
                                 </p>
                               </div>
-                              <span className="text-sm font-bold shrink-0 text-blue-600">
+                              <span className="text-sm font-bold shrink-0 text-tertiary">
                                 +{item.points}
                               </span>
                             </div>
-                            <div className="mt-2 bg-gray-50 rounded-lg px-3 py-2 border border-border">
+                            <div className="mt-2 bg-surface-container-low dark:bg-surface-container rounded-lg px-3 py-2 border border-border">
                               <p className="text-xs text-text-muted">
                                 Balance:{" "}
                                 <span className="font-medium text-text-primary">
@@ -376,7 +376,7 @@ export function ProfilePage() {
                               {signedPoints}
                             </span>
                           </div>
-                          <div className="mt-2 bg-gray-50 rounded-lg px-3 py-2 border border-border">
+                          <div className="mt-2 bg-surface-container-low dark:bg-surface-container rounded-lg px-3 py-2 border border-border">
                             <div className="flex items-center justify-between">
                               <p className="text-xs text-text-muted">
                                 Balance:{" "}
@@ -416,7 +416,7 @@ export function ProfilePage() {
           </h2>
           <div className="space-y-4">
             {sharedEvents.length === 0 ? (
-              <div className="bg-white rounded-xl border border-border shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5 text-center">
+              <div className="bg-surface-container-lowest dark:bg-surface rounded-xl border border-border shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-5 text-center">
                 <p className="text-text-secondary text-sm">
                   Nenhum shared event
                 </p>
@@ -425,8 +425,20 @@ export function ProfilePage() {
               sharedEvents.map((se) => (
                 <div
                   key={se.id}
-                  className="relative bg-gray-100 rounded-xl overflow-hidden aspect-video flex flex-col justify-end"
+                  className="relative rounded-xl overflow-hidden aspect-video flex flex-col justify-end group cursor-pointer"
                 >
+                  {/* Background image or fallback */}
+                  {se.imageUrl ? (
+                    <img
+                      src={se.imageUrl}
+                      alt={se.title}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-surface-container-low dark:bg-surface-container flex items-center justify-center">
+                      <Users size={32} className="text-secondary opacity-50" />
+                    </div>
+                  )}
                   {/* Gradient overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                   {/* Content */}

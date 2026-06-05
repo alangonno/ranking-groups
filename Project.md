@@ -432,7 +432,8 @@ Toda implementação deve considerar:
 - afetado removendo evento **positivo** sobre si → remove imediatamente (bypass, sem votação)
 - demais casos → abre votação de remoção com prazo de 48h
 - quorum: 1/3 dos membros do grupo, arredondado para cima
-- criador auto-vota **Keep**, iniciador auto-vota **Remove**
+- se o **criador** inicia a remoção do próprio evento → criador vota **Remove**
+- se **outro membro** inicia a remoção → criador auto-vota **Keep**, iniciador auto-vota **Remove**
 - durante prazo: quorum atingido → resolve imediatamente (remove ou mantém)
 - após prazo: não-votantes = **Keep**
 - Remove vence se: removeCount >= quorum AND removeCount > keepCount

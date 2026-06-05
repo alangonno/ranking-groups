@@ -48,6 +48,7 @@ export function useUserProfile(groupId: string, userId: string) {
           createdByUserName: string;
           participantCount: number;
           userRole: string;
+          imageUrl?: string;
         }>;
         timeline: Array<{
           id: string;
@@ -117,6 +118,7 @@ export function useUserProfile(groupId: string, userId: string) {
           createdByUserName: se.createdByUserName,
           participantCount: se.participantCount,
           userRole: se.userRole as "organizer" | "participant",
+          imageUrl: se.imageUrl,
         })),
         timeline: (response.timeline || []).map((t: any) => ({
           id: t.id,

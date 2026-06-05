@@ -70,11 +70,11 @@ export function MembersPage() {
               <img
                 src={user.avatarUrl}
                 alt={user.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full rounded-full object-cover flex-shrink-0"
                 onError={() => setUserAvatarError(true)}
               />
             ) : (
-              <div className="w-full h-full bg-primary-light flex items-center justify-center text-primary font-bold text-sm">
+              <div className="w-full h-full rounded-full bg-primary-light flex items-center justify-center text-primary font-bold text-sm">
                 {user?.name?.charAt(0).toUpperCase() || "U"}
               </div>
             )}
@@ -106,8 +106,8 @@ export function MembersPage() {
           onChange={(e) => setSort(e.target.value as "score" | "alphabetical")}
           className="w-full sm:w-48"
         >
-          <option value="score">Highest Score</option>
-          <option value="alphabetical">Alphabetical</option>
+          <option value="score">Pontuação</option>
+          <option value="alphabetical">Alfabetica</option>
         </AppSelect>
       </div>
 
@@ -117,14 +117,14 @@ export function MembersPage() {
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="bg-white rounded-xl border border-border p-4 animate-pulse"
+              className="bg-surface-container-lowest dark:bg-surface rounded-xl border border-border p-4 animate-pulse"
             >
               <div className="flex items-start gap-4">
-                <div className="w-14 h-14 rounded-full bg-gray-200 shrink-0" />
+                <div className="w-14 h-14 rounded-full bg-surface-container shrink-0" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-3/4" />
-                  <div className="h-3 bg-gray-200 rounded w-1/2" />
-                  <div className="h-6 bg-gray-200 rounded w-1/3 mt-3" />
+                  <div className="h-4 bg-surface-container rounded w-3/4" />
+                  <div className="h-3 bg-surface-container rounded w-1/2" />
+                  <div className="h-6 bg-surface-container rounded w-1/3 mt-3" />
                 </div>
               </div>
             </div>

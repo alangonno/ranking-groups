@@ -24,6 +24,7 @@ export interface SharedEvent extends BaseEntity {
     keepCount?: number;
     commentCount?: number;
     imageUrl?: string;
+    createdByUserAvatarUrl?: string;
 }
 
 export interface CreateSharedEventRequest {

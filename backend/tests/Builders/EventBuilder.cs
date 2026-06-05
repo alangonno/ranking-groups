@@ -113,5 +113,17 @@ public class EventBuilder
         return this;
     }
 
+    public EventBuilder WithIsPendingRemoval(bool isPendingRemoval)
+    {
+        _event.IsPendingRemoval = isPendingRemoval;
+        return this;
+    }
+
+    public EventBuilder WithRemovalVoteDeadline(DateTime? deadline)
+    {
+        _event.RemovalVoteDeadline = deadline;
+        return this;
+    }
+
     public Event Build() => _event;
 }

@@ -51,7 +51,7 @@ export function MemberCard({ member, groupId }: MemberCardProps) {
   return (
     <div
       onClick={handleClick}
-      className={`bg-white rounded-xl p-4 cursor-pointer transition-all hover:shadow-md ${
+      className={`bg-surface-container-lowest dark:bg-surface rounded-xl p-4 cursor-pointer transition-all hover:shadow-md ${
         isFirst
           ? "border-2 border-primary shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
           : "border border-border shadow-[0_1px_3px_rgba(0,0,0,0.05)]"

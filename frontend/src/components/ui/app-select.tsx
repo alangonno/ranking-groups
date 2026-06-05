@@ -15,7 +15,7 @@ export function AppSelect({ sizing = "md", className = "", children, ...props }:
   return (
     <div className={`relative ${className}`}>
       <select
-        className={`appearance-none w-full bg-gray-100 text-text-primary ${SIZING_CLASSES[sizing]} rounded-full border-0 focus:ring-2 focus:ring-primary/30 cursor-pointer pr-10`}
+        className={`appearance-none w-full bg-surface-container-low text-text-primary ${SIZING_CLASSES[sizing]} rounded-full border-0 focus:ring-2 focus:ring-primary/30 cursor-pointer pr-10 dark:bg-surface-container`}
         {...props}
       >
         {children}

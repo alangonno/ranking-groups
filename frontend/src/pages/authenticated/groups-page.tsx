@@ -63,7 +63,7 @@ export function GroupsPage() {
         <button
           type="button"
           onClick={() => setShowJoinModal(true)}
-          className="flex items-center justify-center gap-2 py-3 px-6 rounded-full bg-gray-100 text-text-primary font-medium hover:bg-gray-200 transition-colors"
+          className="flex items-center justify-center gap-2 py-3 px-6 rounded-full bg-surface-container-low dark:bg-surface-container text-text-primary font-medium hover:bg-surface-container transition-colors"
         >
           <LogIn size={18} />
           Entrar via Código
@@ -73,7 +73,7 @@ export function GroupsPage() {
       {!hasGroups ? (
         /* Empty State */
         <div className="text-center py-16">
-          <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+          <div className="w-20 h-20 rounded-full bg-surface-container-low dark:bg-surface-container flex items-center justify-center mx-auto mb-4">
             <Users size={32} className="text-text-muted" />
           </div>
           <h3 className="text-lg font-semibold text-text-primary mb-2">

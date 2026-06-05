@@ -13,7 +13,7 @@ const SIZING_CLASSES = {
 export function AppInput({ sizing = "md", className = "", ...props }: AppInputProps) {
   return (
     <input
-      className={`w-full bg-gray-100 text-text-primary ${SIZING_CLASSES[sizing]} rounded-lg border-0 focus:ring-2 focus:ring-primary/30 placeholder:text-text-muted ${className}`}
+      className={`w-full bg-surface-container-low text-text-primary ${SIZING_CLASSES[sizing]} rounded-lg border-0 focus:ring-2 focus:ring-primary/30 placeholder:text-text-muted dark:bg-surface-container ${className}`}
       {...props}
     />
   );
