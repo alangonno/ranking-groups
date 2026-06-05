@@ -18,7 +18,14 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
             .IsRequired()
             .HasMaxLength(1000);
 
+        builder.Property(n => n.Action)
+            .IsRequired()
+            .HasMaxLength(100);
+
         builder.HasIndex(n => n.UserId);
+        builder.HasIndex(n => n.GroupId);
+        builder.HasIndex(n => n.EventId);
+        builder.HasIndex(n => n.SharedEventId);
 
         builder.HasOne(n => n.User)
             .WithMany(u => u.Notifications)

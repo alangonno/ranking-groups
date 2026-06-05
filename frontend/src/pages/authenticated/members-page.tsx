@@ -5,6 +5,7 @@ import { useGroup } from "../../hooks/use-groups";
 import { MemberCard } from "../../components/authenticated/members/member-card";
 import { SearchInput } from "../../components/authenticated/ranking/search-input";
 import { AppSelect } from "../../components/ui/app-select";
+import { NotificationDropdown } from "../../components/authenticated/notifications/notification-dropdown";
 import { useAuthContext } from "../../providers/auth-provider";
 
 export function MembersPage() {
@@ -50,13 +51,16 @@ export function MembersPage() {
             {group?.name || "Grupo"}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => navigate(`/group/${groupId}/profile/${user?.id}`)}
-          className="w-9 h-9 rounded-full bg-primary-light flex items-center justify-center text-primary font-bold text-sm hover:bg-primary-light/70 transition-colors"
-        >
-          {userInitials}
-        </button>
+        <div className="flex items-center gap-2">
+          <NotificationDropdown />
+          <button
+            type="button"
+            onClick={() => navigate(`/group/${groupId}/profile/${user?.id}`)}
+            className="w-9 h-9 rounded-full bg-primary-light flex items-center justify-center text-primary font-bold text-sm hover:bg-primary-light/70 transition-colors"
+          >
+            {userInitials}
+          </button>
+        </div>
       </div>
 
       {/* Header Desktop */}

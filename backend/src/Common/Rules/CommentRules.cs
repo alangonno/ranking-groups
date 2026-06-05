@@ -43,6 +43,14 @@ public static class CommentRules
         Guid? eventId,
         Guid? sharedEventId)
     {
+        if (!parentComment.EventId.HasValue && !parentComment.SharedEventId.HasValue)
+        {
+            throw new BusinessRuleException(
+                "comment_parent_mismatch",
+                "O comentário raiz não está associado a nenhum evento."
+            );
+        }
+
         if (parentComment.EventId.HasValue)
         {
             if (parentComment.EventId != eventId)

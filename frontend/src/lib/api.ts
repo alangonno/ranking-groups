@@ -179,9 +179,12 @@ export async function putJson<TResponse>(
   }
 }
 
-export async function deleteJson<TResponse>(url: string): Promise<TResponse> {
+export async function deleteJson<TResponse>(
+  url: string,
+  params?: Record<string, unknown>
+): Promise<TResponse> {
   try {
-    const response = await apiClient.delete<TResponse>(url);
+    const response = await apiClient.delete<TResponse>(url, { params });
     return response.data;
   } catch (error) {
     if (error instanceof ApiError) {

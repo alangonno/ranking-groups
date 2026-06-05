@@ -39,7 +39,6 @@ public class GetEventCommentsHandlerTests
         {
             new()
             {
-                Id = Guid.NewGuid(),
                 Content = "First comment",
                 UserId = userId,
                 User = new User { Name = "Test User" },
@@ -50,7 +49,7 @@ public class GetEventCommentsHandlerTests
 
         _currentUserService.UserId.Returns(userId);
         _eventRepository.GetByIdAsync(eventId).Returns(new Event { GroupId = groupId });
-        _groupMemberRepository.GetMembersByGroupAsync(groupId).Returns(new List<GroupMember> { new() { UserId = userId } });
+        _groupMemberRepository.GetMembersByGroupAsync(groupId).Returns(new List<GroupMember> { new() { UserId = userId, GroupId = groupId } });
         _commentRepository.GetByEventAsync(eventId).Returns(comments);
 
         var result = await _handler.HandleAsync(request, CancellationToken.None);

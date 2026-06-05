@@ -345,7 +345,6 @@ Não priorizar inicialmente:
 
 - microservices
 - realtime complexo
-- sistema avançado de notificações
 - analytics
 - IA/moderação automática
 - arquitetura distribuída
@@ -579,6 +578,7 @@ Ações auditadas:
 - shared_event_participant_removal_initiated, shared_event_participant_removed_by_vote, shared_event_participant_removal_cancelled
 - group_joined, group_left
 - comment_created
+- notification_created
 
 Cada log contém: action, entityName, entityId, performedByUserId, newValues (JSON estrutura A)
 
@@ -626,6 +626,12 @@ Cada log contém: action, entityName, entityId, performedByUserId, newValues (JS
 ## Rankings
 - GET /api/rankings/group/{groupId}?fromDate=...&toDate=...
 - GET /api/rankings/group/{groupId}/feed?limit=...
+
+## Notifications
+- GET /api/notifications
+- GET /api/notifications?groupId={groupId}
+- DELETE /api/notifications/{notificationId}
+- DELETE /api/notifications
 
 # Anti-Abuso
 

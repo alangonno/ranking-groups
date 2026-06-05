@@ -5,6 +5,7 @@ using backend.src.Handlers.Comments;
 using backend.src.Repositories;
 using backend.src.Services;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 using Xunit;
 
@@ -18,7 +19,8 @@ public class CreateCommentHandlerTests
     private readonly IGroupMemberRepository _groupMemberRepository = Substitute.For<IGroupMemberRepository>();
     private readonly ICurrentUserService _currentUserService = Substitute.For<ICurrentUserService>();
     private readonly IAuditLogRepository _auditLogRepository = Substitute.For<IAuditLogRepository>();
-    private readonly AppDbContext _context = Substitute.For<AppDbContext>();
+    private readonly INotificationRepository _notificationRepository = Substitute.For<INotificationRepository>();
+    private readonly AppDbContext _context = Substitute.For<AppDbContext>(new DbContextOptions<AppDbContext>());
     private readonly ICreateCommentHandler _handler;
 
     public CreateCommentHandlerTests()
@@ -30,6 +32,7 @@ public class CreateCommentHandlerTests
             _groupMemberRepository,
             _currentUserService,
             _auditLogRepository,
+            _notificationRepository,
             _context
         );
     }
@@ -48,7 +51,7 @@ public class CreateCommentHandlerTests
 
         _currentUserService.UserId.Returns(userId);
         _eventRepository.GetByIdAsync(eventId).Returns(new Event { GroupId = groupId });
-        _groupMemberRepository.GetMembersByGroupAsync(groupId).Returns(new List<GroupMember> { new() { UserId = userId } });
+        _groupMemberRepository.GetMembersByGroupAsync(groupId).Returns(new List<GroupMember> { new() { UserId = userId, GroupId = groupId } });
 
         var result = await _handler.HandleAsync(request, CancellationToken.None);
 
@@ -56,7 +59,7 @@ public class CreateCommentHandlerTests
         result.Content.Should().Be("Great event!");
         result.UserId.Should().Be(userId);
         _commentRepository.Received(1).Add(Arg.Any<Comment>());
-        await _context.Received(2).SaveChangesAsync(Arg.Any<CancellationToken>());
+        await _context.Received(3).SaveChangesAsync(Arg.Any<CancellationToken>());
         _auditLogRepository.Received(1).Add(Arg.Any<AuditLog>());
     }
 
@@ -74,7 +77,7 @@ public class CreateCommentHandlerTests
 
         _currentUserService.UserId.Returns(userId);
         _sharedEventRepository.GetByIdAsync(sharedEventId).Returns(new SharedEvent { GroupId = groupId });
-        _groupMemberRepository.GetMembersByGroupAsync(groupId).Returns(new List<GroupMember> { new() { UserId = userId } });
+        _groupMemberRepository.GetMembersByGroupAsync(groupId).Returns(new List<GroupMember> { new() { UserId = userId, GroupId = groupId } });
 
         var result = await _handler.HandleAsync(request, CancellationToken.None);
 
@@ -98,11 +101,11 @@ public class CreateCommentHandlerTests
             Content = "Reply comment"
         };
 
-        var parentComment = new Comment { Id = parentCommentId, EventId = eventId };
+        var parentComment = new Comment { EventId = eventId };
 
         _currentUserService.UserId.Returns(userId);
         _eventRepository.GetByIdAsync(eventId).Returns(new Event { GroupId = groupId });
-        _groupMemberRepository.GetMembersByGroupAsync(groupId).Returns(new List<GroupMember> { new() { UserId = userId } });
+        _groupMemberRepository.GetMembersByGroupAsync(groupId).Returns(new List<GroupMember> { new() { UserId = userId, GroupId = groupId } });
         _commentRepository.GetByIdAsync(parentCommentId).Returns(parentComment);
 
         var result = await _handler.HandleAsync(request, CancellationToken.None);
@@ -208,11 +211,11 @@ public class CreateCommentHandlerTests
             Content = "Reply"
         };
 
-        var parentComment = new Comment { Id = parentCommentId, EventId = Guid.NewGuid() };
+        var parentComment = new Comment { EventId = Guid.NewGuid() };
 
         _currentUserService.UserId.Returns(userId);
         _eventRepository.GetByIdAsync(eventId).Returns(new Event { GroupId = groupId });
-        _groupMemberRepository.GetMembersByGroupAsync(groupId).Returns(new List<GroupMember> { new() { UserId = userId } });
+        _groupMemberRepository.GetMembersByGroupAsync(groupId).Returns(new List<GroupMember> { new() { UserId = userId, GroupId = groupId } });
         _commentRepository.GetByIdAsync(parentCommentId).Returns(parentComment);
 
         var act = async () => await _handler.HandleAsync(request, CancellationToken.None);
@@ -236,7 +239,7 @@ public class CreateCommentHandlerTests
 
         _currentUserService.UserId.Returns(userId);
         _eventRepository.GetByIdAsync(eventId).Returns(new Event { GroupId = groupId });
-        _groupMemberRepository.GetMembersByGroupAsync(groupId).Returns(new List<GroupMember> { new() { UserId = userId } });
+        _groupMemberRepository.GetMembersByGroupAsync(groupId).Returns(new List<GroupMember> { new() { UserId = userId, GroupId = groupId } });
         _commentRepository.GetByIdAsync(parentCommentId).Returns((Comment?)null);
 
         var act = async () => await _handler.HandleAsync(request, CancellationToken.None);

@@ -36,10 +36,11 @@ src/
  │    │    ├── events/                 ← event-card, voting-card, quick-action-card, shared-event-card, shared-events-carousel
  │    │    ├── groups/                 ← group-card, create-group-modal, join-group-modal
  │    │    ├── ranking/                ← podium-card, ranking-list-item, ranking-filter, search-input, top-members-widget, stats-widget
- │    │    ├── dashboard/              ← hero-score-card, pending-votes-section, feed-tabs
- │    │    ├── members/                ← member-card
- │    │    ├── sidebar/                ← app-sidebar.tsx
- │    │    └── navigation/             ← bottom-nav.tsx
+    │    │    ├── dashboard/              ← hero-score-card, pending-votes-section, feed-tabs
+    │    │    ├── members/                ← member-card
+    │    │    ├── notifications/          ← notification-dropdown.tsx
+    │    │    ├── sidebar/                ← app-sidebar.tsx
+    │    │    └── navigation/             ← bottom-nav.tsx
  │    │
  │    └── public/
  │         └── auth/                   ← login-form.tsx, register-form.tsx
@@ -57,15 +58,16 @@ src/
  │         ├── login-page.tsx
  │         └── register-page.tsx
  │
- ├── hooks/
- │    ├── use-auth.ts                  ← useLogin, useRegister, useLogout, useCurrentUser
- │    ├── use-events.ts                ← useGroupEvents, useCreateEvent, useUpdateEvent, useDeleteEvent, useVoteEvent
- │    ├── use-groups.ts                ← useGroups, useGroup, useCreateGroup, useJoinGroup, useLeaveGroup
- │    ├── use-members.ts              ← useMembers
- │    ├── use-user-profile.ts         ← useUserProfile
- │    ├── use-shared-events.ts        ← useGroupSharedEvents, useCreateSharedEvent, useJoinSharedEvent, etc.
- │    ├── use-comments.ts             ← useEventComments, useSharedEventComments, useCreateEventComment, useCreateSharedEventComment
- │    └── use-ranking.ts              ← useRanking, useFeed
+  ├── hooks/
+  │    ├── use-auth.ts                  ← useLogin, useRegister, useLogout, useCurrentUser
+  │    ├── use-events.ts                ← useGroupEvents, useCreateEvent, useUpdateEvent, useDeleteEvent, useVoteEvent
+  │    ├── use-groups.ts                ← useGroups, useGroup, useCreateGroup, useJoinGroup, useLeaveGroup
+  │    ├── use-members.ts              ← useMembers
+  │    ├── use-user-profile.ts         ← useUserProfile
+  │    ├── use-notifications.ts        ← useNotifications, useMarkAsRead, useDeleteNotification, useClearNotifications
+  │    ├── use-shared-events.ts        ← useGroupSharedEvents, useCreateSharedEvent, useJoinSharedEvent, etc.
+  │    ├── use-comments.ts             ← useEventComments, useSharedEventComments, useCreateEventComment, useCreateSharedEventComment
+  │    └── use-ranking.ts              ← useRanking, useFeed
  │
  ├── lib/
  │    ├── api.ts                       ← Cliente axios + wrappers HTTP (consolidado)
@@ -96,13 +98,14 @@ src/
  │    ├── auth-store.ts
  │    └── app-store.ts
  │
- ├── types/
- │    ├── auth/
- │    ├── event/
- │    ├── group/
- │    ├── shared-event/
- │    ├── ranking/
- │    └── common/
+  ├── types/
+  │    ├── auth/
+  │    ├── event/
+  │    ├── group/
+  │    ├── notification/
+  │    ├── shared-event/
+  │    ├── ranking/
+  │    └── common/
  │
  ├── styles/
  │

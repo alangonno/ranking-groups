@@ -38,6 +38,7 @@ public class UpdateEventHandler : IUpdateEventHandler
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
     private readonly IAuditLogRepository _auditLogRepository;
+    private readonly INotificationRepository _notificationRepository;
     private readonly AppDbContext _context;
 
     public UpdateEventHandler(
@@ -45,12 +46,14 @@ public class UpdateEventHandler : IUpdateEventHandler
         IGroupMemberRepository groupMemberRepository,
         ICurrentUserService currentUserService,
         IAuditLogRepository auditLogRepository,
+        INotificationRepository notificationRepository,
         AppDbContext context)
     {
         _eventRepository = eventRepository;
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
         _auditLogRepository = auditLogRepository;
+        _notificationRepository = notificationRepository;
         _context = context;
     }
 
@@ -108,6 +111,10 @@ public class UpdateEventHandler : IUpdateEventHandler
 
         var auditLog = AuditLogBuilder.EventUpdated(@event, oldPoints, userId);
         _auditLogRepository.Add(auditLog);
+        await _context.SaveChangesAsync(ct);
+
+        var notifications = NotificationBuilder.BuildNotifications(auditLog, members, @event, null);
+        _notificationRepository.AddRange(notifications);
         await _context.SaveChangesAsync(ct);
 
         return new UpdateEventResponse

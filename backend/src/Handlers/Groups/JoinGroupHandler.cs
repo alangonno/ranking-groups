@@ -32,6 +32,7 @@ public class JoinGroupHandler : IJoinGroupHandler
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
     private readonly IAuditLogRepository _auditLogRepository;
+    private readonly INotificationRepository _notificationRepository;
     private readonly AppDbContext _context;
 
     public JoinGroupHandler(
@@ -39,12 +40,14 @@ public class JoinGroupHandler : IJoinGroupHandler
         IGroupMemberRepository groupMemberRepository,
         ICurrentUserService currentUserService,
         IAuditLogRepository auditLogRepository,
+        INotificationRepository notificationRepository,
         AppDbContext context)
     {
         _groupRepository = groupRepository;
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
         _auditLogRepository = auditLogRepository;
+        _notificationRepository = notificationRepository;
         _context = context;
     }
 
@@ -76,6 +79,11 @@ public class JoinGroupHandler : IJoinGroupHandler
 
         var auditLog = AuditLogBuilder.GroupJoined(group, userId, member.User?.Name ?? string.Empty);
         _auditLogRepository.Add(auditLog);
+        await _context.SaveChangesAsync(ct);
+
+        var members = await _groupMemberRepository.GetMembersByGroupAsync(group.Id);
+        var notifications = NotificationBuilder.BuildNotifications(auditLog, members, null, null);
+        _notificationRepository.AddRange(notifications);
         await _context.SaveChangesAsync(ct);
 
         return new JoinGroupResponse

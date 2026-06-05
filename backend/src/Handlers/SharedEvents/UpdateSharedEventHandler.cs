@@ -37,6 +37,7 @@ public class UpdateSharedEventHandler : IUpdateSharedEventHandler
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
     private readonly IAuditLogRepository _auditLogRepository;
+    private readonly INotificationRepository _notificationRepository;
     private readonly AppDbContext _context;
 
     public UpdateSharedEventHandler(
@@ -44,12 +45,14 @@ public class UpdateSharedEventHandler : IUpdateSharedEventHandler
         IGroupMemberRepository groupMemberRepository,
         ICurrentUserService currentUserService,
         IAuditLogRepository auditLogRepository,
+        INotificationRepository notificationRepository,
         AppDbContext context)
     {
         _sharedEventRepository = sharedEventRepository;
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
         _auditLogRepository = auditLogRepository;
+        _notificationRepository = notificationRepository;
         _context = context;
     }
 
@@ -84,6 +87,10 @@ public class UpdateSharedEventHandler : IUpdateSharedEventHandler
 
         var auditLog = AuditLogBuilder.SharedEventUpdated(sharedEvent, oldPoints, userId);
         _auditLogRepository.Add(auditLog);
+        await _context.SaveChangesAsync(ct);
+
+        var notifications = NotificationBuilder.BuildNotifications(auditLog, members, null, sharedEvent);
+        _notificationRepository.AddRange(notifications);
         await _context.SaveChangesAsync(ct);
 
         return new UpdateSharedEventResponse

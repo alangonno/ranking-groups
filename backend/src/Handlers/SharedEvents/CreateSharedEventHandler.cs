@@ -39,6 +39,7 @@ public class CreateSharedEventHandler : ICreateSharedEventHandler
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
     private readonly IAuditLogRepository _auditLogRepository;
+    private readonly INotificationRepository _notificationRepository;
     private readonly AppDbContext _context;
 
     public CreateSharedEventHandler(
@@ -47,6 +48,7 @@ public class CreateSharedEventHandler : ICreateSharedEventHandler
         IGroupMemberRepository groupMemberRepository,
         ICurrentUserService currentUserService,
         IAuditLogRepository auditLogRepository,
+        INotificationRepository notificationRepository,
         AppDbContext context)
     {
         _sharedEventRepository = sharedEventRepository;
@@ -54,6 +56,7 @@ public class CreateSharedEventHandler : ICreateSharedEventHandler
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
         _auditLogRepository = auditLogRepository;
+        _notificationRepository = notificationRepository;
         _context = context;
     }
 
@@ -91,6 +94,10 @@ public class CreateSharedEventHandler : ICreateSharedEventHandler
 
         var auditLog = AuditLogBuilder.SharedEventCreated(sharedEvent, userId);
         _auditLogRepository.Add(auditLog);
+        await _context.SaveChangesAsync(ct);
+
+        var notifications = NotificationBuilder.BuildNotifications(auditLog, members, null, sharedEvent);
+        _notificationRepository.AddRange(notifications);
         await _context.SaveChangesAsync(ct);
 
         return new CreateSharedEventResponse

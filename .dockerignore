@@ -1,0 +1,46 @@
+# Git
+.git
+.gitignore
+
+# Node.js
+**/node_modules
+**/dist
+**/.vite
+
+# .NET
+**/bin
+**/obj
+**/*.user
+**/*.suo
+
+# IDEs
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Tests
+**/*.TestResults
+**/.coverage
+
+# Environment (nunca copiar .env para imagens)
+.env
+.env.local
+.env.*.local
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Documentation
+*.md
+docs/

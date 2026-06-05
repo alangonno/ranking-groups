@@ -7,6 +7,7 @@ import { useGroup } from "../../hooks/use-groups";
 import { GroupRole } from "../../types/group/group";
 import { AppBadge } from "../../components/ui/app-badge";
 import { AppSpinner } from "../../components/ui/app-spinner";
+import { NotificationDropdown } from "../../components/authenticated/notifications/notification-dropdown";
 import { postJson } from "../../lib/api";
 import { getUserIdFromToken } from "../../lib/auth-token";
 import { authStore } from "../../store/auth-store";
@@ -122,6 +123,7 @@ export function ProfilePage() {
           <h1 className="text-xl font-bold text-text-primary">Perfil</h1>
           <p className="text-sm text-text-secondary">{group?.name || "Grupo"}</p>
         </div>
+        <NotificationDropdown />
       </div>
 
       {/* Header Desktop */}

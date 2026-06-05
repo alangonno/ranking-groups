@@ -39,7 +39,6 @@ public class GetSharedEventCommentsHandlerTests
         {
             new()
             {
-                Id = Guid.NewGuid(),
                 Content = "Shared event comment",
                 UserId = userId,
                 User = new User { Name = "Test User" },
@@ -50,7 +49,7 @@ public class GetSharedEventCommentsHandlerTests
 
         _currentUserService.UserId.Returns(userId);
         _sharedEventRepository.GetByIdAsync(sharedEventId).Returns(new SharedEvent { GroupId = groupId });
-        _groupMemberRepository.GetMembersByGroupAsync(groupId).Returns(new List<GroupMember> { new() { UserId = userId } });
+        _groupMemberRepository.GetMembersByGroupAsync(groupId).Returns(new List<GroupMember> { new() { UserId = userId, GroupId = groupId } });
         _commentRepository.GetBySharedEventAsync(sharedEventId).Returns(comments);
 
         var result = await _handler.HandleAsync(request, CancellationToken.None);

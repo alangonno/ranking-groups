@@ -199,13 +199,13 @@ function CommentItem({
       <div className="flex items-start gap-2">
         <div className="w-7 h-7 rounded-full bg-primary-container flex items-center justify-center flex-shrink-0">
           <span className="text-[10px] font-bold text-primary">
-            {comment.user?.name?.charAt(0).toUpperCase() || "U"}
+            {comment.userName?.charAt(0).toUpperCase() || "U"}
           </span>
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
             <span className="text-caption font-caption font-semibold text-on-surface">
-              {comment.user?.name || "Usuário"}
+              {comment.userName || "Usuário"}
             </span>
             <span className="text-[10px] text-secondary">
               {formatRelativeTime(comment.createdAt)}

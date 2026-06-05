@@ -32,6 +32,7 @@ public class LeaveGroupHandler : ILeaveGroupHandler
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
     private readonly IAuditLogRepository _auditLogRepository;
+    private readonly INotificationRepository _notificationRepository;
     private readonly AppDbContext _context;
 
     public LeaveGroupHandler(
@@ -39,12 +40,14 @@ public class LeaveGroupHandler : ILeaveGroupHandler
         IGroupMemberRepository groupMemberRepository,
         ICurrentUserService currentUserService,
         IAuditLogRepository auditLogRepository,
+        INotificationRepository notificationRepository,
         AppDbContext context)
     {
         _groupRepository = groupRepository;
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
         _auditLogRepository = auditLogRepository;
+        _notificationRepository = notificationRepository;
         _context = context;
     }
 
@@ -92,6 +95,11 @@ public class LeaveGroupHandler : ILeaveGroupHandler
         var deletedGroup = isOwner && memberCount == 1;
         var auditLog = AuditLogBuilder.GroupLeft(group!, userId, leavingMember?.User?.Name ?? string.Empty, deletedGroup);
         _auditLogRepository.Add(auditLog);
+        await _context.SaveChangesAsync(ct);
+
+        // Send notifications before group deletion if applicable
+        var notifications = NotificationBuilder.BuildNotifications(auditLog, members, null, null);
+        _notificationRepository.AddRange(notifications);
         await _context.SaveChangesAsync(ct);
 
         var message = isOwner && memberCount == 1

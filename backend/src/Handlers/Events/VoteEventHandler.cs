@@ -41,6 +41,7 @@ public class VoteEventHandler : IVoteEventHandler
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
     private readonly IAuditLogRepository _auditLogRepository;
+    private readonly INotificationRepository _notificationRepository;
     private readonly AppDbContext _context;
 
     public VoteEventHandler(
@@ -49,6 +50,7 @@ public class VoteEventHandler : IVoteEventHandler
         IGroupMemberRepository groupMemberRepository,
         ICurrentUserService currentUserService,
         IAuditLogRepository auditLogRepository,
+        INotificationRepository notificationRepository,
         AppDbContext context)
     {
         _eventRepository = eventRepository;
@@ -56,6 +58,7 @@ public class VoteEventHandler : IVoteEventHandler
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
         _auditLogRepository = auditLogRepository;
+        _notificationRepository = notificationRepository;
         _context = context;
     }
 
@@ -113,7 +116,7 @@ public class VoteEventHandler : IVoteEventHandler
 
             if (removeCount >= quorum && removeCount > keepCount)
             {
-                await RemoveEventAsync(@event, userId, ct);
+                await RemoveEventAsync(@event, userId, members, ct);
                 removalResolved = true;
 
                 return new VoteEventResponse
@@ -141,6 +144,10 @@ public class VoteEventHandler : IVoteEventHandler
 
                 var cancelledLog = AuditLogBuilder.EventRemovalCancelled(@event, userId);
                 _auditLogRepository.Add(cancelledLog);
+                await _context.SaveChangesAsync(ct);
+
+                var cancelledNotifications = NotificationBuilder.BuildNotifications(cancelledLog, members, @event, null);
+                _notificationRepository.AddRange(cancelledNotifications);
                 await _context.SaveChangesAsync(ct);
 
                 removalResolved = true;
@@ -199,6 +206,10 @@ public class VoteEventHandler : IVoteEventHandler
                 var approvedLog = AuditLogBuilder.EventApproved(@event, userId, appliedPoints);
                 _auditLogRepository.Add(approvedLog);
                 await _context.SaveChangesAsync(ct);
+
+                var approvedNotifications = NotificationBuilder.BuildNotifications(approvedLog, members, @event, null);
+                _notificationRepository.AddRange(approvedNotifications);
+                await _context.SaveChangesAsync(ct);
             }
             catch (BusinessRuleException)
             {
@@ -217,6 +228,10 @@ public class VoteEventHandler : IVoteEventHandler
 
                 var rejectedLog = AuditLogBuilder.EventRejectedDeleted(@event, userId);
                 _auditLogRepository.Add(rejectedLog);
+                await _context.SaveChangesAsync(ct);
+
+                var rejectedNotifications = NotificationBuilder.BuildNotifications(rejectedLog, members, @event, null);
+                _notificationRepository.AddRange(rejectedNotifications);
                 await _context.SaveChangesAsync(ct);
 
                 return new VoteEventResponse
@@ -271,7 +286,7 @@ public class VoteEventHandler : IVoteEventHandler
 
         if (resolution == RemovalResolution.Remove)
         {
-            await RemoveEventAsync(@event, userId, ct);
+            await RemoveEventAsync(@event, userId, members, ct);
 
             return new VoteEventResponse
             {
@@ -299,6 +314,10 @@ public class VoteEventHandler : IVoteEventHandler
             _auditLogRepository.Add(cancelledLog);
             await _context.SaveChangesAsync(ct);
 
+            var cancelledNotifications = NotificationBuilder.BuildNotifications(cancelledLog, members, @event, null);
+            _notificationRepository.AddRange(cancelledNotifications);
+            await _context.SaveChangesAsync(ct);
+
             return new VoteEventResponse
             {
                 EventId = @event.Id,
@@ -315,7 +334,7 @@ public class VoteEventHandler : IVoteEventHandler
         }
     }
 
-    private async Task RemoveEventAsync(Event @event, Guid performedByUserId, CancellationToken ct)
+    private async Task RemoveEventAsync(Event @event, Guid performedByUserId, IEnumerable<GroupMember> members, CancellationToken ct)
     {
         if (@event.Status == EventStatus.Approved)
         {
@@ -336,6 +355,10 @@ public class VoteEventHandler : IVoteEventHandler
             : 0;
         var removedLog = AuditLogBuilder.EventRemovedByVote(@event, performedByUserId, revertedPoints);
         _auditLogRepository.Add(removedLog);
+        await _context.SaveChangesAsync(ct);
+
+        var removedNotifications = NotificationBuilder.BuildNotifications(removedLog, members, @event, null);
+        _notificationRepository.AddRange(removedNotifications);
         await _context.SaveChangesAsync(ct);
     }
 

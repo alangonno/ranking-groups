@@ -37,6 +37,7 @@ public class RequestEventRemovalHandler : IRequestEventRemovalHandler
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
     private readonly IAuditLogRepository _auditLogRepository;
+    private readonly INotificationRepository _notificationRepository;
     private readonly AppDbContext _context;
 
     public RequestEventRemovalHandler(
@@ -45,6 +46,7 @@ public class RequestEventRemovalHandler : IRequestEventRemovalHandler
         IGroupMemberRepository groupMemberRepository,
         ICurrentUserService currentUserService,
         IAuditLogRepository auditLogRepository,
+        INotificationRepository notificationRepository,
         AppDbContext context)
     {
         _eventRepository = eventRepository;
@@ -52,6 +54,7 @@ public class RequestEventRemovalHandler : IRequestEventRemovalHandler
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
         _auditLogRepository = auditLogRepository;
+        _notificationRepository = notificationRepository;
         _context = context;
     }
 
@@ -146,6 +149,10 @@ public class RequestEventRemovalHandler : IRequestEventRemovalHandler
             _auditLogRepository.Add(cancelledLog);
             await _context.SaveChangesAsync(ct);
 
+            var cancelledNotifications = NotificationBuilder.BuildNotifications(cancelledLog, members, @event, null);
+            _notificationRepository.AddRange(cancelledNotifications);
+            await _context.SaveChangesAsync(ct);
+
             return new RequestEventRemovalResponse
             {
                 EventId = @event.Id,
@@ -160,6 +167,10 @@ public class RequestEventRemovalHandler : IRequestEventRemovalHandler
         // Quórum não atingido ainda → votação continua aberta
         var initiatedLog = AuditLogBuilder.EventRemovalInitiated(@event, userId);
         _auditLogRepository.Add(initiatedLog);
+        await _context.SaveChangesAsync(ct);
+
+        var initiatedNotifications = NotificationBuilder.BuildNotifications(initiatedLog, members, @event, null);
+        _notificationRepository.AddRange(initiatedNotifications);
         await _context.SaveChangesAsync(ct);
 
         return new RequestEventRemovalResponse

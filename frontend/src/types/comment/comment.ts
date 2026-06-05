@@ -1,9 +1,8 @@
 import type { BaseEntity } from "../common/base-entity";
-import type { User } from "../auth/user";
 
 export interface Comment extends BaseEntity {
   userId: string;
-  user?: User;
+  userName: string;
   eventId?: string;
   sharedEventId?: string;
   parentCommentId?: string;

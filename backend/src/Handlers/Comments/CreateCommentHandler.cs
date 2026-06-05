@@ -3,6 +3,7 @@ using backend.src.Common.Exceptions;
 using backend.src.Common.Rules;
 using backend.src.Data;
 using backend.src.Entities;
+using backend.src.Entities.Enums;
 using backend.src.Repositories;
 using backend.src.Services;
 
@@ -39,6 +40,7 @@ public class CreateCommentHandler : ICreateCommentHandler
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
     private readonly IAuditLogRepository _auditLogRepository;
+    private readonly INotificationRepository _notificationRepository;
     private readonly AppDbContext _context;
 
     public CreateCommentHandler(
@@ -48,6 +50,7 @@ public class CreateCommentHandler : ICreateCommentHandler
         IGroupMemberRepository groupMemberRepository,
         ICurrentUserService currentUserService,
         IAuditLogRepository auditLogRepository,
+        INotificationRepository notificationRepository,
         AppDbContext context)
     {
         _commentRepository = commentRepository;
@@ -56,6 +59,7 @@ public class CreateCommentHandler : ICreateCommentHandler
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
         _auditLogRepository = auditLogRepository;
+        _notificationRepository = notificationRepository;
         _context = context;
     }
 
@@ -109,6 +113,22 @@ public class CreateCommentHandler : ICreateCommentHandler
         _auditLogRepository.Add(auditLog);
         await _context.SaveChangesAsync(ct);
 
+        Event? eventEntity = null;
+        SharedEvent? sharedEventEntity = null;
+
+        if (request.EventId.HasValue)
+        {
+            eventEntity = await _eventRepository.GetByIdAsync(request.EventId.Value);
+        }
+        else if (request.SharedEventId.HasValue)
+        {
+            sharedEventEntity = await _sharedEventRepository.GetByIdAsync(request.SharedEventId.Value);
+        }
+
+        var notifications = NotificationBuilder.BuildNotifications(auditLog, members, eventEntity, sharedEventEntity);
+        _notificationRepository.AddRange(notifications);
+        await _context.SaveChangesAsync(ct);
+
         return new CreateCommentResponse
         {
             CommentId = comment.Id,
@@ -116,7 +136,7 @@ public class CreateCommentHandler : ICreateCommentHandler
             ParentCommentId = comment.ParentCommentId,
             CreatedAt = comment.CreatedAt,
             UserId = userId,
-            UserName = comment.User?.Name ?? string.Empty
+            UserName = _currentUserService.UserName ?? string.Empty
         };
     }
 }

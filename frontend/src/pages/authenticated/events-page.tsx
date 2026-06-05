@@ -7,6 +7,7 @@ import { EventCard } from "../../components/authenticated/events/event-card";
 import { VotingCard } from "../../components/authenticated/events/voting-card";
 import { CreateEventModal } from "../../components/authenticated/events/create-event-modal";
 import { CreateSharedEventModal } from "../../components/authenticated/events/create-shared-event-modal";
+import { NotificationDropdown } from "../../components/authenticated/notifications/notification-dropdown";
 import { EventStatus } from "../../types/event/event";
 import { useGroupEvents } from "../../hooks/use-events";
 import { useGroup } from "../../hooks/use-groups";
@@ -76,13 +77,16 @@ export function EventsPage() {
           <h1 className="text-xl font-bold text-text-primary">Eventos</h1>
           <p className="text-sm text-text-secondary">{group?.name || "Grupo"}</p>
         </div>
-        <button
-          type="button"
-          onClick={() => navigate(`/group/${groupId}/profile/${user?.id}`)}
-          className="w-9 h-9 rounded-full bg-primary-light flex items-center justify-center text-primary font-bold text-sm hover:bg-primary-light/70 transition-colors"
-        >
-          {userInitials}
-        </button>
+        <div className="flex items-center gap-2">
+          <NotificationDropdown />
+          <button
+            type="button"
+            onClick={() => navigate(`/group/${groupId}/profile/${user?.id}`)}
+            className="w-9 h-9 rounded-full bg-primary-light flex items-center justify-center text-primary font-bold text-sm hover:bg-primary-light/70 transition-colors"
+          >
+            {userInitials}
+          </button>
+        </div>
       </div>
 
       {/* Header Desktop */}

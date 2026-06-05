@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { Plus, Bell, ArrowLeft } from "lucide-react";
+import { Plus, ArrowLeft } from "lucide-react";
 import { AppButton } from "../../components/ui/app-button";
 import { EventCard } from "../../components/authenticated/events/event-card";
 import { VotingCard } from "../../components/authenticated/events/voting-card";
@@ -10,6 +10,7 @@ import { HeroScoreCard } from "../../components/authenticated/dashboard/hero-sco
 import { PendingVotesSection } from "../../components/authenticated/dashboard/pending-votes-section";
 import { FeedTabs } from "../../components/authenticated/dashboard/feed-tabs";
 import { CreateEventModal } from "../../components/authenticated/events/create-event-modal";
+import { NotificationDropdown } from "../../components/authenticated/notifications/notification-dropdown";
 import { useDashboardData } from "../../hooks/use-dashboard-data";
 
 export function DashboardPage() {
@@ -55,19 +56,13 @@ export function DashboardPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <NotificationDropdown />
           <button
             type="button"
             onClick={() => navigate(`/group/${groupId}/profile/${user?.id}`)}
             className="w-9 h-9 rounded-full bg-primary-light flex items-center justify-center text-primary font-bold text-sm hover:bg-primary-light/70 transition-colors"
           >
             {userInitials}
-          </button>
-          <button
-            type="button"
-            aria-label="Notificações"
-            className="w-9 h-9 rounded-full flex items-center justify-center text-secondary hover:bg-surface-container-low transition-colors"
-          >
-            <Bell size={18} />
           </button>
         </div>
       </div>

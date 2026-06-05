@@ -5,6 +5,7 @@ using backend.src.Handlers.Comments;
 using backend.src.Handlers.Events;
 using backend.src.Handlers.Groups;
 using backend.src.Handlers.Rankings;
+using backend.src.Handlers.Notifications;
 using backend.src.Handlers.SharedEvents;
 using backend.src.Middleware;
 using backend.src.Repositories;
@@ -15,7 +16,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-Env.Load("../.env");
+if (File.Exists("../.env"))
+{
+    Env.Load("../.env");
+}
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,6 +44,7 @@ builder.Services.AddScoped<ISharedEventRepository, SharedEventRepository>();
 builder.Services.AddScoped<ISharedEventParticipantRepository, SharedEventParticipantRepository>();
 builder.Services.AddScoped<ISharedEventParticipantRemovalVoteRepository, SharedEventParticipantRemovalVoteRepository>();
 builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 
 // Handlers
@@ -83,6 +88,11 @@ builder.Services.AddScoped<IGetSharedEventCommentsHandler, GetSharedEventComment
 // Ranking and Feed Handlers
 builder.Services.AddScoped<IGetGroupRankingHandler, GetGroupRankingHandler>();
 builder.Services.AddScoped<IGetGroupFeedHandler, GetGroupFeedHandler>();
+
+// Notification Handlers
+builder.Services.AddScoped<IGetNotificationsHandler, GetNotificationsHandler>();
+builder.Services.AddScoped<IMarkNotificationAsReadHandler, MarkNotificationAsReadHandler>();
+builder.Services.AddScoped<IMarkAllNotificationsAsReadHandler, MarkAllNotificationsAsReadHandler>();
 
 // Database
 var connectionString = ConnectionStringBuilder.BuildFromEnvironment();

@@ -305,6 +305,40 @@ public class Notification : Entity
 
 ---
 
+# Comment
+
+```csharp
+using Api.Entities.Base;
+
+namespace Api.Entities;
+
+public class Comment : Entity
+{
+    public Guid UserId { get; set; }
+
+    public User User { get; set; } = null!;
+
+    public Guid? EventId { get; set; }
+
+    public Event? Event { get; set; }
+
+    public Guid? SharedEventId { get; set; }
+
+    public SharedEvent? SharedEvent { get; set; }
+
+    public Guid? ParentCommentId { get; set; }
+
+    public Comment? ParentComment { get; set; }
+
+    public string Content { get; set; } = string.Empty;
+
+    public ICollection<Comment> Replies { get; set; }
+        = new List<Comment>();
+}
+```
+
+---
+
 # Relationship Summary
 
 ## User
@@ -351,6 +385,19 @@ Relacionamentos:
 - creator
 - affected user
 - approvals
+- comments
+
+---
+
+## Comment
+
+Relacionamentos:
+
+- user (author)
+- event (optional)
+- shared event (optional)
+- parent comment (optional)
+- replies (children)
 
 ---
 
@@ -378,6 +425,16 @@ Representa votos de aprovação/rejeição.
 - criador não aprova sozinho
 - armazena tanto votos de criação (Approve/Reject) quanto votos de remoção (Remove/Keep)
 - votos de remoção são independentes dos votos de criação
+
+---
+
+## Comment
+
+- content não vazio
+- associado a exatamente um evento ou shared event (não ambos)
+- parent_comment_id opcional; se presente, deve pertencer ao mesmo post (event_id ou shared_event_id)
+- deleção em cascata do pai (Event ou SharedEvent)
+- não há edição ou exclusão de comentários
 
 ---
 
@@ -468,8 +525,28 @@ user_id
 (event_id, user_id) unique
 ```
 
+---
 
-kakskask
+## Comments
+
+```text
+user_id
+event_id
+shared_event_id
+parent_comment_id
+event_id + created_at
+shared_event_id + created_at
+```
+
+---
+
+## Notifications
+
+```text
+user_id
+user_id + is_read
+user_id + created_at
+```
 
 # Nova Entidade
 

@@ -67,13 +67,14 @@ A prioridade é:
 
 ```text
 src/
- ├── Controllers/
- ├── Handlers/
- │    ├── Auth/
- │    ├── Comments/
- │    ├── Events/
- │    ├── Groups/
- │    └── Rankings/
+  ├── Controllers/
+  ├── Handlers/
+  │    ├── Auth/
+  │    ├── Comments/
+  │    ├── Events/
+  │    ├── Groups/
+  │    ├── Notifications/
+  │    └── Rankings/
  ├── Repositories/
  ├── Entities/
  │    ├── Base/
@@ -117,11 +118,12 @@ Exemplo:
 
 ```text
 Handlers/
- ├── Auth/
- ├── Comments/
- ├── Events/
- ├── Groups/
- └── Rankings/
+  ├── Auth/
+  ├── Comments/
+  ├── Events/
+  ├── Groups/
+  ├── Notifications/
+  └── Rankings/
 ```
 
 Cada arquivo de handler deve conter:

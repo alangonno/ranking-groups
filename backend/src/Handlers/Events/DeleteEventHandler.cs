@@ -30,6 +30,7 @@ public class DeleteEventHandler : IDeleteEventHandler
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
     private readonly IAuditLogRepository _auditLogRepository;
+    private readonly INotificationRepository _notificationRepository;
     private readonly AppDbContext _context;
 
     public DeleteEventHandler(
@@ -37,12 +38,14 @@ public class DeleteEventHandler : IDeleteEventHandler
         IGroupMemberRepository groupMemberRepository,
         ICurrentUserService currentUserService,
         IAuditLogRepository auditLogRepository,
+        INotificationRepository notificationRepository,
         AppDbContext context)
     {
         _eventRepository = eventRepository;
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
         _auditLogRepository = auditLogRepository;
+        _notificationRepository = notificationRepository;
         _context = context;
     }
 
@@ -87,6 +90,10 @@ public class DeleteEventHandler : IDeleteEventHandler
 
         var auditLog = AuditLogBuilder.EventDeleted(@event, userId, revertedPoints);
         _auditLogRepository.Add(auditLog);
+        await _context.SaveChangesAsync(ct);
+
+        var notifications = NotificationBuilder.BuildNotifications(auditLog, members, @event, null);
+        _notificationRepository.AddRange(notifications);
         await _context.SaveChangesAsync(ct);
 
         return new DeleteEventResponse { Success = true };

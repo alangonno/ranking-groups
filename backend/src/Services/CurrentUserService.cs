@@ -5,6 +5,7 @@ namespace backend.src.Services;
 public interface ICurrentUserService
 {
     Guid? UserId { get; }
+    string? UserName { get; }
     bool IsAuthenticated { get; }
 }
 
@@ -28,6 +29,15 @@ public class CurrentUserService : ICurrentUserService
                 return userId;
 
             return null;
+        }
+    }
+
+    public string? UserName
+    {
+        get
+        {
+            var nameClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("name");
+            return nameClaim?.Value;
         }
     }
 
