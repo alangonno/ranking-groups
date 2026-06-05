@@ -107,5 +107,11 @@ public class EventBuilder
         return this;
     }
 
+    public EventBuilder WithCreatedAt(DateTime createdAt)
+    {
+        typeof(Event).GetProperty("CreatedAt")?.SetValue(_event, createdAt);
+        return this;
+    }
+
     public Event Build() => _event;
 }

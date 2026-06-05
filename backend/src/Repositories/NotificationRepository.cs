@@ -1,3 +1,4 @@
+using backend.src.Common.Models;
 using backend.src.Data;
 using backend.src.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -6,7 +7,7 @@ namespace backend.src.Repositories;
 
 public interface INotificationRepository
 {
-    Task<IEnumerable<Notification>> GetByUserIdAsync(Guid userId);
+    Task<CursorPagedResult<Notification>> GetByUserIdAsync(Guid userId, string? cursor = null, int pageSize = CursorPagination.DefaultPageSize);
     Task<int> GetCountByUserIdAsync(Guid userId);
     void Add(Notification notification);
     void AddRange(IEnumerable<Notification> notifications);
@@ -25,12 +26,12 @@ public class NotificationRepository : INotificationRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Notification>> GetByUserIdAsync(Guid userId)
+    public Task<CursorPagedResult<Notification>> GetByUserIdAsync(Guid userId, string? cursor = null, int pageSize = CursorPagination.DefaultPageSize)
     {
-        return await _context.Notifications
-            .Where(n => n.UserId == userId)
-            .OrderByDescending(n => n.CreatedAt)
-            .ToListAsync();
+        var query = _context.Notifications
+            .Where(n => n.UserId == userId);
+
+        return Task.FromResult(CursorPagination.Apply(query, cursor, pageSize));
     }
 
     public async Task<int> GetCountByUserIdAsync(Guid userId)

@@ -11,11 +11,14 @@ public class ListUserGroupEventsRequest
 {
     public Guid GroupId { get; set; }
     public Guid? UserId { get; set; }
+    public string? Cursor { get; set; }
 }
 
 public class ListUserGroupEventsResponse
 {
     public List<UserEventSummaryDto> Events { get; set; } = new();
+    public bool HasMore { get; set; }
+    public string? NextCursor { get; set; }
 }
 
     public class UserEventSummaryDto
@@ -66,10 +69,12 @@ public class ListUserGroupEventsHandler : IListUserGroupEventsHandler
 
         var targetUserId = request.UserId ?? currentUserId;
 
-        var members = await _groupMemberRepository.GetMembersByGroupAsync(request.GroupId);
+        var membersResult = await _groupMemberRepository.GetMembersByGroupAsync(request.GroupId);
+        var members = membersResult.Items;
         GroupPermissionRules.ValidateUserCanInteract(currentUserId, request.GroupId, members);
 
-        var events = await _eventRepository.GetByGroupAsync(request.GroupId);
+        var pagedEvents = await _eventRepository.GetByGroupAsync(request.GroupId, request.Cursor);
+        var events = pagedEvents.Items;
         var userEvents = events
             .Where(e => e.AffectedUserId == targetUserId)
             .OrderBy(e => e.CreatedAt)
@@ -106,6 +111,11 @@ public class ListUserGroupEventsHandler : IListUserGroupEventsHandler
             runningBalance += impact;
         }
 
-        return new ListUserGroupEventsResponse { Events = dtos };
+        return new ListUserGroupEventsResponse
+        {
+            Events = dtos,
+            HasMore = pagedEvents.HasMore,
+            NextCursor = pagedEvents.NextCursor
+        };
     }
 }

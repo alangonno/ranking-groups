@@ -6,11 +6,18 @@ import { MemberCard } from "../../components/authenticated/members/member-card";
 import { SearchInput } from "../../components/authenticated/ranking/search-input";
 import { AppSelect } from "../../components/ui/app-select";
 import { NotificationDropdown } from "../../components/authenticated/notifications/notification-dropdown";
+import { useInfiniteScroll } from "../../hooks/use-infinite-scroll";
 import { useAuthContext } from "../../providers/auth-provider";
 
 export function MembersPage() {
   const { groupId } = useParams<{ groupId: string }>();
-  const { data: members, isLoading } = useMembers(groupId || "");
+  const {
+    data: membersData,
+    isLoading,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useMembers(groupId || "");
   const navigate = useNavigate();
   const { user } = useAuthContext();
   const { data: group } = useGroup(groupId || "");
@@ -25,6 +32,14 @@ export function MembersPage() {
         .slice(0, 2)
     : "U";
   const [sort, setSort] = useState<"score" | "alphabetical">("score");
+
+  const members = membersData?.flattened ?? [];
+
+  const { sentinelRef } = useInfiniteScroll({
+    onIntersect: () => fetchNextPage(),
+    hasMore: !!hasNextPage,
+    isLoading: isFetchingNextPage,
+  });
 
   const filteredMembers = useMemo(() => {
     if (!members) return [];
@@ -125,6 +140,13 @@ export function MembersPage() {
           ))}
         </div>
       )}
+
+      {/* Infinite scroll sentinel */}
+      <div ref={sentinelRef} className="py-4 flex justify-center">
+        {isFetchingNextPage && (
+          <span className="text-sm text-text-secondary">Carregando mais...</span>
+        )}
+      </div>
 
       {/* Empty state */}
       {!isLoading && filteredMembers.length === 0 && (

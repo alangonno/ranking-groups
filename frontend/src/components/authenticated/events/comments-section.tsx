@@ -11,6 +11,9 @@ interface CommentsSectionProps {
   isLoading: boolean;
   isSubmitting: boolean;
   commentCount: number;
+  hasMoreComments?: boolean;
+  onLoadMoreComments?: () => void;
+  isLoadingMoreComments?: boolean;
 }
 
 export function CommentsSection({
@@ -19,6 +22,9 @@ export function CommentsSection({
   isLoading,
   isSubmitting,
   commentCount,
+  hasMoreComments: hasMorePages,
+  onLoadMoreComments,
+  isLoadingMoreComments,
 }: CommentsSectionProps) {
   const [expanded, setExpanded] = useState(false);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
@@ -39,7 +45,7 @@ export function CommentsSection({
     ? sortedRootComments
     : sortedRootComments.slice(0, 2);
 
-  const hasMoreComments = sortedRootComments.length > 2;
+  const hasLocalMore = sortedRootComments.length > 2;
 
   function handleSubmitComment() {
     if (!newComment.trim()) return;
@@ -106,8 +112,8 @@ export function CommentsSection({
         ))}
       </div>
 
-      {/* Show More / Less */}
-      {hasMoreComments && (
+      {/* Show More / Less (local) */}
+      {hasLocalMore && (
         <button
           type="button"
           onClick={() => setExpanded(!expanded)}
@@ -122,6 +128,25 @@ export function CommentsSection({
             <>
               <ChevronDown size={14} />
               <span>Mostrar todos os {commentCount} comentários</span>
+            </>
+          )}
+        </button>
+      )}
+
+      {/* Load more pages from server */}
+      {hasMorePages && (
+        <button
+          type="button"
+          onClick={onLoadMoreComments}
+          disabled={isLoadingMoreComments}
+          className="mt-3 flex items-center gap-1 text-caption font-caption text-secondary hover:text-primary transition-colors"
+        >
+          {isLoadingMoreComments ? (
+            <AppSpinner size="xs" />
+          ) : (
+            <>
+              <ChevronDown size={14} />
+              <span>Carregar mais comentários</span>
             </>
           )}
         </button>

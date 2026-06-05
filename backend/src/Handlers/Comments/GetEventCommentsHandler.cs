@@ -9,11 +9,14 @@ namespace backend.src.Handlers.Comments;
 public class GetEventCommentsRequest
 {
     public Guid EventId { get; set; }
+    public string? Cursor { get; set; }
 }
 
 public class GetEventCommentsResponse
 {
     public List<CommentDto> Comments { get; set; } = new();
+    public bool HasMore { get; set; }
+    public string? NextCursor { get; set; }
 }
 
 public class CommentDto
@@ -62,10 +65,15 @@ public class GetEventCommentsHandler : IGetEventCommentsHandler
         var members = await _groupMemberRepository.GetMembersByGroupAsync(@event.GroupId);
         GroupPermissionRules.ValidateUserCanInteract(userId, @event.GroupId, members);
 
-        var comments = await _commentRepository.GetByEventAsync(request.EventId);
-        var dtos = comments.Select(MapToDto).ToList();
+        var pagedComments = await _commentRepository.GetByEventAsync(request.EventId, request.Cursor);
+        var dtos = pagedComments.Items.Select(MapToDto).ToList();
 
-        return new GetEventCommentsResponse { Comments = dtos };
+        return new GetEventCommentsResponse
+        {
+            Comments = dtos,
+            HasMore = pagedComments.HasMore,
+            NextCursor = pagedComments.NextCursor
+        };
     }
 
     private static CommentDto MapToDto(Comment comment)

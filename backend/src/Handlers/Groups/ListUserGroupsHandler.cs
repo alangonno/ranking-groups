@@ -5,9 +5,16 @@ using backend.src.Services;
 
 namespace backend.src.Handlers.Groups;
 
+public class ListUserGroupsRequest
+{
+    public string? Cursor { get; set; }
+}
+
 public class ListUserGroupsResponse
 {
     public List<UserGroupDto> Groups { get; set; } = new();
+    public bool HasMore { get; set; }
+    public string? NextCursor { get; set; }
 }
 
 public class UserGroupDto
@@ -21,7 +28,7 @@ public class UserGroupDto
 
 public interface IListUserGroupsHandler
 {
-    Task<ListUserGroupsResponse> HandleAsync(CancellationToken ct);
+    Task<ListUserGroupsResponse> HandleAsync(ListUserGroupsRequest request, CancellationToken ct);
 }
 
 public class ListUserGroupsHandler : IListUserGroupsHandler
@@ -37,7 +44,7 @@ public class ListUserGroupsHandler : IListUserGroupsHandler
         _currentUserService = currentUserService;
     }
 
-    public async Task<ListUserGroupsResponse> HandleAsync(CancellationToken ct)
+    public async Task<ListUserGroupsResponse> HandleAsync(ListUserGroupsRequest request, CancellationToken ct)
     {
         var userId = _currentUserService.UserId;
         if (!userId.HasValue)
@@ -45,9 +52,9 @@ public class ListUserGroupsHandler : IListUserGroupsHandler
             return new ListUserGroupsResponse { Groups = new List<UserGroupDto>() };
         }
 
-        var memberships = await _groupMemberRepository.GetUserMembershipsAsync(userId.Value);
+        var pagedMemberships = await _groupMemberRepository.GetUserMembershipsAsync(userId.Value, request.Cursor);
 
-        var groups = memberships.Select(m => new UserGroupDto
+        var groups = pagedMemberships.Items.Select(m => new UserGroupDto
         {
             GroupId = m.GroupId,
             Name = m.Group?.Name ?? string.Empty,
@@ -56,6 +63,11 @@ public class ListUserGroupsHandler : IListUserGroupsHandler
             InviteCode = m.Group?.InviteCode ?? string.Empty
         }).ToList();
 
-        return new ListUserGroupsResponse { Groups = groups };
+        return new ListUserGroupsResponse
+        {
+            Groups = groups,
+            HasMore = pagedMemberships.HasMore,
+            NextCursor = pagedMemberships.NextCursor
+        };
     }
 }

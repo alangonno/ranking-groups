@@ -12,6 +12,7 @@ import { EventStatus } from "../../types/event/event";
 import { useGroupEvents } from "../../hooks/use-events";
 import { useGroup } from "../../hooks/use-groups";
 import { useGroupSharedEvents } from "../../hooks/use-shared-events";
+import { useInfiniteScroll } from "../../hooks/use-infinite-scroll";
 import { useAuthContext } from "../../providers/auth-provider";
 
 export function EventsPage() {
@@ -40,8 +41,22 @@ export function EventsPage() {
   }, [location.state?.createEvent]);
 
   const { data: group } = useGroup(groupId || "");
-  const { data: allEvents = [] } = useGroupEvents(groupId || "");
-  const { data: sharedEvents = [] } = useGroupSharedEvents(groupId || "");
+  const {
+    data: eventsData,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useGroupEvents(groupId || "");
+  const { data: sharedEventsData } = useGroupSharedEvents(groupId || "");
+
+  const allEvents = eventsData?.flattened ?? [];
+  const sharedEvents = sharedEventsData?.flattened ?? [];
+
+  const { sentinelRef } = useInfiniteScroll({
+    onIntersect: () => fetchNextPage(),
+    hasMore: !!hasNextPage,
+    isLoading: isFetchingNextPage,
+  });
 
   const myEvents = allEvents.filter(
     (e) => e.createdByUserId === user?.id || e.affectedUserId === user?.id
@@ -112,8 +127,7 @@ export function EventsPage() {
       {/* Quick Actions */}
       <div className="mb-6">
         <QuickActionCards
-          onCreatePositive={() => setShowCreateEvent(true)}
-          onCreateNegative={() => setShowCreateEvent(true)}
+          onCreateEvent={() => setShowCreateEvent(true)}
           onCreateShared={() => setShowCreateSharedEvent(true)}
         />
       </div>
@@ -162,6 +176,13 @@ export function EventsPage() {
               <EventCard key={event.id} event={event} />
             )
           )
+        )}
+      </div>
+
+      {/* Infinite scroll sentinel */}
+      <div ref={sentinelRef} className="py-4 flex justify-center">
+        {isFetchingNextPage && (
+          <span className="text-sm text-text-secondary">Carregando mais...</span>
         )}
       </div>
 

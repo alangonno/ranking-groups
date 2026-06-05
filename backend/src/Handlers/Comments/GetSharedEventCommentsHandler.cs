@@ -9,11 +9,14 @@ namespace backend.src.Handlers.Comments;
 public class GetSharedEventCommentsRequest
 {
     public Guid SharedEventId { get; set; }
+    public string? Cursor { get; set; }
 }
 
 public class GetSharedEventCommentsResponse
 {
     public List<CommentDto> Comments { get; set; } = new();
+    public bool HasMore { get; set; }
+    public string? NextCursor { get; set; }
 }
 
 public interface IGetSharedEventCommentsHandler
@@ -49,12 +52,17 @@ public class GetSharedEventCommentsHandler : IGetSharedEventCommentsHandler
             ?? throw new BusinessRuleException("shared_event_not_found", "Evento compartilhado não encontrado.");
 
         var members = await _groupMemberRepository.GetMembersByGroupAsync(sharedEvent.GroupId);
-        GroupPermissionRules.ValidateUserCanInteract(userId, sharedEvent.GroupId, members);
+        GroupPermissionRules.ValidateUserCanInteract(userId, sharedEvent.GroupId, members.Items);
 
-        var comments = await _commentRepository.GetBySharedEventAsync(request.SharedEventId);
-        var dtos = comments.Select(MapToDto).ToList();
+        var pagedComments = await _commentRepository.GetBySharedEventAsync(request.SharedEventId, request.Cursor);
+        var dtos = pagedComments.Items.Select(MapToDto).ToList();
 
-        return new GetSharedEventCommentsResponse { Comments = dtos };
+        return new GetSharedEventCommentsResponse
+        {
+            Comments = dtos,
+            HasMore = pagedComments.HasMore,
+            NextCursor = pagedComments.NextCursor
+        };
     }
 
     private static CommentDto MapToDto(Comment comment)

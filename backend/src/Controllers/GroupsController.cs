@@ -48,16 +48,17 @@ public class GroupsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> ListMine(CancellationToken ct)
+    public async Task<IActionResult> ListMine(CancellationToken ct, [FromQuery] string? cursor)
     {
-        var response = await _listUserGroupsHandler.HandleAsync(ct);
+        var request = new ListUserGroupsRequest { Cursor = cursor };
+        var response = await _listUserGroupsHandler.HandleAsync(request, ct);
         return Ok(response);
     }
 
     [HttpGet("{groupId:guid}")]
-    public async Task<IActionResult> GetDetails(Guid groupId, CancellationToken ct)
+    public async Task<IActionResult> GetDetails(Guid groupId, CancellationToken ct, [FromQuery] string? membersCursor)
     {
-        var request = new GetGroupDetailsRequest { GroupId = groupId };
+        var request = new GetGroupDetailsRequest { GroupId = groupId, MembersCursor = membersCursor };
         var response = await _getGroupDetailsHandler.HandleAsync(request, ct);
         return Ok(response);
     }

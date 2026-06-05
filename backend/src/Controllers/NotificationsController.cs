@@ -25,9 +25,9 @@ public class NotificationsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> Get([FromQuery] Guid? groupId, CancellationToken ct)
+    public async Task<IActionResult> Get([FromQuery] Guid? groupId, CancellationToken ct, [FromQuery] string? cursor)
     {
-        var request = new GetNotificationsRequest { GroupId = groupId };
+        var request = new GetNotificationsRequest { GroupId = groupId, Cursor = cursor };
         var response = await _getNotificationsHandler.HandleAsync(request, ct);
         return Ok(response);
     }

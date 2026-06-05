@@ -1,4 +1,5 @@
 using backend.src.Common.Exceptions;
+using backend.src.Common.Models;
 using backend.src.Entities;
 using backend.src.Handlers.Comments;
 using backend.src.Repositories;
@@ -49,8 +50,8 @@ public class GetEventCommentsHandlerTests
 
         _currentUserService.UserId.Returns(userId);
         _eventRepository.GetByIdAsync(eventId).Returns(new Event { GroupId = groupId });
-        _groupMemberRepository.GetMembersByGroupAsync(groupId).Returns(new List<GroupMember> { new() { UserId = userId, GroupId = groupId } });
-        _commentRepository.GetByEventAsync(eventId).Returns(comments);
+        _groupMemberRepository.GetMembersByGroupAsync(groupId).Returns(new CursorPagedResult<GroupMember>(new List<GroupMember> { new() { UserId = userId, GroupId = groupId } }, false, null));
+        _commentRepository.GetByEventAsync(eventId).Returns(new CursorPagedResult<Comment>(comments, false, null));
 
         var result = await _handler.HandleAsync(request, CancellationToken.None);
 
@@ -84,7 +85,7 @@ public class GetEventCommentsHandlerTests
 
         _currentUserService.UserId.Returns(userId);
         _eventRepository.GetByIdAsync(eventId).Returns(new Event { GroupId = groupId });
-        _groupMemberRepository.GetMembersByGroupAsync(groupId).Returns(new List<GroupMember>());
+        _groupMemberRepository.GetMembersByGroupAsync(groupId).Returns(new CursorPagedResult<GroupMember>(new List<GroupMember>(), false, null));
 
         var act = async () => await _handler.HandleAsync(request, CancellationToken.None);
 

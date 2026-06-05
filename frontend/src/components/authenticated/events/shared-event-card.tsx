@@ -30,10 +30,16 @@ export function SharedEventCard({ event }: SharedEventCardProps) {
   const [showComments, setShowComments] = useState(false);
   const groupId = useCurrentGroupId();
 
-  const { data: comments, isLoading } = useSharedEventComments(
-    showComments ? event.id : ""
-  );
+  const {
+    data: commentsData,
+    isLoading,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useSharedEventComments(showComments ? event.id : "");
   const createComment = useCreateSharedEventComment(event.id, groupId || undefined);
+
+  const comments = commentsData?.flattened ?? [];
 
   function formatClosesAt(dateString: string) {
     const date = new Date(dateString);
@@ -155,6 +161,9 @@ export function SharedEventCard({ event }: SharedEventCardProps) {
               isLoading={isLoading}
               isSubmitting={createComment.isPending}
               commentCount={event.commentCount ?? 0}
+              hasMoreComments={!!hasNextPage}
+              onLoadMoreComments={() => fetchNextPage()}
+              isLoadingMoreComments={isFetchingNextPage}
             />
           </div>
         )}

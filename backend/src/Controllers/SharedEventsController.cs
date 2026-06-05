@@ -68,9 +68,9 @@ public class SharedEventsController : ControllerBase
     }
 
     [HttpGet("group/{groupId:guid}")]
-    public async Task<IActionResult> ListByGroup(Guid groupId, CancellationToken ct)
+    public async Task<IActionResult> ListByGroup(Guid groupId, CancellationToken ct, [FromQuery] string? cursor)
     {
-        var request = new ListGroupSharedEventsRequest { GroupId = groupId };
+        var request = new ListGroupSharedEventsRequest { GroupId = groupId, Cursor = cursor };
         var response = await _listGroupSharedEventsHandler.HandleAsync(request, ct);
         return Ok(response);
     }
@@ -145,9 +145,9 @@ public class SharedEventsController : ControllerBase
     }
 
     [HttpGet("{sharedEventId:guid}/comments")]
-    public async Task<IActionResult> GetComments(Guid sharedEventId, CancellationToken ct)
+    public async Task<IActionResult> GetComments(Guid sharedEventId, CancellationToken ct, [FromQuery] string? cursor)
     {
-        var request = new GetSharedEventCommentsRequest { SharedEventId = sharedEventId };
+        var request = new GetSharedEventCommentsRequest { SharedEventId = sharedEventId, Cursor = cursor };
         var response = await _getSharedEventCommentsHandler.HandleAsync(request, ct);
         return Ok(response);
     }

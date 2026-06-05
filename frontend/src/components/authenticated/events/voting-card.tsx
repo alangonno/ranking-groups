@@ -19,10 +19,16 @@ export function VotingCard({ event, compact = false }: VotingCardProps) {
   const [showComments, setShowComments] = useState(false);
   const groupId = useCurrentGroupId();
 
-  const { data: comments, isLoading } = useEventComments(
-    showComments ? event.id : ""
-  );
+  const {
+    data: commentsData,
+    isLoading,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useEventComments(showComments ? event.id : "");
   const createComment = useCreateEventComment(event.id, groupId || undefined);
+
+  const comments = commentsData?.flattened ?? [];
 
   const isRemovalVote = event.isPendingRemoval === true;
 
@@ -266,6 +272,9 @@ export function VotingCard({ event, compact = false }: VotingCardProps) {
               isLoading={isLoading}
               isSubmitting={createComment.isPending}
               commentCount={event.commentCount ?? 0}
+              hasMoreComments={!!hasNextPage}
+              onLoadMoreComments={() => fetchNextPage()}
+              isLoadingMoreComments={isFetchingNextPage}
             />
           )}
         </div>

@@ -4,10 +4,25 @@ import { GroupCard } from "../../components/authenticated/groups/group-card";
 import { CreateGroupModal } from "../../components/authenticated/groups/create-group-modal";
 import { JoinGroupModal } from "../../components/authenticated/groups/join-group-modal";
 import { useGroups } from "../../hooks/use-groups";
+import { useInfiniteScroll } from "../../hooks/use-infinite-scroll";
+
 export function GroupsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
-  const { data: groups = [] } = useGroups();
+  const {
+    data: groupsData,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useGroups();
+
+  const groups = groupsData?.flattened ?? [];
+
+  const { sentinelRef } = useInfiniteScroll({
+    onIntersect: () => fetchNextPage(),
+    hasMore: !!hasNextPage,
+    isLoading: isFetchingNextPage,
+  });
 
   const hasGroups = groups.length > 0;
   const primaryGroup = hasGroups ? groups[0] : null;
@@ -102,6 +117,13 @@ export function GroupsPage() {
           )}
         </div>
       )}
+
+      {/* Infinite scroll sentinel */}
+      <div ref={sentinelRef} className="py-4 flex justify-center">
+        {isFetchingNextPage && (
+          <span className="text-sm text-text-secondary">Carregando mais...</span>
+        )}
+      </div>
 
       {/* Modals */}
       <CreateGroupModal

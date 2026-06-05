@@ -12,6 +12,7 @@ import { FeedTabs } from "../../components/authenticated/dashboard/feed-tabs";
 import { CreateEventModal } from "../../components/authenticated/events/create-event-modal";
 import { NotificationDropdown } from "../../components/authenticated/notifications/notification-dropdown";
 import { useDashboardData } from "../../hooks/use-dashboard-data";
+import { useInfiniteScroll } from "../../hooks/use-infinite-scroll";
 
 export function DashboardPage() {
   const { groupId } = useParams<{ groupId: string }>();
@@ -29,7 +30,16 @@ export function DashboardPage() {
     totalEvents,
     activeMembersCount,
     profile,
+    hasMoreFeed,
+    fetchMoreFeed,
+    isFetchingMoreFeed,
   } = useDashboardData(groupId);
+
+  const { sentinelRef } = useInfiniteScroll({
+    onIntersect: () => fetchMoreFeed(),
+    hasMore: !!hasMoreFeed,
+    isLoading: isFetchingMoreFeed,
+  });
 
   if (!groupId) {
     return (
@@ -136,6 +146,11 @@ export function DashboardPage() {
             pendingEvents.map((event) => <VotingCard key={event.id} event={event} />)
           )}
         </div>
+        <div ref={sentinelRef} className="py-4 flex justify-center">
+          {isFetchingMoreFeed && (
+            <span className="text-sm text-text-secondary">Carregando mais...</span>
+          )}
+        </div>
         <div className="pt-4 space-y-4">
           <TopMembersWidget members={topMembers} />
         </div>
@@ -189,6 +204,11 @@ export function DashboardPage() {
               )
             ) : (
               pendingEvents.map((event) => <VotingCard key={event.id} event={event} />)
+            )}
+          </div>
+          <div ref={sentinelRef} className="py-4 flex justify-center">
+            {isFetchingMoreFeed && (
+              <span className="text-sm text-text-secondary">Carregando mais...</span>
             )}
           </div>
         </div>

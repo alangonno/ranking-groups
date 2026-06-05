@@ -1,5 +1,6 @@
 using backend.src.Common;
 using backend.src.Common.Exceptions;
+using backend.src.Common.Models;
 using backend.src.Common.Rules;
 using backend.src.Data;
 using backend.src.Entities;
@@ -12,11 +13,14 @@ namespace backend.src.Handlers.Events;
 public class ListGroupEventsRequest
 {
     public Guid GroupId { get; set; }
+    public string? Cursor { get; set; }
 }
 
 public class ListGroupEventsResponse
 {
     public List<EventSummaryDto> Events { get; set; } = new();
+    public bool HasMore { get; set; }
+    public string? NextCursor { get; set; }
 }
 
 public class EventSummaryDto
@@ -82,13 +86,15 @@ public class ListGroupEventsHandler : IListGroupEventsHandler
         var userId = _currentUserService.UserId
             ?? throw new BusinessRuleException("unauthorized", "Usuário não autenticado.");
 
-        var members = await _groupMemberRepository.GetMembersByGroupAsync(request.GroupId);
+        var membersResult = await _groupMemberRepository.GetMembersByGroupAsync(request.GroupId);
+        var members = membersResult.Items;
         GroupPermissionRules.ValidateUserCanInteract(userId, request.GroupId, members);
 
-        var totalMembers = members.Count();
+        var totalMembers = members.Count;
         var quorum = EventRemovalRules.CalculateQuorum(totalMembers);
 
-        var events = await _eventRepository.GetByGroupAsync(request.GroupId);
+        var pagedEvents = await _eventRepository.GetByGroupAsync(request.GroupId, request.Cursor);
+        var events = pagedEvents.Items;
 
         // Fallback para eventos antigos criados antes da migração de deadline
         foreach (var ev in events.Where(e => e.IsPendingRemoval && !e.RemovalVoteDeadline.HasValue))
@@ -131,6 +137,11 @@ public class ListGroupEventsHandler : IListGroupEventsHandler
             });
         }
 
-        return new ListGroupEventsResponse { Events = dtos };
+        return new ListGroupEventsResponse
+        {
+            Events = dtos,
+            HasMore = pagedEvents.HasMore,
+            NextCursor = pagedEvents.NextCursor
+        };
     }
 }

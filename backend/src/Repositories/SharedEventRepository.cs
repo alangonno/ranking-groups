@@ -1,3 +1,4 @@
+using backend.src.Common.Models;
 using backend.src.Data;
 using backend.src.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +8,7 @@ namespace backend.src.Repositories;
 public interface ISharedEventRepository
 {
     Task<SharedEvent?> GetByIdAsync(Guid id);
-    Task<IEnumerable<SharedEvent>> GetByGroupAsync(Guid groupId);
+    Task<CursorPagedResult<SharedEvent>> GetByGroupAsync(Guid groupId, string? cursor = null, int pageSize = CursorPagination.DefaultPageSize);
     void Add(SharedEvent sharedEvent);
     void Update(SharedEvent sharedEvent);
     void Remove(SharedEvent sharedEvent);
@@ -32,15 +33,15 @@ public class SharedEventRepository : ISharedEventRepository
             .FirstOrDefaultAsync(se => se.Id == id);
     }
 
-    public async Task<IEnumerable<SharedEvent>> GetByGroupAsync(Guid groupId)
+    public Task<CursorPagedResult<SharedEvent>> GetByGroupAsync(Guid groupId, string? cursor = null, int pageSize = CursorPagination.DefaultPageSize)
     {
-        return await _context.SharedEvents
+        var query = _context.SharedEvents
             .Include(se => se.CreatedByUser)
             .Include(se => se.Participants)
             .ThenInclude(p => p.User)
-            .Where(se => se.GroupId == groupId)
-            .OrderByDescending(se => se.CreatedAt)
-            .ToListAsync();
+            .Where(se => se.GroupId == groupId);
+
+        return Task.FromResult(CursorPagination.Apply(query, cursor, pageSize));
     }
 
     public void Add(SharedEvent sharedEvent)

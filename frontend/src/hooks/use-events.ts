@@ -1,11 +1,12 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { deleteJson, getJson, postJson, putJson } from "../lib/api";
+import { flattenPages, getNextPageParam } from "../lib/cursor-utils";
+import { invalidateFirstPage } from "../lib/query-utils";
 import { mapStringToEventStatus, mapStringToEventType } from "../lib/utils/event-mappers";
 import type {
   CreateEventRequest,
   CreateEventResponse,
   Event,
-  EventWithScoreBalance,
   RequestEventRemovalResponse,
   UpdateEventRequest,
   UpdateEventResponse,
@@ -75,31 +76,55 @@ function mapEventFromBackend(e: {
 }
 
 export function useGroupEvents(groupId: string) {
-  return useQuery<Event[]>({
+  return useInfiniteQuery({
     queryKey: ["events", "group", groupId],
-    queryFn: async () => {
-      const response = await getJson<{ events: Array<Parameters<typeof mapEventFromBackend>[0]> }>(
-        `/api/events/group/${groupId}`
-      );
-      return (response.events || []).map(mapEventFromBackend);
+    queryFn: async ({ pageParam }) => {
+      const response = await getJson<{
+        events: Array<Parameters<typeof mapEventFromBackend>[0]>;
+        hasMore: boolean;
+        nextCursor: string | null;
+      }>(`/api/events/group/${groupId}`, { cursor: pageParam });
+      return {
+        items: (response.events || []).map(mapEventFromBackend),
+        hasMore: response.hasMore,
+        nextCursor: response.nextCursor,
+      };
     },
+    getNextPageParam,
+    initialPageParam: undefined as string | undefined,
     enabled: !!groupId,
+    select: (data) => ({
+      ...data,
+      flattened: flattenPages(data.pages),
+    }),
   });
 }
 
 export function useUserEvents(groupId: string, userId: string) {
-  return useQuery<EventWithScoreBalance[]>({
+  return useInfiniteQuery({
     queryKey: ["events", "group", groupId, "user", userId],
-    queryFn: async () => {
+    queryFn: async ({ pageParam }) => {
       const response = await getJson<{
         events: Array<Parameters<typeof mapEventFromBackend>[0] & { scoreBalance: number }>;
-      }>(`/api/events/group/${groupId}/user/${userId}`);
-      return (response.events || []).map((e) => ({
-        ...mapEventFromBackend(e),
-        scoreBalance: e.scoreBalance,
-      }));
+        hasMore: boolean;
+        nextCursor: string | null;
+      }>(`/api/events/group/${groupId}/user/${userId}`, { cursor: pageParam });
+      return {
+        items: (response.events || []).map((e) => ({
+          ...mapEventFromBackend(e),
+          scoreBalance: e.scoreBalance,
+        })),
+        hasMore: response.hasMore,
+        nextCursor: response.nextCursor,
+      };
     },
+    getNextPageParam,
+    initialPageParam: undefined as string | undefined,
     enabled: !!groupId && !!userId,
+    select: (data) => ({
+      ...data,
+      flattened: flattenPages(data.pages),
+    }),
   });
 }
 
@@ -118,9 +143,9 @@ export function useCreateEvent() {
     mutationFn: (payload: CreateEventRequest) =>
       postJson<CreateEventResponse>("/api/events", payload),
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["events", "group", variables.groupId] });
+      invalidateFirstPage(queryClient, ["events", "group", variables.groupId]);
       queryClient.invalidateQueries({ queryKey: ["ranking", variables.groupId] });
-      queryClient.invalidateQueries({ queryKey: ["feed", variables.groupId] });
+      invalidateFirstPage(queryClient, ["feed", variables.groupId]);
     },
   });
 }
@@ -133,9 +158,9 @@ export function useUpdateEvent(eventId: string) {
       putJson<UpdateEventResponse>(`/api/events/${eventId}`, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events", eventId] });
-      queryClient.invalidateQueries({ queryKey: ["events"] });
-      queryClient.invalidateQueries({ queryKey: ["ranking"] });
-      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      invalidateAllFirstPages(queryClient, ["events"]);
+      invalidateAllFirstPages(queryClient, ["ranking"]);
+      invalidateAllFirstPages(queryClient, ["feed"]);
     },
   });
 }
@@ -147,9 +172,9 @@ export function useDeleteEvent(eventId: string, groupId: string) {
     mutationFn: () => deleteJson<void>(`/api/events/${eventId}`),
     onSuccess: () => {
       queryClient.removeQueries({ queryKey: ["events", eventId] });
-      queryClient.invalidateQueries({ queryKey: ["events", "group", groupId] });
+      invalidateFirstPage(queryClient, ["events", "group", groupId]);
       queryClient.invalidateQueries({ queryKey: ["ranking", groupId] });
-      queryClient.invalidateQueries({ queryKey: ["feed", groupId] });
+      invalidateFirstPage(queryClient, ["feed", groupId]);
       queryClient.invalidateQueries({ queryKey: ["user-profile"] });
     },
   });
@@ -163,9 +188,9 @@ export function useVoteEvent(eventId: string, groupId: string) {
       postJson<VoteEventResponse>(`/api/events/${eventId}/vote`, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events", eventId] });
-      queryClient.invalidateQueries({ queryKey: ["events", "group", groupId] });
+      invalidateFirstPage(queryClient, ["events", "group", groupId]);
       queryClient.invalidateQueries({ queryKey: ["ranking", groupId] });
-      queryClient.invalidateQueries({ queryKey: ["feed", groupId] });
+      invalidateFirstPage(queryClient, ["feed", groupId]);
       queryClient.invalidateQueries({ queryKey: ["user-profile"] });
     },
   });
@@ -179,10 +204,19 @@ export function useRequestEventRemoval(eventId: string, groupId: string) {
       postJson<RequestEventRemovalResponse>(`/api/events/${eventId}/request-removal`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events", eventId] });
-      queryClient.invalidateQueries({ queryKey: ["events", "group", groupId] });
+      invalidateFirstPage(queryClient, ["events", "group", groupId]);
       queryClient.invalidateQueries({ queryKey: ["ranking", groupId] });
-      queryClient.invalidateQueries({ queryKey: ["feed", groupId] });
+      invalidateFirstPage(queryClient, ["feed", groupId]);
       queryClient.invalidateQueries({ queryKey: ["user-profile"] });
     },
+  });
+}
+
+import type { QueryClient } from "@tanstack/react-query";
+
+function invalidateAllFirstPages(queryClient: QueryClient, baseKey: unknown[]) {
+  const keys = queryClient.getQueriesData({ queryKey: baseKey, type: "all" });
+  keys.forEach(([queryKey]) => {
+    invalidateFirstPage(queryClient, queryKey as unknown[]);
   });
 }

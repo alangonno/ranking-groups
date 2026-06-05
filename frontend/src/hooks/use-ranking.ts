@@ -1,5 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { getJson } from "../lib/api";
+import { flattenPages, getNextPageParam } from "../lib/cursor-utils";
 import type { RankingEntry, RankingQueryParams, FeedItem } from "../types/ranking/ranking";
 import type { User } from "../types/auth/user";
 
@@ -19,19 +20,30 @@ export function useRanking(groupId: string, params?: RankingQueryParams) {
   });
 }
 
-export function useFeed(groupId: string, limit?: number) {
-  return useQuery<FeedItem[]>({
-    queryKey: ["feed", groupId, limit],
-    queryFn: async () => {
-      const response = await getJson<{ items: FeedItem[] }>(
-        `/api/rankings/group/${groupId}/feed`,
-        { limit } as Record<string, unknown>
-      );
-      return (response.items || []).map((item) => ({
-        ...item,
-        commentCount: item.commentCount ?? 0,
-      }));
+export function useFeed(groupId: string) {
+  return useInfiniteQuery({
+    queryKey: ["feed", groupId],
+    queryFn: async ({ pageParam }) => {
+      const response = await getJson<{
+        items: FeedItem[];
+        hasMore: boolean;
+        nextCursor: string | null;
+      }>(`/api/rankings/group/${groupId}/feed`, { cursor: pageParam });
+      return {
+        items: (response.items || []).map((item) => ({
+          ...item,
+          commentCount: item.commentCount ?? 0,
+        })),
+        hasMore: response.hasMore,
+        nextCursor: response.nextCursor,
+      };
     },
+    getNextPageParam,
+    initialPageParam: undefined as string | undefined,
     enabled: !!groupId,
+    select: (data) => ({
+      ...data,
+      flattened: flattenPages(data.pages),
+    }),
   });
 }

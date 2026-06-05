@@ -39,12 +39,12 @@ public class RankingsController : ControllerBase
     }
 
     [HttpGet("group/{groupId:guid}/feed")]
-    public async Task<IActionResult> GetFeed(Guid groupId, CancellationToken ct, [FromQuery] int limit = 20)
+    public async Task<IActionResult> GetFeed(Guid groupId, CancellationToken ct, [FromQuery] string? cursor)
     {
         var request = new GetGroupFeedRequest
         {
             GroupId = groupId,
-            Limit = limit
+            Cursor = cursor
         };
         var response = await _getGroupFeedHandler.HandleAsync(request, ct);
         return Ok(response);

@@ -1,3 +1,4 @@
+using backend.src.Common.Models;
 using backend.src.Data;
 using backend.src.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +8,7 @@ namespace backend.src.Repositories;
 public interface IEventRepository
 {
     Task<Event?> GetByIdAsync(Guid id);
-    Task<IEnumerable<Event>> GetByGroupAsync(Guid groupId);
+    Task<CursorPagedResult<Event>> GetByGroupAsync(Guid groupId, string? cursor = null, int pageSize = CursorPagination.DefaultPageSize);
     void Add(Event @event);
     void Update(Event @event);
     void Remove(Event @event);
@@ -33,15 +34,15 @@ public class EventRepository : IEventRepository
             .FirstOrDefaultAsync(e => e.Id == id);
     }
 
-    public async Task<IEnumerable<Event>> GetByGroupAsync(Guid groupId)
+    public Task<CursorPagedResult<Event>> GetByGroupAsync(Guid groupId, string? cursor = null, int pageSize = CursorPagination.DefaultPageSize)
     {
-        return await _context.Events
+        var query = _context.Events
             .Include(e => e.CreatedByUser)
             .Include(e => e.AffectedUser)
             .Include(e => e.Approvals)
-            .Where(e => e.GroupId == groupId)
-            .OrderByDescending(e => e.CreatedAt)
-            .ToListAsync();
+            .Where(e => e.GroupId == groupId);
+
+        return Task.FromResult(CursorPagination.Apply(query, cursor, pageSize));
     }
 
     public void Add(Event @event)

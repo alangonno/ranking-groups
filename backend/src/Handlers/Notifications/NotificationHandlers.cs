@@ -9,6 +9,7 @@ namespace backend.src.Handlers.Notifications;
 public class GetNotificationsRequest
 {
     public Guid? GroupId { get; set; }
+    public string? Cursor { get; set; }
 }
 
 public class GetNotificationsResponse
@@ -22,9 +23,16 @@ public class GetNotificationsResponse
     public DateTime CreatedAt { get; set; }
 }
 
+public class GetNotificationsPagedResponse
+{
+    public List<GetNotificationsResponse> Items { get; set; } = new();
+    public bool HasMore { get; set; }
+    public string? NextCursor { get; set; }
+}
+
 public interface IGetNotificationsHandler
 {
-    Task<IEnumerable<GetNotificationsResponse>> HandleAsync(GetNotificationsRequest request, CancellationToken ct);
+    Task<GetNotificationsPagedResponse> HandleAsync(GetNotificationsRequest request, CancellationToken ct);
 }
 
 public class GetNotificationsHandler : IGetNotificationsHandler
@@ -40,19 +48,20 @@ public class GetNotificationsHandler : IGetNotificationsHandler
         _currentUserService = currentUserService;
     }
 
-    public async Task<IEnumerable<GetNotificationsResponse>> HandleAsync(GetNotificationsRequest request, CancellationToken ct)
+    public async Task<GetNotificationsPagedResponse> HandleAsync(GetNotificationsRequest request, CancellationToken ct)
     {
         var userId = _currentUserService.UserId
             ?? throw new BusinessRuleException("unauthorized", "Usuário não autenticado.");
 
-        var notifications = await _notificationRepository.GetByUserIdAsync(userId);
+        var pagedNotifications = await _notificationRepository.GetByUserIdAsync(userId, request.Cursor);
+        var notifications = pagedNotifications.Items;
 
         if (request.GroupId.HasValue)
         {
-            notifications = notifications.Where(n => n.GroupId == request.GroupId.Value);
+            notifications = notifications.Where(n => n.GroupId == request.GroupId.Value).ToList();
         }
 
-        return notifications.Select(n => new GetNotificationsResponse
+        var items = notifications.Select(n => new GetNotificationsResponse
         {
             NotificationId = n.Id,
             Title = n.Title,
@@ -61,7 +70,14 @@ public class GetNotificationsHandler : IGetNotificationsHandler
             EventId = n.EventId,
             SharedEventId = n.SharedEventId,
             CreatedAt = n.CreatedAt
-        });
+        }).ToList();
+
+        return new GetNotificationsPagedResponse
+        {
+            Items = items,
+            HasMore = pagedNotifications.HasMore,
+            NextCursor = pagedNotifications.NextCursor
+        };
     }
 }
 

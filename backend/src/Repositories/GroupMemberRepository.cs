@@ -1,3 +1,4 @@
+using backend.src.Common.Models;
 using backend.src.Data;
 using backend.src.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -7,8 +8,8 @@ namespace backend.src.Repositories;
 public interface IGroupMemberRepository
 {
     Task<GroupMember?> GetByGroupAndUserAsync(Guid groupId, Guid userId);
-    Task<IEnumerable<GroupMember>> GetMembersByGroupAsync(Guid groupId);
-    Task<IEnumerable<GroupMember>> GetUserMembershipsAsync(Guid userId);
+    Task<CursorPagedResult<GroupMember>> GetMembersByGroupAsync(Guid groupId, string? cursor = null, int pageSize = CursorPagination.DefaultPageSize);
+    Task<CursorPagedResult<GroupMember>> GetUserMembershipsAsync(Guid userId, string? cursor = null, int pageSize = CursorPagination.DefaultPageSize);
     Task<int> CountMembersAsync(Guid groupId);
     void Add(GroupMember groupMember);
     void Remove(GroupMember groupMember);
@@ -30,20 +31,22 @@ public class GroupMemberRepository : IGroupMemberRepository
             .FirstOrDefaultAsync(gm => gm.GroupId == groupId && gm.UserId == userId);
     }
 
-    public async Task<IEnumerable<GroupMember>> GetMembersByGroupAsync(Guid groupId)
+    public Task<CursorPagedResult<GroupMember>> GetMembersByGroupAsync(Guid groupId, string? cursor = null, int pageSize = CursorPagination.DefaultPageSize)
     {
-        return await _context.GroupMembers
+        var query = _context.GroupMembers
             .Include(gm => gm.User)
-            .Where(gm => gm.GroupId == groupId)
-            .ToListAsync();
+            .Where(gm => gm.GroupId == groupId);
+
+        return Task.FromResult(CursorPagination.Apply(query, cursor, pageSize));
     }
 
-    public async Task<IEnumerable<GroupMember>> GetUserMembershipsAsync(Guid userId)
+    public Task<CursorPagedResult<GroupMember>> GetUserMembershipsAsync(Guid userId, string? cursor = null, int pageSize = CursorPagination.DefaultPageSize)
     {
-        return await _context.GroupMembers
+        var query = _context.GroupMembers
             .Include(gm => gm.Group)
-            .Where(gm => gm.UserId == userId)
-            .ToListAsync();
+            .Where(gm => gm.UserId == userId);
+
+        return Task.FromResult(CursorPagination.Apply(query, cursor, pageSize));
     }
 
     public async Task<int> CountMembersAsync(Guid groupId)

@@ -1,5 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getJson, postJson } from "../lib/api";
+import { flattenPages, getNextPageParam } from "../lib/cursor-utils";
+import { invalidateFirstPage } from "../lib/query-utils";
 import type {
   CreateGroupRequest,
   Group,
@@ -10,21 +12,35 @@ import type {
 } from "../types/group/group";
 
 export function useGroups() {
-  return useQuery<Group[]>({
+  return useInfiniteQuery({
     queryKey: ["groups"],
-    queryFn: async () => {
-      const response = await getJson<{ groups: UserGroupSummary[] }>("/api/groups");
-      return response.groups.map((g) => ({
-        id: g.groupId,
-        name: g.name,
-        inviteCode: g.inviteCode,
-        description: undefined,
-        createdByUserId: "",
-        createdByUser: undefined,
-        createdAt: "",
-        updatedAt: undefined,
-      }));
+    queryFn: async ({ pageParam }) => {
+      const response = await getJson<{
+        groups: UserGroupSummary[];
+        hasMore: boolean;
+        nextCursor: string | null;
+      }>("/api/groups", { cursor: pageParam });
+      return {
+        items: (response.groups || []).map((g) => ({
+          id: g.groupId,
+          name: g.name,
+          inviteCode: g.inviteCode,
+          description: undefined,
+          createdByUserId: "",
+          createdByUser: undefined,
+          createdAt: "",
+          updatedAt: undefined,
+        })),
+        hasMore: response.hasMore,
+        nextCursor: response.nextCursor,
+      };
     },
+    getNextPageParam,
+    initialPageParam: undefined as string | undefined,
+    select: (data) => ({
+      ...data,
+      flattened: flattenPages(data.pages),
+    }),
   });
 }
 
@@ -60,7 +76,7 @@ export function useCreateGroup() {
     mutationFn: (payload: CreateGroupRequest) =>
       postJson<CreateGroupBackendResponse>("/api/groups", payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["groups"] });
+      invalidateFirstPage(queryClient, ["groups"]);
     },
   });
 }
@@ -72,7 +88,7 @@ export function useJoinGroup() {
     mutationFn: (payload: JoinGroupRequest) =>
       postJson<JoinGroupBackendResponse>("/api/groups/join", payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["groups"] });
+      invalidateFirstPage(queryClient, ["groups"]);
     },
   });
 }
@@ -83,7 +99,7 @@ export function useLeaveGroup(groupId: string) {
   return useMutation({
     mutationFn: () => postJson<void>(`/api/groups/${groupId}/leave`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["groups"] });
+      invalidateFirstPage(queryClient, ["groups"]);
       queryClient.invalidateQueries({ queryKey: ["groups", groupId] });
     },
   });

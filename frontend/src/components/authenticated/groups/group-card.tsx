@@ -1,5 +1,6 @@
+import { useState, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight, Users } from "lucide-react";
+import { ChevronRight, Users, Copy, Check } from "lucide-react";
 import type { Group } from "../../../types/group/group";
 
 interface GroupCardProps {
@@ -9,6 +10,8 @@ interface GroupCardProps {
 }
 
 export function GroupCard({ group, memberCount, isHighlighted = false }: GroupCardProps) {
+  const [hasCopied, setHasCopied] = useState(false);
+
   const initials = group.name
     .split(" ")
     .map((n) => n[0])
@@ -16,9 +19,24 @@ export function GroupCard({ group, memberCount, isHighlighted = false }: GroupCa
     .toUpperCase()
     .slice(0, 2);
 
+  const handleCopy = useCallback(async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!group.inviteCode) return;
+
+    try {
+      await navigator.clipboard.writeText(group.inviteCode);
+      setHasCopied(true);
+      setTimeout(() => setHasCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy invite code:", err);
+    }
+  }, [group.inviteCode]);
+
   return (
-    <div className="bg-surface-container-lowest rounded-xl p-5 shadow-sm border border-surface-container hover:scale-[0.99] transition-transform duration-200 cursor-pointer">
-      <Link to={`/group/${group.id}`} className="flex items-center gap-3">
+    <div className="bg-surface-container-lowest rounded-xl p-5 shadow-sm border border-surface-container hover:scale-[0.99] transition-transform duration-200 cursor-pointer flex items-center justify-between gap-4">
+      <Link to={`/group/${group.id}`} className="flex items-center gap-3 flex-1 min-w-0">
         <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg flex-shrink-0 ${
           isHighlighted ? "bg-primary text-white" : "bg-gray-100 text-text-secondary"
         }`}>
@@ -40,6 +58,28 @@ export function GroupCard({ group, memberCount, isHighlighted = false }: GroupCa
         </div>
         <ChevronRight size={18} className="text-text-muted flex-shrink-0" />
       </Link>
+
+      <div className="flex flex-col items-end gap-1 flex-shrink-0">
+        <span className="text-[10px] text-text-muted uppercase tracking-wider font-medium">
+          Código
+        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-mono text-text-secondary bg-gray-100 px-2 py-1 rounded">
+            {group.inviteCode}
+          </span>
+          <button
+            onClick={handleCopy}
+            className="p-1.5 rounded-md hover:bg-gray-100 transition-colors"
+            title="Copiar código"
+          >
+            {hasCopied ? (
+              <Check size={16} className="text-green-600" />
+            ) : (
+              <Copy size={16} className="text-text-muted" />
+            )}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { getJson } from "../lib/api";
-import type { GroupMemberProfile } from "../types/group/group";
+import { flattenPages, getNextPageParam } from "../lib/cursor-utils";
 import type { GroupRole } from "../types/group/group";
 
 const ROLE_MAP: Record<string, GroupRole> = {
@@ -10,9 +10,9 @@ const ROLE_MAP: Record<string, GroupRole> = {
 };
 
 export function useMembers(groupId: string) {
-  return useQuery<GroupMemberProfile[]>({
+  return useInfiniteQuery({
     queryKey: ["group-details", groupId],
-    queryFn: async () => {
+    queryFn: async ({ pageParam }) => {
       const data = await getJson<{
         members: Array<{
           userId: string;
@@ -20,17 +20,19 @@ export function useMembers(groupId: string) {
           role: string;
           currentScore: number;
         }>;
+        membersHasMore: boolean;
+        membersNextCursor: string | null;
         ranking: Array<{
           userId: string;
           position: number;
         }>;
-      }>(`/api/groups/${groupId}`);
+      }>(`/api/groups/${groupId}`, { membersCursor: pageParam });
 
       const positionMap = new Map(
         (data.ranking || []).map((r) => [r.userId, r.position])
       );
 
-      return (data.members || []).map((m) => ({
+      const items = (data.members || []).map((m) => ({
         userId: m.userId,
         name: m.name,
         username: "",
@@ -40,8 +42,20 @@ export function useMembers(groupId: string) {
         currentScore: m.currentScore,
         rankPosition: positionMap.get(m.userId) ?? 0,
       }));
+
+      return {
+        items,
+        hasMore: data.membersHasMore,
+        nextCursor: data.membersNextCursor,
+      };
     },
+    getNextPageParam,
+    initialPageParam: undefined as string | undefined,
     enabled: !!groupId,
     staleTime: 5 * 60 * 1000,
+    select: (data) => ({
+      ...data,
+      flattened: flattenPages(data.pages),
+    }),
   });
 }

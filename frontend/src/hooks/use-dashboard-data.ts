@@ -21,13 +21,16 @@ function getUserInitials(name: string | undefined): string {
 export function useDashboardData(groupId: string | undefined) {
   const { data: user } = useCurrentUser();
   const { data: group } = useGroup(groupId || "");
-  const { data: groupEvents = [] } = useGroupEvents(groupId || "");
-  const { data: feedItems = [] } = useFeed(groupId || "");
+  const groupEventsQuery = useGroupEvents(groupId || "");
+  const feedQuery = useFeed(groupId || "");
   const { data: ranking = [] } = useRanking(groupId || "");
   const { data: profile } = useUserProfile(
     groupId || "",
     user?.id || ""
   );
+
+  const groupEvents = groupEventsQuery.data?.flattened ?? [];
+  const feedItems = feedQuery.data?.flattened ?? [];
 
   useEffect(() => {
     if (groupId) {
@@ -104,5 +107,9 @@ export function useDashboardData(groupId: string | undefined) {
     totalEvents,
     activeMembersCount,
     profile,
+    hasMoreFeed: feedQuery.hasNextPage,
+    fetchMoreFeed: feedQuery.fetchNextPage,
+    isFetchingMoreFeed: feedQuery.isFetchingNextPage,
   };
 }
+

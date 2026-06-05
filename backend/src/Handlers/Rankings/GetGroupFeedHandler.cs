@@ -1,4 +1,5 @@
 using backend.src.Common.Exceptions;
+using backend.src.Common.Models;
 using backend.src.Common.Rules;
 using backend.src.Entities;
 using backend.src.Entities.Enums;
@@ -10,12 +11,14 @@ namespace backend.src.Handlers.Rankings;
 public class GetGroupFeedRequest
 {
     public Guid GroupId { get; set; }
-    public int Limit { get; set; } = 20;
+    public string? Cursor { get; set; }
 }
 
 public class GetGroupFeedResponse
 {
     public List<FeedItemDto> Items { get; set; } = new();
+    public bool HasMore { get; set; }
+    public string? NextCursor { get; set; }
 }
 
 public class FeedItemDto
@@ -74,15 +77,16 @@ public class GetGroupFeedHandler : IGetGroupFeedHandler
             ?? throw new BusinessRuleException("unauthorized", "Usuário não autenticado.");
 
         var members = await _groupMemberRepository.GetMembersByGroupAsync(request.GroupId);
-        GroupPermissionRules.ValidateUserCanInteract(userId, request.GroupId, members);
+        GroupPermissionRules.ValidateUserCanInteract(userId, request.GroupId, members.Items);
 
-        var limit = Math.Clamp(request.Limit, 1, 100);
-
-        var events = await _eventRepository.GetByGroupAsync(request.GroupId);
-        var sharedEvents = await _sharedEventRepository.GetByGroupAsync(request.GroupId);
+        // Buscar pageSize + 1 de cada tipo para garantir que temos
+        // dados suficientes para determinar se há próxima página
+        var fetchCount = CursorPagination.DefaultPageSize + 1;
+        var pagedEvents = await _eventRepository.GetByGroupAsync(request.GroupId, request.Cursor, fetchCount);
+        var pagedSharedEvents = await _sharedEventRepository.GetByGroupAsync(request.GroupId, request.Cursor, fetchCount);
 
         var eventItems = new List<FeedItemDto>();
-        foreach (var e in events)
+        foreach (var e in pagedEvents.Items)
         {
             var commentCount = await _commentRepository.GetCommentCountByEventAsync(e.Id);
             eventItems.Add(new FeedItemDto
@@ -107,7 +111,7 @@ public class GetGroupFeedHandler : IGetGroupFeedHandler
         }
 
         var sharedItems = new List<FeedItemDto>();
-        foreach (var se in sharedEvents)
+        foreach (var se in pagedSharedEvents.Items)
         {
             var commentCount = await _commentRepository.GetCommentCountBySharedEventAsync(se.Id);
             sharedItems.Add(new FeedItemDto
@@ -130,9 +134,27 @@ public class GetGroupFeedHandler : IGetGroupFeedHandler
         var allItems = eventItems
             .Concat(sharedItems)
             .OrderByDescending(i => i.CreatedAt)
-            .Take(limit)
             .ToList();
 
-        return new GetGroupFeedResponse { Items = allItems };
+        // Se juntos temos mais que pageSize, há próxima página
+        var hasMore = allItems.Count > CursorPagination.DefaultPageSize;
+        if (hasMore)
+        {
+            allItems.RemoveAt(allItems.Count - 1);
+        }
+
+        string? nextCursor = null;
+        if (hasMore && allItems.Count > 0)
+        {
+            var last = allItems[^1];
+            nextCursor = CursorToken.Encode(last.CreatedAt, last.Id);
+        }
+
+        return new GetGroupFeedResponse
+        {
+            Items = allItems,
+            HasMore = hasMore,
+            NextCursor = nextCursor
+        };
     }
 }

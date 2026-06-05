@@ -12,10 +12,11 @@ export function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const groupId = useCurrentGroupId();
   const navigate = useNavigate();
-  const { data: notifications, isLoading } = useNotifications(groupId);
+  const { data: notificationsData, isLoading } = useNotifications(groupId);
   const markAsRead = useMarkNotificationAsRead();
   const markAllAsRead = useMarkAllNotificationsAsRead();
 
+  const notifications = notificationsData?.flattened ?? [];
   const notificationCount = notifications?.length ?? 0;
   const hasNotifications = notificationCount > 0;
 

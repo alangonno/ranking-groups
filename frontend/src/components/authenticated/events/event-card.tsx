@@ -18,10 +18,16 @@ export function EventCard({ event }: EventCardProps) {
   const [showComments, setShowComments] = useState(false);
   const groupId = useCurrentGroupId();
 
-  const { data: comments, isLoading } = useEventComments(
-    showComments ? event.id : ""
-  );
+  const {
+    data: commentsData,
+    isLoading,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useEventComments(showComments ? event.id : "");
   const createComment = useCreateEventComment(event.id, groupId || undefined);
+
+  const comments = commentsData?.flattened ?? [];
 
   return (
     <div className="bg-surface-container-lowest rounded-xl p-5 shadow-sm border border-surface-container hover:scale-[0.99] transition-transform duration-200">
@@ -72,6 +78,9 @@ export function EventCard({ event }: EventCardProps) {
               isLoading={isLoading}
               isSubmitting={createComment.isPending}
               commentCount={event.commentCount ?? 0}
+              hasMoreComments={!!hasNextPage}
+              onLoadMoreComments={() => fetchNextPage()}
+              isLoadingMoreComments={isFetchingNextPage}
             />
           )}
         </div>

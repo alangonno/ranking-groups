@@ -1,5 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getJson, deleteJson } from "../lib/api";
+import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { deleteJson, getJson } from "../lib/api";
+import { flattenPages, getNextPageParam } from "../lib/cursor-utils";
+import { invalidateFirstPage } from "../lib/query-utils";
 import type {
   GetNotificationsResponse,
   MarkNotificationAsReadResponse,
@@ -7,13 +9,28 @@ import type {
 } from "../types/notification/notification";
 
 export function useNotifications(groupId: string | null = null) {
-  return useQuery<GetNotificationsResponse[]>({
+  return useInfiniteQuery({
     queryKey: ["notifications", groupId],
-    queryFn: async () => {
-      const params = groupId ? { groupId } : undefined;
-      return getJson<GetNotificationsResponse[]>("/api/notifications", params);
+    queryFn: async ({ pageParam }) => {
+      const params = { groupId, cursor: pageParam };
+      const response = await getJson<{
+        items: GetNotificationsResponse[];
+        hasMore: boolean;
+        nextCursor: string | null;
+      }>("/api/notifications", params);
+      return {
+        items: response.items || [],
+        hasMore: response.hasMore,
+        nextCursor: response.nextCursor,
+      };
     },
+    getNextPageParam,
+    initialPageParam: undefined as string | undefined,
     refetchInterval: 30000,
+    select: (data) => ({
+      ...data,
+      flattened: flattenPages(data.pages),
+    }),
   });
 }
 
@@ -27,7 +44,7 @@ export function useMarkNotificationAsRead() {
       );
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      invalidateFirstPage(queryClient, ["notifications"]);
     },
   });
 }
@@ -44,7 +61,7 @@ export function useMarkAllNotificationsAsRead() {
       );
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      invalidateFirstPage(queryClient, ["notifications"]);
     },
   });
 }

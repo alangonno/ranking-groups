@@ -1,3 +1,4 @@
+using backend.src.Common.Models;
 using backend.src.Data;
 using backend.src.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -7,8 +8,8 @@ namespace backend.src.Repositories;
 public interface ICommentRepository
 {
     Task<Comment?> GetByIdAsync(Guid id);
-    Task<IEnumerable<Comment>> GetByEventAsync(Guid eventId);
-    Task<IEnumerable<Comment>> GetBySharedEventAsync(Guid sharedEventId);
+    Task<CursorPagedResult<Comment>> GetByEventAsync(Guid eventId, string? cursor = null, int pageSize = CursorPagination.DefaultPageSize);
+    Task<CursorPagedResult<Comment>> GetBySharedEventAsync(Guid sharedEventId, string? cursor = null, int pageSize = CursorPagination.DefaultPageSize);
     Task<int> GetCommentCountByEventAsync(Guid eventId);
     Task<int> GetCommentCountBySharedEventAsync(Guid sharedEventId);
     void Add(Comment comment);
@@ -34,26 +35,26 @@ public class CommentRepository : ICommentRepository
             .FirstOrDefaultAsync(c => c.Id == id);
     }
 
-    public async Task<IEnumerable<Comment>> GetByEventAsync(Guid eventId)
+    public Task<CursorPagedResult<Comment>> GetByEventAsync(Guid eventId, string? cursor = null, int pageSize = CursorPagination.DefaultPageSize)
     {
-        return await _context.Comments
+        var query = _context.Comments
             .Include(c => c.User)
             .Include(c => c.Replies)
             .ThenInclude(r => r.User)
-            .Where(c => c.EventId == eventId)
-            .OrderByDescending(c => c.CreatedAt)
-            .ToListAsync();
+            .Where(c => c.EventId == eventId);
+
+        return Task.FromResult(CursorPagination.Apply(query, cursor, pageSize));
     }
 
-    public async Task<IEnumerable<Comment>> GetBySharedEventAsync(Guid sharedEventId)
+    public Task<CursorPagedResult<Comment>> GetBySharedEventAsync(Guid sharedEventId, string? cursor = null, int pageSize = CursorPagination.DefaultPageSize)
     {
-        return await _context.Comments
+        var query = _context.Comments
             .Include(c => c.User)
             .Include(c => c.Replies)
             .ThenInclude(r => r.User)
-            .Where(c => c.SharedEventId == sharedEventId)
-            .OrderByDescending(c => c.CreatedAt)
-            .ToListAsync();
+            .Where(c => c.SharedEventId == sharedEventId);
+
+        return Task.FromResult(CursorPagination.Apply(query, cursor, pageSize));
     }
 
     public async Task<int> GetCommentCountByEventAsync(Guid eventId)

@@ -62,17 +62,17 @@ public class EventsController : ControllerBase
     }
 
     [HttpGet("group/{groupId:guid}")]
-    public async Task<IActionResult> ListByGroup(Guid groupId, CancellationToken ct)
+    public async Task<IActionResult> ListByGroup(Guid groupId, CancellationToken ct, [FromQuery] string? cursor)
     {
-        var request = new ListGroupEventsRequest { GroupId = groupId };
+        var request = new ListGroupEventsRequest { GroupId = groupId, Cursor = cursor };
         var response = await _listGroupEventsHandler.HandleAsync(request, ct);
         return Ok(response);
     }
 
     [HttpGet("group/{groupId:guid}/user/{userId:guid}")]
-    public async Task<IActionResult> ListByUser(Guid groupId, Guid userId, CancellationToken ct)
+    public async Task<IActionResult> ListByUser(Guid groupId, Guid userId, CancellationToken ct, [FromQuery] string? cursor)
     {
-        var request = new ListUserGroupEventsRequest { GroupId = groupId, UserId = userId };
+        var request = new ListUserGroupEventsRequest { GroupId = groupId, UserId = userId, Cursor = cursor };
         var response = await _listUserGroupEventsHandler.HandleAsync(request, ct);
         return Ok(response);
     }
@@ -118,9 +118,9 @@ public class EventsController : ControllerBase
     }
 
     [HttpGet("{eventId:guid}/comments")]
-    public async Task<IActionResult> GetComments(Guid eventId, CancellationToken ct)
+    public async Task<IActionResult> GetComments(Guid eventId, CancellationToken ct, [FromQuery] string? cursor)
     {
-        var request = new GetEventCommentsRequest { EventId = eventId };
+        var request = new GetEventCommentsRequest { EventId = eventId, Cursor = cursor };
         var response = await _getEventCommentsHandler.HandleAsync(request, ct);
         return Ok(response);
     }

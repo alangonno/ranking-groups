@@ -25,7 +25,8 @@ export function CreateEventModal({ isOpen, onClose, groupId }: CreateEventModalP
   const [error, setError] = useState<string | null>(null);
 
   const createEvent = useCreateEvent();
-  const { data: members = [] } = useMembers(groupId);
+  const { data: membersData } = useMembers(groupId);
+  const members = membersData?.flattened ?? [];
 
   if (!isOpen) return null;
 

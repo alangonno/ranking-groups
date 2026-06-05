@@ -9,11 +9,14 @@ namespace backend.src.Handlers.SharedEvents;
 public class ListGroupSharedEventsRequest
 {
     public Guid GroupId { get; set; }
+    public string? Cursor { get; set; }
 }
 
 public class ListGroupSharedEventsResponse
 {
     public List<SharedEventSummaryDto> SharedEvents { get; set; } = new();
+    public bool HasMore { get; set; }
+    public string? NextCursor { get; set; }
 }
 
 public class SharedEventSummaryDto
@@ -62,12 +65,12 @@ public class ListGroupSharedEventsHandler : IListGroupSharedEventsHandler
             ?? throw new BusinessRuleException("unauthorized", "Usuário não autenticado.");
 
         var members = await _groupMemberRepository.GetMembersByGroupAsync(request.GroupId);
-        GroupPermissionRules.ValidateUserCanInteract(userId, request.GroupId, members);
+        GroupPermissionRules.ValidateUserCanInteract(userId, request.GroupId, members.Items);
 
-        var sharedEvents = await _sharedEventRepository.GetByGroupAsync(request.GroupId);
+        var pagedSharedEvents = await _sharedEventRepository.GetByGroupAsync(request.GroupId, request.Cursor);
 
         var dtos = new List<SharedEventSummaryDto>();
-        foreach (var se in sharedEvents)
+        foreach (var se in pagedSharedEvents.Items)
         {
             var commentCount = await _commentRepository.GetCommentCountBySharedEventAsync(se.Id);
             dtos.Add(new SharedEventSummaryDto
@@ -87,6 +90,11 @@ public class ListGroupSharedEventsHandler : IListGroupSharedEventsHandler
             });
         }
 
-        return new ListGroupSharedEventsResponse { SharedEvents = dtos };
+        return new ListGroupSharedEventsResponse
+        {
+            SharedEvents = dtos,
+            HasMore = pagedSharedEvents.HasMore,
+            NextCursor = pagedSharedEvents.NextCursor
+        };
     }
 }

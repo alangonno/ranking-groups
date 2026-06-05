@@ -1,5 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { deleteJson, getJson, postJson, putJson } from "../lib/api";
+import { flattenPages, getNextPageParam } from "../lib/cursor-utils";
+import { invalidateFirstPage } from "../lib/query-utils";
 import type {
   CreateSharedEventRequest,
   CreateSharedEventResponse,
@@ -9,9 +11,9 @@ import type {
 } from "../types/shared-event/shared-event";
 
 export function useGroupSharedEvents(groupId: string) {
-  return useQuery<SharedEvent[]>({
+  return useInfiniteQuery({
     queryKey: ["shared-events", "group", groupId],
-    queryFn: async () => {
+    queryFn: async ({ pageParam }) => {
       const response = await getJson<{
         sharedEvents: Array<{
           sharedEventId: string;
@@ -28,23 +30,35 @@ export function useGroupSharedEvents(groupId: string) {
           hasCurrentUserJoined: boolean;
           commentCount?: number;
         }>;
-      }>(`/api/shared-events/group/${groupId}`);
-      return (response.sharedEvents || []).map((se) => ({
-        id: se.sharedEventId,
-        title: se.title,
-        description: se.description,
-        points: se.points,
-        isClosed: se.isClosed,
-        closesAt: se.closesAt ?? undefined,
-        createdAt: se.createdAt,
-        groupId: se.groupId,
-        createdByUserId: se.createdByUserId,
-        participantCount: se.participantCount,
-        hasCurrentUserJoined: se.hasCurrentUserJoined,
-        commentCount: se.commentCount ?? 0,
-      }));
+        hasMore: boolean;
+        nextCursor: string | null;
+      }>(`/api/shared-events/group/${groupId}`, { cursor: pageParam });
+      return {
+        items: (response.sharedEvents || []).map((se) => ({
+          id: se.sharedEventId,
+          title: se.title,
+          description: se.description,
+          points: se.points,
+          isClosed: se.isClosed,
+          closesAt: se.closesAt ?? undefined,
+          createdAt: se.createdAt,
+          groupId: se.groupId,
+          createdByUserId: se.createdByUserId,
+          participantCount: se.participantCount,
+          hasCurrentUserJoined: se.hasCurrentUserJoined,
+          commentCount: se.commentCount ?? 0,
+        })),
+        hasMore: response.hasMore,
+        nextCursor: response.nextCursor,
+      };
     },
+    getNextPageParam,
+    initialPageParam: undefined as string | undefined,
     enabled: !!groupId,
+    select: (data) => ({
+      ...data,
+      flattened: flattenPages(data.pages),
+    }),
   });
 }
 
@@ -63,9 +77,9 @@ export function useCreateSharedEvent() {
     mutationFn: (payload: CreateSharedEventRequest) =>
       postJson<CreateSharedEventResponse>("/api/shared-events", payload),
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["shared-events", "group", variables.groupId] });
+      invalidateFirstPage(queryClient, ["shared-events", "group", variables.groupId]);
       queryClient.invalidateQueries({ queryKey: ["ranking", variables.groupId] });
-      queryClient.invalidateQueries({ queryKey: ["feed", variables.groupId] });
+      invalidateFirstPage(queryClient, ["feed", variables.groupId]);
     },
   });
 }
@@ -78,9 +92,9 @@ export function useUpdateSharedEvent(id: string) {
       putJson<UpdateSharedEventResponse>(`/api/shared-events/${id}`, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shared-events", id] });
-      queryClient.invalidateQueries({ queryKey: ["shared-events"] });
-      queryClient.invalidateQueries({ queryKey: ["ranking"] });
-      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      invalidateAllFirstPages(queryClient, ["shared-events"]);
+      invalidateAllFirstPages(queryClient, ["ranking"]);
+      invalidateAllFirstPages(queryClient, ["feed"]);
     },
   });
 }
@@ -91,9 +105,9 @@ export function useDeleteSharedEvent(id: string) {
   return useMutation({
     mutationFn: () => deleteJson<void>(`/api/shared-events/${id}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["shared-events"] });
-      queryClient.invalidateQueries({ queryKey: ["ranking"] });
-      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      invalidateAllFirstPages(queryClient, ["shared-events"]);
+      invalidateAllFirstPages(queryClient, ["ranking"]);
+      invalidateAllFirstPages(queryClient, ["feed"]);
     },
   });
 }
@@ -104,9 +118,9 @@ export function useJoinSharedEvent(id: string) {
   return useMutation({
     mutationFn: () => postJson<void>(`/api/shared-events/${id}/join`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["shared-events"] });
-      queryClient.invalidateQueries({ queryKey: ["ranking"] });
-      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      invalidateAllFirstPages(queryClient, ["shared-events"]);
+      invalidateAllFirstPages(queryClient, ["ranking"]);
+      invalidateAllFirstPages(queryClient, ["feed"]);
     },
   });
 }
@@ -117,9 +131,9 @@ export function useLeaveSharedEvent(id: string) {
   return useMutation({
     mutationFn: () => postJson<void>(`/api/shared-events/${id}/leave`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["shared-events"] });
-      queryClient.invalidateQueries({ queryKey: ["ranking"] });
-      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      invalidateAllFirstPages(queryClient, ["shared-events"]);
+      invalidateAllFirstPages(queryClient, ["ranking"]);
+      invalidateAllFirstPages(queryClient, ["feed"]);
     },
   });
 }
@@ -130,9 +144,9 @@ export function useCloseSharedEvent(id: string) {
   return useMutation({
     mutationFn: () => postJson<void>(`/api/shared-events/${id}/close`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["shared-events"] });
-      queryClient.invalidateQueries({ queryKey: ["ranking"] });
-      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      invalidateAllFirstPages(queryClient, ["shared-events"]);
+      invalidateAllFirstPages(queryClient, ["ranking"]);
+      invalidateAllFirstPages(queryClient, ["feed"]);
       queryClient.invalidateQueries({ queryKey: ["user-profile"] });
     },
   });
@@ -145,9 +159,9 @@ export function useRequestSharedEventParticipantRemoval(sharedEventId: string, p
     mutationFn: () =>
       postJson<void>(`/api/shared-events/${sharedEventId}/participants/${participantId}/request-removal`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["shared-events"] });
-      queryClient.invalidateQueries({ queryKey: ["ranking"] });
-      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      invalidateAllFirstPages(queryClient, ["shared-events"]);
+      invalidateAllFirstPages(queryClient, ["ranking"]);
+      invalidateAllFirstPages(queryClient, ["feed"]);
       queryClient.invalidateQueries({ queryKey: ["user-profile"] });
     },
   });
@@ -160,10 +174,17 @@ export function useVoteSharedEventParticipantRemoval(sharedEventId: string, part
     mutationFn: (voteType: number) =>
       postJson<void>(`/api/shared-events/${sharedEventId}/participants/${participantId}/vote`, { voteType }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["shared-events"] });
-      queryClient.invalidateQueries({ queryKey: ["ranking"] });
-      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      invalidateAllFirstPages(queryClient, ["shared-events"]);
+      invalidateAllFirstPages(queryClient, ["ranking"]);
+      invalidateAllFirstPages(queryClient, ["feed"]);
       queryClient.invalidateQueries({ queryKey: ["user-profile"] });
     },
+  });
+}
+
+function invalidateAllFirstPages(queryClient: QueryClient, baseKey: unknown[]) {
+  const keys = queryClient.getQueriesData({ queryKey: baseKey, type: "all" });
+  keys.forEach(([key]) => {
+    invalidateFirstPage(queryClient, key as unknown[]);
   });
 }
