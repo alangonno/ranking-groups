@@ -4,6 +4,7 @@ import type { User } from "../auth/user";
 export interface RankingEntry {
   user: User;
   score: number;
+  weeklyScore: number;
 }
 
 export interface RankingQueryParams {

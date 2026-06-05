@@ -2,6 +2,7 @@ interface RankingListItemProps {
   position: number;
   name: string;
   points: number;
+  weeklyScore: number;
   avatarUrl?: string;
   maxPoints: number;
   isCurrentUser?: boolean;
@@ -11,6 +12,7 @@ export function RankingListItem({
   position,
   name,
   points,
+  weeklyScore,
   avatarUrl,
   maxPoints,
   isCurrentUser = false,
@@ -52,6 +54,11 @@ export function RankingListItem({
           {isCurrentUser && (
             <span className="text-primary ml-1.5 text-caption font-caption font-bold">
               Você
+            </span>
+          )}
+          {weeklyScore > 0 && (
+            <span className="text-primary ml-2 text-caption font-caption">
+              ↑ +{weeklyScore.toLocaleString()} esta semana
             </span>
           )}
         </p>

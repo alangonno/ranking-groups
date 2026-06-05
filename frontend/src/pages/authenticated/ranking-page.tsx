@@ -13,21 +13,22 @@ import type { RankingQueryParams } from "../../types/ranking/ranking";
 
 function getRankingQueryParams(filter: string): RankingQueryParams {
   const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
   switch (filter) {
     case "month": {
-      const start = new Date(today.getFullYear(), today.getMonth(), 1);
-      return { fromDate: start.toISOString(), toDate: today.toISOString() };
+      const start = new Date(todayStart.getFullYear(), todayStart.getMonth(), 1);
+      return { fromDate: start.toISOString(), toDate: todayEnd.toISOString() };
     }
     case "last-month": {
-      const start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-      const end = new Date(today.getFullYear(), today.getMonth(), 0);
+      const start = new Date(todayStart.getFullYear(), todayStart.getMonth() - 1, 1);
+      const end = new Date(todayStart.getFullYear(), todayStart.getMonth(), 0, 23, 59, 59, 999);
       return { fromDate: start.toISOString(), toDate: end.toISOString() };
     }
     case "last-year": {
-      const start = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
-      return { fromDate: start.toISOString(), toDate: today.toISOString() };
+      const start = new Date(todayStart.getFullYear() - 1, todayStart.getMonth(), todayStart.getDate());
+      return { fromDate: start.toISOString(), toDate: todayEnd.toISOString() };
     }
     case "all":
     default:
@@ -132,6 +133,7 @@ export function RankingPage() {
             name={top1.user.name}
             points={top1.score}
             avatarUrl={top1.user.avatarUrl}
+            weeklyScore={top1.weeklyScore}
           />
         )}
         {top2 && (
@@ -140,7 +142,7 @@ export function RankingPage() {
             name={top2.user.name}
             points={top2.score}
             avatarUrl={top2.user.avatarUrl}
-            growth={450}
+            weeklyScore={top2.weeklyScore}
           />
         )}
       </div>
@@ -153,6 +155,7 @@ export function RankingPage() {
             position={index + 3}
             name={member.user.name}
             points={member.score}
+            weeklyScore={member.weeklyScore}
             avatarUrl={member.user.avatarUrl}
             maxPoints={maxPoints}
             isCurrentUser={member.user.id === currentUserId}

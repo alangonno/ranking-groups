@@ -3,7 +3,7 @@ interface PodiumCardProps {
   name: string;
   points: number;
   avatarUrl?: string;
-  growth?: number;
+  weeklyScore?: number;
   badges?: string[];
 }
 
@@ -12,7 +12,7 @@ export function PodiumCard({
   name,
   points,
   avatarUrl,
-  growth,
+  weeklyScore,
   badges = [],
 }: PodiumCardProps) {
   const fallbackAvatar = name.charAt(0).toUpperCase();
@@ -67,6 +67,12 @@ export function PodiumCard({
             </span>
             <span className="text-body-md font-body-md text-secondary pb-1">pts</span>
           </div>
+          {weeklyScore !== undefined && weeklyScore > 0 && (
+            <div className="mt-2 flex items-center gap-1 text-primary text-caption font-caption">
+              <span className="text-lg">↑</span>
+              +{weeklyScore.toLocaleString()} esta semana
+            </div>
+          )}
         </div>
       </div>
     );
@@ -99,10 +105,10 @@ export function PodiumCard({
         {points.toLocaleString()} pts
       </div>
 
-      {growth !== undefined && (
+      {weeklyScore !== undefined && weeklyScore > 0 && (
         <div className="mt-3 flex items-center gap-1 text-primary text-caption font-caption">
           <span className="text-lg">↑</span>
-          +{growth} esta semana
+          +{weeklyScore.toLocaleString()} esta semana
         </div>
       )}
     </div>

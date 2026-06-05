@@ -10,11 +10,12 @@ export function useRanking(groupId: string, params?: RankingQueryParams) {
     queryKey: ["ranking", groupId, params],
     queryFn: async () => {
       const response = await getJson<{
-        members: Array<{ userId: string; name: string; score: number; position: number; avatarUrl?: string }>;
+        members: Array<{ userId: string; name: string; score: number; position: number; weeklyScore: number; avatarUrl?: string }>;
       }>(`/api/rankings/group/${groupId}`, params as Record<string, unknown>);
       return (response.members || []).map((m) => ({
         user: { id: m.userId, name: m.name, avatarUrl: getAvatarUrl(m.avatarUrl) } as User,
         score: m.score,
+        weeklyScore: m.weeklyScore,
       }));
     },
     enabled: !!groupId,

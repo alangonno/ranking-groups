@@ -26,6 +26,7 @@ public class RankingMemberDto
     public string? AvatarUrl { get; set; }
     public int Score { get; set; }
     public int Position { get; set; }
+    public int WeeklyScore { get; set; }
 }
 
 public interface IGetGroupRankingHandler
@@ -63,8 +64,10 @@ public class GetGroupRankingHandler : IGetGroupRankingHandler
         var members = await _groupMemberRepository.GetMembersByGroupAsync(request.GroupId);
         GroupPermissionRules.ValidateUserCanInteract(userId, request.GroupId, members);
 
-        var fromDate = request.FromDate ?? DateTime.UtcNow.AddYears(-1);
-        var toDate = request.ToDate ?? DateTime.UtcNow;
+        var fromDate = request.FromDate;
+        var toDate = request.ToDate;
+
+        var weekAgo = DateTime.UtcNow.AddDays(-7);
 
         var events = await _eventRepository.GetByGroupAsync(request.GroupId);
         var approvedEvents = events.Where(e => e.Status == EventStatus.Approved).ToList();
@@ -78,17 +81,25 @@ public class GetGroupRankingHandler : IGetGroupRankingHandler
 
             var userSharedPoints = sharedEvents
                 .SelectMany(se => se.Participants)
-                .Where(p => p.UserId == m.UserId && p.CreatedAt >= fromDate && p.CreatedAt <= toDate)
+                .Where(p => p.UserId == m.UserId && (fromDate == null || p.CreatedAt >= fromDate) && (toDate == null || p.CreatedAt <= toDate))
                 .Sum(p => p.SharedEvent.Points);
 
             score += userSharedPoints;
+
+            var weeklyScore = RankingRules.CalculateScoreFromEvents(userEvents, weekAgo, DateTime.UtcNow);
+            var weeklySharedPoints = sharedEvents
+                .SelectMany(se => se.Participants)
+                .Where(p => p.UserId == m.UserId && p.CreatedAt >= weekAgo)
+                .Sum(p => p.SharedEvent.Points);
+            weeklyScore += weeklySharedPoints;
 
             return new RankingMemberDto
             {
                 UserId = m.UserId,
                 Name = m.User?.Name ?? string.Empty,
                 AvatarUrl = _storageService.GetPublicUrlFromPath(m.User?.AvatarUrl),
-                Score = score
+                Score = score,
+                WeeklyScore = weeklyScore
             };
         });
 
@@ -100,6 +111,7 @@ public class GetGroupRankingHandler : IGetGroupRankingHandler
                 Name = m.Name,
                 AvatarUrl = m.AvatarUrl,
                 Score = m.Score,
+                WeeklyScore = m.WeeklyScore,
                 Position = index + 1
             })
             .ToList();
