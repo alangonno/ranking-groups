@@ -66,6 +66,7 @@ public class ListGroupEventsHandler : IListGroupEventsHandler
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
     private readonly ICommentRepository _commentRepository;
+    private readonly ISupabaseStorageService _storageService;
     private readonly AppDbContext _context;
 
     public ListGroupEventsHandler(
@@ -73,12 +74,14 @@ public class ListGroupEventsHandler : IListGroupEventsHandler
         IGroupMemberRepository groupMemberRepository,
         ICurrentUserService currentUserService,
         ICommentRepository commentRepository,
+        ISupabaseStorageService storageService,
         AppDbContext context)
     {
         _eventRepository = eventRepository;
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
         _commentRepository = commentRepository;
+        _storageService = storageService;
         _context = context;
     }
 
@@ -128,7 +131,7 @@ public class ListGroupEventsHandler : IListGroupEventsHandler
                 RemoveCount = e.Approvals.Count(a => a.VoteType == EventVoteType.Remove),
                 KeepCount = e.Approvals.Count(a => a.VoteType == EventVoteType.Keep),
                 CommentCount = commentCount,
-                ImageUrl = e.ImageUrl,
+                ImageUrl = _storageService.GetPublicUrlFromPath(e.ImageUrl),
                 Approvals = e.Approvals.Select(a => new EventApprovalSummaryDto
                 {
                     UserId = a.UserId,

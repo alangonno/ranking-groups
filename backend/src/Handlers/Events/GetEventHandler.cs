@@ -59,6 +59,7 @@ public class GetEventHandler : IGetEventHandler
     private readonly ICurrentUserService _currentUserService;
     private readonly IAuditLogRepository _auditLogRepository;
     private readonly ICommentRepository _commentRepository;
+    private readonly ISupabaseStorageService _storageService;
     private readonly AppDbContext _context;
 
     public GetEventHandler(
@@ -68,6 +69,7 @@ public class GetEventHandler : IGetEventHandler
         ICurrentUserService currentUserService,
         IAuditLogRepository auditLogRepository,
         ICommentRepository commentRepository,
+        ISupabaseStorageService storageService,
         AppDbContext context)
     {
         _eventRepository = eventRepository;
@@ -76,6 +78,7 @@ public class GetEventHandler : IGetEventHandler
         _currentUserService = currentUserService;
         _auditLogRepository = auditLogRepository;
         _commentRepository = commentRepository;
+        _storageService = storageService;
         _context = context;
     }
 
@@ -136,7 +139,7 @@ public class GetEventHandler : IGetEventHandler
             RemoveCount = removeCount,
             KeepCount = keepCount,
             CommentCount = commentCount,
-            ImageUrl = @event.ImageUrl,
+            ImageUrl = _storageService.GetPublicUrlFromPath(@event.ImageUrl),
             Approvals = approvals.Select(a => new EventApprovalDto
             {
                 UserId = a.UserId,

@@ -19,6 +19,7 @@ export function getUserFromToken(token: string): {
   name: string;
   email: string;
   username: string;
+  avatarUrl?: string;
 } | null {
   const decoded = decodeTokenPayload(token);
   if (!decoded) return null;
@@ -28,6 +29,7 @@ export function getUserFromToken(token: string): {
     name: (decoded.name as string) || "",
     email: (decoded.email as string) || "",
     username: (decoded.username as string) || "",
+    avatarUrl: (decoded.avatarUrl as string) || undefined,
   };
 }
 

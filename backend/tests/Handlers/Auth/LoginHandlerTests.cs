@@ -14,6 +14,7 @@ public class LoginHandlerTests
     private readonly IUserRepository _userRepository = Substitute.For<IUserRepository>();
     private readonly IPasswordHasher _passwordHasher = Substitute.For<IPasswordHasher>();
     private readonly IJwtService _jwtService = Substitute.For<IJwtService>();
+    private readonly ISupabaseStorageService _storageService = Substitute.For<ISupabaseStorageService>();
     private readonly ILoginHandler _handler;
 
     public LoginHandlerTests()
@@ -21,7 +22,8 @@ public class LoginHandlerTests
         _handler = new LoginHandler(
             _userRepository,
             _passwordHasher,
-            _jwtService
+            _jwtService,
+            _storageService
         );
     }
 
@@ -44,7 +46,7 @@ public class LoginHandlerTests
 
         _userRepository.GetByEmailAsync(request.Email).Returns(user);
         _passwordHasher.Verify(request.Password, user.PasswordHash).Returns(true);
-        _jwtService.GenerateAccessToken(user.Id, user.Name, user.Email, user.Username).Returns("jwt_token");
+        _jwtService.GenerateAccessToken(user.Id, user.Name, user.Email, user.Username, Arg.Any<string?>()).Returns("jwt_token");
 
         var result = await _handler.HandleAsync(request, CancellationToken.None);
 
@@ -76,7 +78,7 @@ public class LoginHandlerTests
         _userRepository.GetByEmailAsync(request.Email).Returns((User?)null);
         _userRepository.GetByUsernameAsync(request.Email).Returns(user);
         _passwordHasher.Verify(request.Password, user.PasswordHash).Returns(true);
-        _jwtService.GenerateAccessToken(user.Id, user.Name, user.Email, user.Username).Returns("jwt_token");
+        _jwtService.GenerateAccessToken(user.Id, user.Name, user.Email, user.Username, Arg.Any<string?>()).Returns("jwt_token");
 
         var result = await _handler.HandleAsync(request, CancellationToken.None);
 

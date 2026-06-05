@@ -36,6 +36,7 @@ export function useLogin() {
         name: data.name,
         email: data.email,
         username: data.username,
+        avatarUrl: data.avatarUrl,
       });
     },
   });
@@ -55,6 +56,7 @@ export function useRegister() {
         name: data.name,
         email: data.email,
         username: data.username,
+        avatarUrl: data.avatarUrl,
       });
     },
   });

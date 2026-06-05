@@ -30,6 +30,7 @@ public class SharedEventSummaryDto
     public DateTime CreatedAt { get; set; }
     public Guid CreatedByUserId { get; set; }
     public string CreatedByUserName { get; set; } = string.Empty;
+    public string? CreatedByUserAvatarUrl { get; set; }
     public int ParticipantCount { get; set; }
     public bool HasCurrentUserJoined { get; set; }
     public int CommentCount { get; set; }
@@ -47,17 +48,20 @@ public class ListGroupSharedEventsHandler : IListGroupSharedEventsHandler
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
     private readonly ICommentRepository _commentRepository;
+    private readonly ISupabaseStorageService _storageService;
 
     public ListGroupSharedEventsHandler(
         ISharedEventRepository sharedEventRepository,
         IGroupMemberRepository groupMemberRepository,
         ICurrentUserService currentUserService,
-        ICommentRepository commentRepository)
+        ICommentRepository commentRepository,
+        ISupabaseStorageService storageService)
     {
         _sharedEventRepository = sharedEventRepository;
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
         _commentRepository = commentRepository;
+        _storageService = storageService;
     }
 
     public async Task<ListGroupSharedEventsResponse> HandleAsync(ListGroupSharedEventsRequest request, CancellationToken ct)
@@ -85,10 +89,13 @@ public class ListGroupSharedEventsHandler : IListGroupSharedEventsHandler
                 CreatedAt = se.CreatedAt,
                 CreatedByUserId = se.CreatedByUserId,
                 CreatedByUserName = se.CreatedByUser?.Name ?? string.Empty,
+                CreatedByUserAvatarUrl = !string.IsNullOrWhiteSpace(se.CreatedByUser?.AvatarUrl)
+                    ? _storageService.GetPublicUrlFromPath(se.CreatedByUser?.AvatarUrl)
+                    : null,
                 ParticipantCount = se.Participants.Count,
                 HasCurrentUserJoined = se.Participants.Any(p => p.UserId == userId),
                 CommentCount = commentCount,
-                ImageUrl = se.ImageUrl
+                ImageUrl = _storageService.GetPublicUrlFromPath(se.ImageUrl)
             });
         }
 

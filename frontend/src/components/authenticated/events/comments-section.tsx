@@ -218,14 +218,25 @@ function CommentItem({
 
   const replies = getReplies(comment.id);
   const hasReplies = replies.length > 0;
+  const [avatarError, setAvatarError] = useState(false);
+  const showAvatar = comment.avatarUrl && !avatarError;
 
   return (
     <div className={`${indentClass} ${effectiveDepth > 0 ? "border-l-2 border-surface-container pl-3" : ""}`}>
       <div className="flex items-start gap-2">
-        <div className="w-7 h-7 rounded-full bg-primary-container flex items-center justify-center flex-shrink-0">
-          <span className="text-[10px] font-bold text-primary">
-            {comment.userName?.charAt(0).toUpperCase() || "U"}
-          </span>
+        <div className="w-7 h-7 rounded-full bg-primary-container flex items-center justify-center flex-shrink-0 overflow-hidden">
+          {showAvatar ? (
+            <img
+              src={comment.avatarUrl}
+              alt={comment.userName}
+              className="w-full h-full object-cover"
+              onError={() => setAvatarError(true)}
+            />
+          ) : (
+            <span className="text-[10px] font-bold text-primary">
+              {comment.userName?.charAt(0).toUpperCase() || "U"}
+            </span>
+          )}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">

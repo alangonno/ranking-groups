@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { ImageModal } from "../../ui/image-modal";
 import { AppSpinner } from "../../ui/app-spinner";
 import { ArrowDown, ClipboardList, Trash2, Clock, MessageCircle } from "lucide-react";
 import type { Event, EventVoteType } from "../../../types/event/event";
@@ -73,6 +74,8 @@ export function VotingCard({ event, compact = false }: VotingCardProps) {
     vote.mutate({ voteType });
   }
 
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+
   const initials = affectedUser?.name
     ? affectedUser.name
         .split(" ")
@@ -84,60 +87,79 @@ export function VotingCard({ event, compact = false }: VotingCardProps) {
 
   if (compact) {
     return (
-      <div className="shadow-[0_1px_3px_rgba(0,0,0,0.05)] min-w-[260px] snap-start p-4 bg-surface-container-lowest rounded-xl border border-surface-container">
-        <div className="flex items-start gap-2">
-          <div className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-secondary font-bold text-xs flex-shrink-0">
-            {isRemovalVote ? <Trash2 size={14} /> : initials}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-on-surface truncate">{event.title}</p>
-            <p className="text-xs text-secondary truncate">
-              {isRemovalVote ? `Remoção de ${affectedUser?.name}` : `Validar ${affectedUser?.name}`}
-            </p>
-            <div className="flex gap-2 mt-2">
+      <>
+        <div className="shadow-[0_1px_3px_rgba(0,0,0,0.05)] min-w-[260px] snap-start p-4 bg-surface-container-lowest rounded-xl border border-surface-container">
+          <div className="flex items-start gap-2">
+            <div
+              className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-secondary font-bold text-xs flex-shrink-0 overflow-hidden cursor-pointer"
+              onClick={() => affectedUser?.avatarUrl && setPreviewImage(affectedUser.avatarUrl)}
+            >
               {isRemovalVote ? (
-                <>
-                  <button
-                    type="button"
-                    className="flex-1 text-xs py-1.5 px-3 rounded-lg border border-surface-container text-on-surface bg-surface-container-lowest hover:bg-surface-container-low transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={() => handleVote("keep")}
-                    disabled={!canVote || vote.isPending}
-                  >
-                    {vote.isPending ? <AppSpinner size="xs" /> : "Manter"}
-                  </button>
-                  <button
-                    type="button"
-                    className="flex-1 text-xs py-1.5 px-3 rounded-lg bg-error text-on-primary hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={() => handleVote("remove")}
-                    disabled={!canVote || vote.isPending}
-                  >
-                    {vote.isPending ? <AppSpinner size="xs" /> : "Remover"}
-                  </button>
-                </>
+                <Trash2 size={14} />
+              ) : affectedUser?.avatarUrl ? (
+                <img src={affectedUser.avatarUrl} alt={affectedUser.name} className="w-full h-full object-cover" />
               ) : (
-                <>
-                  <button
-                    type="button"
-                    className="flex-1 text-xs py-1.5 px-3 rounded-lg border border-surface-container text-on-surface bg-surface-container-lowest hover:bg-surface-container-low transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={() => handleVote("reject")}
-                    disabled={!canVote || vote.isPending}
-                  >
-                    {vote.isPending ? <AppSpinner size="xs" /> : "Negar"}
-                  </button>
-                  <button
-                    type="button"
-                    className="flex-1 text-xs py-1.5 px-3 rounded-lg bg-primary text-on-primary hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={() => handleVote("confirm")}
-                    disabled={!canVote || vote.isPending}
-                  >
-                    {vote.isPending ? <AppSpinner size="xs" /> : "Aprovar"}
-                  </button>
-                </>
+                initials
               )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-on-surface truncate">{event.title}</p>
+              <p className="text-xs text-secondary truncate">
+                {isRemovalVote ? `Remoção de ${affectedUser?.name}` : `Validar ${affectedUser?.name}`}
+              </p>
+              <div className="flex gap-2 mt-2">
+                {isRemovalVote ? (
+                  <>
+                    <button
+                      type="button"
+                      className="flex-1 text-xs py-1.5 px-3 rounded-lg border border-surface-container text-on-surface bg-surface-container-lowest hover:bg-surface-container-low transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={() => handleVote("keep")}
+                      disabled={!canVote || vote.isPending}
+                    >
+                      {vote.isPending ? <AppSpinner size="xs" /> : "Manter"}
+                    </button>
+                    <button
+                      type="button"
+                      className="flex-1 text-xs py-1.5 px-3 rounded-lg bg-error text-on-primary hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={() => handleVote("remove")}
+                      disabled={!canVote || vote.isPending}
+                    >
+                      {vote.isPending ? <AppSpinner size="xs" /> : "Remover"}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      className="flex-1 text-xs py-1.5 px-3 rounded-lg border border-surface-container text-on-surface bg-surface-container-lowest hover:bg-surface-container-low transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={() => handleVote("reject")}
+                      disabled={!canVote || vote.isPending}
+                    >
+                      {vote.isPending ? <AppSpinner size="xs" /> : "Negar"}
+                    </button>
+                    <button
+                      type="button"
+                      className="flex-1 text-xs py-1.5 px-3 rounded-lg bg-primary text-on-primary hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={() => handleVote("confirm")}
+                      disabled={!canVote || vote.isPending}
+                    >
+                      {vote.isPending ? <AppSpinner size="xs" /> : "Aprovar"}
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+
+        {previewImage && (
+          <ImageModal
+            imageUrl={previewImage}
+            alt={event.title}
+            onClose={() => setPreviewImage(null)}
+          />
+        )}
+      </>
     );
   }
 
@@ -161,12 +183,40 @@ export function VotingCard({ event, compact = false }: VotingCardProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <p className="text-body-md font-body-md text-on-surface">
-                <span className="font-semibold">{isRemovalVote ? "Remoção de" : null} {affectedUser?.name}</span>
-              </p>
-              <p className="text-caption font-caption text-secondary mt-0.5">
-                {isRemovalVote ? `iniciado por ${creator?.name}` : `registrado por ${creator?.name}`}
-              </p>
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-8 h-8 rounded-full overflow-hidden bg-surface-container flex-shrink-0 cursor-pointer"
+                  onClick={() => affectedUser?.avatarUrl && setPreviewImage(affectedUser.avatarUrl)}
+                >
+                  {affectedUser?.avatarUrl ? (
+                    <img src={affectedUser.avatarUrl} alt={affectedUser.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-secondary font-bold text-xs">
+                      {affectedUser?.name?.charAt(0).toUpperCase() || "U"}
+                    </div>
+                  )}
+                </div>
+                <p className="text-body-md font-body-md text-on-surface">
+                  <span className="font-semibold">{isRemovalVote ? "Remoção de" : null} {affectedUser?.name}</span>
+                </p>
+              </div>
+              <div className="flex items-center gap-1.5 mt-1">
+                <div
+                  className="w-5 h-5 rounded-full overflow-hidden bg-surface-container flex-shrink-0 cursor-pointer"
+                  onClick={() => creator?.avatarUrl && setPreviewImage(creator.avatarUrl)}
+                >
+                  {creator?.avatarUrl ? (
+                    <img src={creator.avatarUrl} alt={creator.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-secondary font-bold text-[8px]">
+                      {creator?.name?.charAt(0).toUpperCase() || "U"}
+                    </div>
+                  )}
+                </div>
+                <p className="text-caption font-caption text-secondary mt-0.5">
+                  {isRemovalVote ? `iniciado por ${creator?.name}` : `registrado por ${creator?.name}`}
+                </p>
+              </div>
             </div>
 
             <span className="flex-shrink-0 inline-flex items-center gap-0.5 bg-error-container text-on-error-container text-caption font-caption px-2.5 py-1 rounded-full">
@@ -279,6 +329,14 @@ export function VotingCard({ event, compact = false }: VotingCardProps) {
           )}
         </div>
       </div>
+
+      {previewImage && (
+        <ImageModal
+          imageUrl={previewImage}
+          alt={event.title}
+          onClose={() => setPreviewImage(null)}
+        />
+      )}
     </div>
   );
 }

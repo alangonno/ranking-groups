@@ -35,15 +35,18 @@ public class LoginHandler : ILoginHandler
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtService _jwtService;
+    private readonly ISupabaseStorageService _storageService;
 
     public LoginHandler(
         IUserRepository userRepository,
         IPasswordHasher passwordHasher,
-        IJwtService jwtService)
+        IJwtService jwtService,
+        ISupabaseStorageService storageService)
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
         _jwtService = jwtService;
+        _storageService = storageService;
     }
 
     public async Task<LoginResponse> HandleAsync(LoginRequest request, CancellationToken ct)
@@ -67,7 +70,7 @@ public class LoginHandler : ILoginHandler
             throw new BusinessRuleException("invalid_credentials", "Email ou senha incorretos.");
         }
 
-        var accessToken = _jwtService.GenerateAccessToken(user.Id, user.Name, user.Email, user.Username);
+        var accessToken = _jwtService.GenerateAccessToken(user.Id, user.Name, user.Email, user.Username, _storageService.GetPublicUrlFromPath(user.AvatarUrl));
 
         return new LoginResponse
         {
@@ -76,7 +79,7 @@ public class LoginHandler : ILoginHandler
             Name = user.Name,
             Username = user.Username,
             Email = user.Email,
-            AvatarUrl = user.AvatarUrl
+            AvatarUrl = _storageService.GetPublicUrlFromPath(user.AvatarUrl)
         };
     }
 }

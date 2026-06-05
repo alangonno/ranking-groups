@@ -7,9 +7,10 @@ interface SharedEvent {
   participantCount: number;
   isClosed: boolean;
   createdByUserId: string;
+  createdByUserAvatarUrl?: string;
   hasCurrentUserJoined: boolean;
   closesAt?: string;
-  image?: string;
+  imageUrl?: string;
 }
 
 interface SharedEventsCarouselProps {

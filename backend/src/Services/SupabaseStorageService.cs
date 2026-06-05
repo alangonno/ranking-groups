@@ -7,6 +7,7 @@ namespace backend.src.Services;
 public interface ISupabaseStorageService
 {
     string GetPublicUrl(string bucket, string path);
+    string GetPublicUrlFromPath(string? path);
     Task<string> GenerateUploadSignedUrl(string bucket, string path, int expirySeconds = 300);
     Task DeleteObjectAsync(string bucket, string path);
 }
@@ -34,6 +35,18 @@ public class SupabaseStorageService : ISupabaseStorageService
 
         var cleanPath = path.TrimStart('/');
         return $"{_supabaseUrl}/storage/v1/object/public/{bucket}/{cleanPath}";
+    }
+
+    public string GetPublicUrlFromPath(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return string.Empty;
+
+        var parts = path.Split('/', 2);
+        if (parts.Length < 2)
+            return string.Empty;
+
+        return GetPublicUrl(parts[0], parts[1]);
     }
 
     public async Task<string> GenerateUploadSignedUrl(string bucket, string path, int expirySeconds = 300)

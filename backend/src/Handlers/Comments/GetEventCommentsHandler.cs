@@ -26,6 +26,7 @@ public class CommentDto
     public DateTime CreatedAt { get; set; }
     public Guid UserId { get; set; }
     public string UserName { get; set; } = string.Empty;
+    public string? AvatarUrl { get; set; }
     public Guid? ParentCommentId { get; set; }
     public List<CommentDto> Replies { get; set; } = new();
 }
@@ -41,17 +42,20 @@ public class GetEventCommentsHandler : IGetEventCommentsHandler
     private readonly IEventRepository _eventRepository;
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly ISupabaseStorageService _storageService;
 
     public GetEventCommentsHandler(
         ICommentRepository commentRepository,
         IEventRepository eventRepository,
         IGroupMemberRepository groupMemberRepository,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        ISupabaseStorageService storageService)
     {
         _commentRepository = commentRepository;
         _eventRepository = eventRepository;
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
+        _storageService = storageService;
     }
 
     public async Task<GetEventCommentsResponse> HandleAsync(GetEventCommentsRequest request, CancellationToken ct)
@@ -76,7 +80,7 @@ public class GetEventCommentsHandler : IGetEventCommentsHandler
         };
     }
 
-    private static CommentDto MapToDto(Comment comment)
+    private CommentDto MapToDto(Comment comment)
     {
         return new CommentDto
         {
@@ -85,6 +89,9 @@ public class GetEventCommentsHandler : IGetEventCommentsHandler
             CreatedAt = comment.CreatedAt,
             UserId = comment.UserId,
             UserName = comment.User?.Name ?? string.Empty,
+            AvatarUrl = !string.IsNullOrWhiteSpace(comment.User?.AvatarUrl)
+                ? _storageService.GetPublicUrlFromPath(comment.User?.AvatarUrl)
+                : null,
             ParentCommentId = comment.ParentCommentId,
             Replies = comment.Replies.Select(MapToDto).ToList()
         };

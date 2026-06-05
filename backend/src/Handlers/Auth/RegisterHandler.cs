@@ -38,17 +38,20 @@ public class RegisterHandler : IRegisterHandler
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtService _jwtService;
+    private readonly ISupabaseStorageService _storageService;
     private readonly AppDbContext _context;
 
     public RegisterHandler(
         IUserRepository userRepository,
         IPasswordHasher passwordHasher,
         IJwtService jwtService,
+        ISupabaseStorageService storageService,
         AppDbContext context)
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
         _jwtService = jwtService;
+        _storageService = storageService;
         _context = context;
     }
 
@@ -79,7 +82,7 @@ public class RegisterHandler : IRegisterHandler
         _userRepository.Add(user);
         await _context.SaveChangesAsync(ct);
 
-        var accessToken = _jwtService.GenerateAccessToken(user.Id, user.Name, user.Email, user.Username);
+        var accessToken = _jwtService.GenerateAccessToken(user.Id, user.Name, user.Email, user.Username, _storageService.GetPublicUrlFromPath(user.AvatarUrl));
 
         return new RegisterResponse
         {
@@ -88,7 +91,7 @@ public class RegisterHandler : IRegisterHandler
             Name = user.Name,
             Username = user.Username,
             Email = user.Email,
-            AvatarUrl = user.AvatarUrl
+            AvatarUrl = _storageService.GetPublicUrlFromPath(user.AvatarUrl)
         };
     }
 }

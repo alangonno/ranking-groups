@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ImageModal } from "../../ui/image-modal";
 import { Users, ArrowUp, CheckCircle2, Clock, LogOut, MessageCircle } from "lucide-react";
 import { AppButton } from "../../ui/app-button";
 import { AppSpinner } from "../../ui/app-spinner";
@@ -14,6 +15,7 @@ interface SharedEvent {
   participantCount: number;
   isClosed: boolean;
   createdByUserId: string;
+  createdByUserAvatarUrl?: string;
   hasCurrentUserJoined: boolean;
   closesAt?: string;
   imageUrl?: string;
@@ -62,6 +64,7 @@ export function SharedEventCard({ event }: SharedEventCardProps) {
   }
 
   const isActionPending = joinEvent.isPending || leaveEvent.isPending;
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   return (
     <div className="bg-surface-container-lowest shadow-sm rounded-2xl min-w-[260px] snap-start overflow-hidden border border-surface-container group cursor-pointer hover:border-outline-variant transition-colors">
@@ -70,7 +73,8 @@ export function SharedEventCard({ event }: SharedEventCardProps) {
           <img
             src={event.imageUrl}
             alt={event.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover cursor-pointer"
+            onClick={() => setPreviewImage(event.imageUrl!)}
           />
           <span className="absolute top-2 left-2 bg-surface/90 backdrop-blur-sm text-on-surface text-[10px] font-bold px-2 py-1 rounded-full">
             Em breve
@@ -108,6 +112,14 @@ export function SharedEventCard({ event }: SharedEventCardProps) {
 
         <div className="flex items-center justify-between mt-4 pt-4 border-t border-surface-container">
           <div className="flex items-center gap-3">
+            {event.createdByUserAvatarUrl && (
+              <div
+                className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 cursor-pointer"
+                onClick={() => setPreviewImage(event.createdByUserAvatarUrl!)}
+              >
+                <img src={event.createdByUserAvatarUrl} alt="Criador" className="w-full h-full object-cover" />
+              </div>
+            )}
             <div className="flex items-center gap-1 text-caption font-caption text-secondary">
               <Users size={14} />
               <span>{event.participantCount} confirmados</span>
@@ -173,6 +185,14 @@ export function SharedEventCard({ event }: SharedEventCardProps) {
           </div>
         )}
       </div>
+
+      {previewImage && (
+        <ImageModal
+          imageUrl={previewImage}
+          alt={event.title}
+          onClose={() => setPreviewImage(null)}
+        />
+      )}
     </div>
   );
 }

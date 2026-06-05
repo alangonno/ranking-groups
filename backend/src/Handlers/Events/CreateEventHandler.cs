@@ -45,6 +45,7 @@ public class CreateEventHandler : ICreateEventHandler
     private readonly ICurrentUserService _currentUserService;
     private readonly IAuditLogRepository _auditLogRepository;
     private readonly INotificationRepository _notificationRepository;
+    private readonly ISupabaseStorageService _storageService;
     private readonly AppDbContext _context;
 
     public CreateEventHandler(
@@ -54,6 +55,7 @@ public class CreateEventHandler : ICreateEventHandler
         ICurrentUserService currentUserService,
         IAuditLogRepository auditLogRepository,
         INotificationRepository notificationRepository,
+        ISupabaseStorageService storageService,
         AppDbContext context)
     {
         _eventRepository = eventRepository;
@@ -62,6 +64,7 @@ public class CreateEventHandler : ICreateEventHandler
         _currentUserService = currentUserService;
         _auditLogRepository = auditLogRepository;
         _notificationRepository = notificationRepository;
+        _storageService = storageService;
         _context = context;
     }
 
@@ -157,7 +160,7 @@ public class CreateEventHandler : ICreateEventHandler
             Type = @event.Type.ToString(),
             Status = @event.Status.ToString(),
             CreatedAt = @event.CreatedAt,
-            ImageUrl = @event.ImageUrl
+            ImageUrl = _storageService.GetPublicUrlFromPath(@event.ImageUrl)
         };
     }
 

@@ -53,15 +53,18 @@ public class GetGroupDetailsHandler : IGetGroupDetailsHandler
     private readonly IGroupRepository _groupRepository;
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly ISupabaseStorageService _storageService;
 
     public GetGroupDetailsHandler(
         IGroupRepository groupRepository,
         IGroupMemberRepository groupMemberRepository,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        ISupabaseStorageService storageService)
     {
         _groupRepository = groupRepository;
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
+        _storageService = storageService;
     }
 
     public async Task<GetGroupDetailsResponse> HandleAsync(GetGroupDetailsRequest request, CancellationToken ct)
@@ -85,7 +88,7 @@ public class GetGroupDetailsHandler : IGetGroupDetailsHandler
             Name = m.User?.Name ?? string.Empty,
             Role = m.Role.ToString(),
             CurrentScore = m.CurrentScore,
-            AvatarUrl = m.User?.AvatarUrl
+            AvatarUrl = _storageService.GetPublicUrlFromPath(m.User?.AvatarUrl)
         }).ToList();
 
         var ranking = memberDtos

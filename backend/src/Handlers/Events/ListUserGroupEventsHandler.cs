@@ -50,17 +50,20 @@ public class ListUserGroupEventsHandler : IListUserGroupEventsHandler
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
     private readonly ICommentRepository _commentRepository;
+    private readonly ISupabaseStorageService _storageService;
 
     public ListUserGroupEventsHandler(
         IEventRepository eventRepository,
         IGroupMemberRepository groupMemberRepository,
         ICurrentUserService currentUserService,
-        ICommentRepository commentRepository)
+        ICommentRepository commentRepository,
+        ISupabaseStorageService storageService)
     {
         _eventRepository = eventRepository;
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
         _commentRepository = commentRepository;
+        _storageService = storageService;
     }
 
     public async Task<ListUserGroupEventsResponse> HandleAsync(ListUserGroupEventsRequest request, CancellationToken ct)
@@ -107,7 +110,7 @@ public class ListUserGroupEventsHandler : IListUserGroupEventsHandler
                 AffectedUserName = @event.AffectedUser?.Name ?? string.Empty,
                 ScoreBalance = runningBalance,
                 CommentCount = commentCount,
-                ImageUrl = @event.ImageUrl
+                ImageUrl = _storageService.GetPublicUrlFromPath(@event.ImageUrl)
             });
 
             runningBalance += impact;

@@ -18,14 +18,7 @@ export function RankingPage() {
   const [search, setSearch] = useState("");
   const [parent] = useAutoAnimate();
 
-  const userInitials = user?.name
-    ? user.name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2)
-    : "U";
+  const [userAvatarError, setUserAvatarError] = useState(false);
 
   const { data: group } = useGroup(groupId || "");
   const { data: ranking = [] } = useRanking(groupId || "");
@@ -66,9 +59,20 @@ export function RankingPage() {
           <button
             type="button"
             onClick={() => navigate(`/group/${groupId}/profile/${user?.id}`)}
-            className="w-9 h-9 rounded-full bg-primary-light flex items-center justify-center text-primary font-bold text-sm hover:bg-primary-light/70 transition-colors"
+            className="w-9 h-9 rounded-full flex items-center justify-center overflow-hidden hover:ring-2 hover:ring-primary transition-all"
           >
-            {userInitials}
+            {user?.avatarUrl && !userAvatarError ? (
+              <img
+                src={user.avatarUrl}
+                alt={user.name}
+                className="w-full h-full object-cover"
+                onError={() => setUserAvatarError(true)}
+              />
+            ) : (
+              <div className="w-full h-full bg-primary-light flex items-center justify-center text-primary font-bold text-sm">
+                {user?.name?.charAt(0).toUpperCase() || "U"}
+              </div>
+            )}
           </button>
         </div>
       </div>
@@ -146,13 +150,21 @@ export function RankingPage() {
               <span className="text-sm font-bold text-primary">
                 #{currentUserPosition + 1}
               </span>
-              <div className="w-8 h-8 rounded-full bg-primary-light flex items-center justify-center text-primary font-bold text-xs">
-                {currentUserData.user.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
-                  .toUpperCase()
-                  .slice(0, 2)}
+              <div className="w-8 h-8 rounded-full bg-primary-light flex items-center justify-center text-primary font-bold text-xs overflow-hidden">
+                {currentUserData.user.avatarUrl ? (
+                  <img
+                    src={currentUserData.user.avatarUrl}
+                    alt={currentUserData.user.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  currentUserData.user.name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .toUpperCase()
+                    .slice(0, 2)
+                )}
               </div>
               <span className="text-sm font-medium text-text-primary">
                 Você

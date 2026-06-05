@@ -30,17 +30,20 @@ public class GetSharedEventCommentsHandler : IGetSharedEventCommentsHandler
     private readonly ISharedEventRepository _sharedEventRepository;
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly ISupabaseStorageService _storageService;
 
     public GetSharedEventCommentsHandler(
         ICommentRepository commentRepository,
         ISharedEventRepository sharedEventRepository,
         IGroupMemberRepository groupMemberRepository,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        ISupabaseStorageService storageService)
     {
         _commentRepository = commentRepository;
         _sharedEventRepository = sharedEventRepository;
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
+        _storageService = storageService;
     }
 
     public async Task<GetSharedEventCommentsResponse> HandleAsync(GetSharedEventCommentsRequest request, CancellationToken ct)
@@ -65,7 +68,7 @@ public class GetSharedEventCommentsHandler : IGetSharedEventCommentsHandler
         };
     }
 
-    private static CommentDto MapToDto(Comment comment)
+    private CommentDto MapToDto(Comment comment)
     {
         return new CommentDto
         {
@@ -74,6 +77,9 @@ public class GetSharedEventCommentsHandler : IGetSharedEventCommentsHandler
             CreatedAt = comment.CreatedAt,
             UserId = comment.UserId,
             UserName = comment.User?.Name ?? string.Empty,
+            AvatarUrl = !string.IsNullOrWhiteSpace(comment.User?.AvatarUrl)
+                ? _storageService.GetPublicUrlFromPath(comment.User?.AvatarUrl)
+                : null,
             ParentCommentId = comment.ParentCommentId,
             Replies = comment.Replies.Select(MapToDto).ToList()
         };

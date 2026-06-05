@@ -70,9 +70,19 @@ export function DashboardPage() {
           <button
             type="button"
             onClick={() => navigate(`/group/${groupId}/profile/${user?.id}`)}
-            className="w-9 h-9 rounded-full bg-primary-light flex items-center justify-center text-primary font-bold text-sm hover:bg-primary-light/70 transition-colors"
+            className="w-9 h-9 rounded-full flex items-center justify-center overflow-hidden hover:ring-2 hover:ring-primary transition-all"
           >
-            {userInitials}
+            {user?.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt={user.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-primary-light flex items-center justify-center text-primary font-bold text-sm">
+                {user?.name?.charAt(0).toUpperCase() || "U"}
+              </div>
+            )}
           </button>
         </div>
       </div>
@@ -121,7 +131,7 @@ export function DashboardPage() {
             ) : (
               allFeedItems.map((entry) =>
                 entry.type === "shared_event" ? (
-                  <SharedEventCard
+                    <SharedEventCard
                     key={`shared-${entry.item.id}`}
                     event={{
                       id: entry.item.id,
@@ -130,7 +140,9 @@ export function DashboardPage() {
                       participantCount: entry.item.participantCount ?? 0,
                       isClosed: entry.item.isClosed ?? false,
                       createdByUserId: entry.item.createdByUserId,
+                      createdByUserAvatarUrl: entry.item.createdByUserAvatarUrl,
                       hasCurrentUserJoined: entry.item.hasCurrentUserJoined ?? false,
+                      imageUrl: entry.item.imageUrl,
                     }}
                   />
                 ) : (
@@ -185,21 +197,23 @@ export function DashboardPage() {
               ) : (
                 allFeedItems.map((entry) =>
                   entry.type === "shared_event" ? (
-                    <SharedEventCard
-                      key={`shared-${entry.item.id}`}
-                      event={{
-                        id: entry.item.id,
-                        title: entry.item.title,
-                        points: entry.item.points,
-                        participantCount: entry.item.participantCount ?? 0,
-                        isClosed: entry.item.isClosed ?? false,
-                        createdByUserId: entry.item.createdByUserId,
-                        hasCurrentUserJoined: entry.item.hasCurrentUserJoined ?? false,
-                      }}
-                    />
-                  ) : (
-                    <EventCard key={entry.event.id} event={entry.event} />
-                  )
+                      <SharedEventCard
+                        key={`shared-${entry.item.id}`}
+                        event={{
+                          id: entry.item.id,
+                          title: entry.item.title,
+                          points: entry.item.points,
+                          participantCount: entry.item.participantCount ?? 0,
+                          isClosed: entry.item.isClosed ?? false,
+                          createdByUserId: entry.item.createdByUserId,
+                          createdByUserAvatarUrl: entry.item.createdByUserAvatarUrl,
+                          hasCurrentUserJoined: entry.item.hasCurrentUserJoined ?? false,
+                          imageUrl: entry.item.imageUrl,
+                        }}
+                      />
+                    ) : (
+                      <EventCard key={entry.event.id} event={entry.event} />
+                    )
                 )
               )
             ) : (

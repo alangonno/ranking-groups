@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -13,12 +14,14 @@ import { useLogout } from "../../../hooks/use-auth";
 import { useAuthContext } from "../../../providers/auth-provider";
 import { useCurrentGroupId } from "../../../lib/use-group-context";
 import { NotificationDropdown } from "../notifications/notification-dropdown";
+import { ImageModal } from "../../ui/image-modal";
 
 export function AppSidebar() {
   const { user } = useAuthContext();
   const logout = useLogout();
   const navigate = useNavigate();
   const groupId = useCurrentGroupId();
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   function handleLogout() {
     logout.mutate(undefined, {
@@ -59,7 +62,8 @@ export function AppSidebar() {
               <img
                 src={user.avatarUrl}
                 alt={user.name}
-                className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                className="w-12 h-12 rounded-full object-cover flex-shrink-0 cursor-pointer"
+                onClick={() => setPreviewImage(user.avatarUrl!)}
               />
             ) : (
               <div className="w-12 h-12 rounded-full bg-primary-light flex items-center justify-center text-primary font-bold text-lg flex-shrink-0">
@@ -157,6 +161,14 @@ export function AppSidebar() {
           Sair
         </button>
       </div>
+
+      {previewImage && (
+        <ImageModal
+          imageUrl={previewImage}
+          alt={user?.name || "Avatar"}
+          onClose={() => setPreviewImage(null)}
+        />
+      )}
     </aside>
   );
 }

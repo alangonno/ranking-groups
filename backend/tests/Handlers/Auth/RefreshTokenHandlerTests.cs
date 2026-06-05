@@ -13,13 +13,15 @@ public class RefreshTokenHandlerTests
 {
     private readonly IJwtService _jwtService = Substitute.For<IJwtService>();
     private readonly IUserRepository _userRepository = Substitute.For<IUserRepository>();
+    private readonly ISupabaseStorageService _storageService = Substitute.For<ISupabaseStorageService>();
     private readonly IRefreshTokenHandler _handler;
 
     public RefreshTokenHandlerTests()
     {
         _handler = new RefreshTokenHandler(
             _jwtService,
-            _userRepository
+            _userRepository,
+            _storageService
         );
     }
 
@@ -40,7 +42,7 @@ public class RefreshTokenHandlerTests
 
         _jwtService.ValidateRefreshToken(request.RefreshToken).Returns(user.Id);
         _userRepository.GetByIdAsync(user.Id).Returns(user);
-        _jwtService.GenerateAccessToken(user.Id, user.Name, user.Email, user.Username).Returns("new_jwt_token");
+        _jwtService.GenerateAccessToken(user.Id, user.Name, user.Email, user.Username, Arg.Any<string?>()).Returns("new_jwt_token");
 
         var result = await _handler.HandleAsync(request, CancellationToken.None);
 

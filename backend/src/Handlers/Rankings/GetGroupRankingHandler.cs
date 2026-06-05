@@ -39,17 +39,20 @@ public class GetGroupRankingHandler : IGetGroupRankingHandler
     private readonly ISharedEventRepository _sharedEventRepository;
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly ISupabaseStorageService _storageService;
 
     public GetGroupRankingHandler(
         IEventRepository eventRepository,
         ISharedEventRepository sharedEventRepository,
         IGroupMemberRepository groupMemberRepository,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        ISupabaseStorageService storageService)
     {
         _eventRepository = eventRepository;
         _sharedEventRepository = sharedEventRepository;
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
+        _storageService = storageService;
     }
 
     public async Task<GetGroupRankingResponse> HandleAsync(GetGroupRankingRequest request, CancellationToken ct)
@@ -84,7 +87,7 @@ public class GetGroupRankingHandler : IGetGroupRankingHandler
             {
                 UserId = m.UserId,
                 Name = m.User?.Name ?? string.Empty,
-                AvatarUrl = m.User?.AvatarUrl,
+                AvatarUrl = _storageService.GetPublicUrlFromPath(m.User?.AvatarUrl),
                 Score = score
             };
         });

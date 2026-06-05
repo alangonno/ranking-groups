@@ -111,6 +111,7 @@ public class GetUserGroupProfileHandler : IGetUserGroupProfileHandler
     private readonly IEventRepository _eventRepository;
     private readonly ISharedEventRepository _sharedEventRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly ISupabaseStorageService _storageService;
     private readonly AppDbContext _context;
 
     public GetUserGroupProfileHandler(
@@ -118,12 +119,14 @@ public class GetUserGroupProfileHandler : IGetUserGroupProfileHandler
         IEventRepository eventRepository,
         ISharedEventRepository sharedEventRepository,
         ICurrentUserService currentUserService,
+        ISupabaseStorageService storageService,
         AppDbContext context)
     {
         _groupMemberRepository = groupMemberRepository;
         _eventRepository = eventRepository;
         _sharedEventRepository = sharedEventRepository;
         _currentUserService = currentUserService;
+        _storageService = storageService;
         _context = context;
     }
 
@@ -154,7 +157,7 @@ public class GetUserGroupProfileHandler : IGetUserGroupProfileHandler
             Name = targetMember.User?.Name ?? string.Empty,
             Username = targetMember.User?.Username ?? string.Empty,
             Email = targetMember.User?.Email ?? string.Empty,
-            AvatarUrl = targetMember.User?.AvatarUrl,
+            AvatarUrl = _storageService.GetPublicUrlFromPath(targetMember.User?.AvatarUrl),
             Role = targetMember.Role.ToString(),
             CurrentScore = targetMember.CurrentScore,
             RankPosition = rankPosition
@@ -197,7 +200,7 @@ public class GetUserGroupProfileHandler : IGetUserGroupProfileHandler
                 AffectedUserId = @event.AffectedUserId,
                 AffectedUserName = @event.AffectedUser?.Name ?? string.Empty,
                 ScoreBalance = runningBalance,
-                ImageUrl = @event.ImageUrl
+                ImageUrl = _storageService.GetPublicUrlFromPath(@event.ImageUrl)
             });
 
             runningBalance += impact;
@@ -218,7 +221,7 @@ public class GetUserGroupProfileHandler : IGetUserGroupProfileHandler
             CreatedByUserName = se.CreatedByUser?.Name ?? string.Empty,
             ParticipantCount = se.Participants?.Count ?? 0,
             UserRole = se.CreatedByUserId == request.UserId ? "organizer" : "participant",
-            ImageUrl = se.ImageUrl
+            ImageUrl = _storageService.GetPublicUrlFromPath(se.ImageUrl)
         }).ToList();
 
         var totalMembers = members.Count();
@@ -240,7 +243,7 @@ public class GetUserGroupProfileHandler : IGetUserGroupProfileHandler
             AffectedUserName = e.AffectedUser?.Name ?? string.Empty,
             IsClosed = null,
             ParticipantCount = null,
-            ImageUrl = e.ImageUrl,
+            ImageUrl = _storageService.GetPublicUrlFromPath(e.ImageUrl),
             IsPendingRemoval = e.IsPendingRemoval,
             RemovalVoteDeadline = e.RemovalVoteDeadline,
             QuorumRequired = quorum,
@@ -274,7 +277,7 @@ public class GetUserGroupProfileHandler : IGetUserGroupProfileHandler
                     AffectedUserName = null,
                     IsClosed = se.IsClosed,
                     ParticipantCount = se.Participants?.Count ?? 0,
-                    ImageUrl = se.ImageUrl,
+                    ImageUrl = _storageService.GetPublicUrlFromPath(se.ImageUrl),
                     IsPendingRemoval = false
                 })
         );

@@ -3,6 +3,7 @@ import type { BaseEntity } from "../common/base-entity";
 export interface Comment extends BaseEntity {
   userId: string;
   userName: string;
+  avatarUrl?: string;
   eventId?: string;
   sharedEventId?: string;
   parentCommentId?: string;

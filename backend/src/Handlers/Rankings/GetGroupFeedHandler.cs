@@ -31,9 +31,11 @@ public class FeedItemDto
     public DateTime CreatedAt { get; set; }
     public Guid CreatedByUserId { get; set; }
     public string CreatedByUserName { get; set; } = string.Empty;
+    public string? CreatedByUserAvatarUrl { get; set; }
 
     public Guid? AffectedUserId { get; set; }
     public string? AffectedUserName { get; set; }
+    public string? AffectedUserAvatarUrl { get; set; }
     public string? EventStatus { get; set; }
     public string? EventType { get; set; }
     public int? ScoreBalance { get; set; }
@@ -57,19 +59,22 @@ public class GetGroupFeedHandler : IGetGroupFeedHandler
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
     private readonly ICommentRepository _commentRepository;
+    private readonly ISupabaseStorageService _storageService;
 
     public GetGroupFeedHandler(
         IEventRepository eventRepository,
         ISharedEventRepository sharedEventRepository,
         IGroupMemberRepository groupMemberRepository,
         ICurrentUserService currentUserService,
-        ICommentRepository commentRepository)
+        ICommentRepository commentRepository,
+        ISupabaseStorageService storageService)
     {
         _eventRepository = eventRepository;
         _sharedEventRepository = sharedEventRepository;
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
         _commentRepository = commentRepository;
+        _storageService = storageService;
     }
 
     public async Task<GetGroupFeedResponse> HandleAsync(GetGroupFeedRequest request, CancellationToken ct)
@@ -100,15 +105,21 @@ public class GetGroupFeedHandler : IGetGroupFeedHandler
                 CreatedAt = e.CreatedAt,
                 CreatedByUserId = e.CreatedByUserId,
                 CreatedByUserName = e.CreatedByUser?.Name ?? string.Empty,
+                CreatedByUserAvatarUrl = !string.IsNullOrWhiteSpace(e.CreatedByUser?.AvatarUrl)
+                    ? _storageService.GetPublicUrlFromPath(e.CreatedByUser?.AvatarUrl)
+                    : null,
                 AffectedUserId = e.AffectedUserId,
                 AffectedUserName = e.AffectedUser?.Name ?? string.Empty,
+                AffectedUserAvatarUrl = !string.IsNullOrWhiteSpace(e.AffectedUser?.AvatarUrl)
+                    ? _storageService.GetPublicUrlFromPath(e.AffectedUser?.AvatarUrl)
+                    : null,
                 EventStatus = e.Status.ToString(),
                 EventType = e.Type.ToString(),
                 ScoreBalance = e.Status == EventStatus.Approved
                     ? (e.Type == EventType.Negative ? -e.Points : e.Points)
                     : 0,
                 CommentCount = commentCount,
-                ImageUrl = e.ImageUrl
+                ImageUrl = _storageService.GetPublicUrlFromPath(e.ImageUrl)
             });
         }
 
@@ -126,11 +137,14 @@ public class GetGroupFeedHandler : IGetGroupFeedHandler
                 CreatedAt = se.CreatedAt,
                 CreatedByUserId = se.CreatedByUserId,
                 CreatedByUserName = se.CreatedByUser?.Name ?? string.Empty,
+                CreatedByUserAvatarUrl = !string.IsNullOrWhiteSpace(se.CreatedByUser?.AvatarUrl)
+                    ? _storageService.GetPublicUrlFromPath(se.CreatedByUser?.AvatarUrl)
+                    : null,
                 ParticipantCount = se.Participants.Count,
                 IsClosed = se.IsClosed,
                 HasCurrentUserJoined = se.Participants.Any(p => p.UserId == userId),
                 CommentCount = commentCount,
-                ImageUrl = se.ImageUrl
+                ImageUrl = _storageService.GetPublicUrlFromPath(se.ImageUrl)
             });
         }
 

@@ -10,6 +10,7 @@ import { GroupRole } from "../../types/group/group";
 import { AppBadge } from "../../components/ui/app-badge";
 import { AppSpinner } from "../../components/ui/app-spinner";
 import { NotificationDropdown } from "../../components/authenticated/notifications/notification-dropdown";
+import { ImageModal } from "../../components/ui/image-modal";
 import { postJson } from "../../lib/api";
 import { getUserIdFromToken } from "../../lib/auth-token";
 import { authStore } from "../../store/auth-store";
@@ -52,6 +53,7 @@ export function ProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { uploadImage, isUploading: isUploadingImage } = useImageUpload();
   const updateAvatar = useUpdateAvatar();
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
 
@@ -150,7 +152,8 @@ export function ProfilePage() {
                 <img
                   src={member.avatarUrl}
                   alt={member.name}
-                  className="w-20 h-20 rounded-full object-cover"
+                  className="w-20 h-20 rounded-full object-cover cursor-pointer"
+                  onClick={() => setPreviewImage(member.avatarUrl!)}
                 />
               ) : (
                 <div className="w-20 h-20 rounded-full bg-primary-light flex items-center justify-center text-primary font-bold text-2xl">
@@ -452,6 +455,14 @@ export function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {previewImage && (
+        <ImageModal
+          imageUrl={previewImage}
+          alt={member?.name || "Avatar"}
+          onClose={() => setPreviewImage(null)}
+        />
+      )}
     </div>
   );
 }

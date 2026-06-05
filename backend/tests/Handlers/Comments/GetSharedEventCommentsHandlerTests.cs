@@ -16,6 +16,7 @@ public class GetSharedEventCommentsHandlerTests
     private readonly ISharedEventRepository _sharedEventRepository = Substitute.For<ISharedEventRepository>();
     private readonly IGroupMemberRepository _groupMemberRepository = Substitute.For<IGroupMemberRepository>();
     private readonly ICurrentUserService _currentUserService = Substitute.For<ICurrentUserService>();
+    private readonly ISupabaseStorageService _storageService = Substitute.For<ISupabaseStorageService>();
     private readonly IGetSharedEventCommentsHandler _handler;
 
     public GetSharedEventCommentsHandlerTests()
@@ -24,7 +25,8 @@ public class GetSharedEventCommentsHandlerTests
             _commentRepository,
             _sharedEventRepository,
             _groupMemberRepository,
-            _currentUserService
+            _currentUserService,
+            _storageService
         );
     }
 

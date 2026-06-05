@@ -7,7 +7,7 @@ namespace backend.src.Services;
 
 public interface IJwtService
 {
-    string GenerateAccessToken(Guid userId, string name, string email, string username);
+    string GenerateAccessToken(Guid userId, string name, string email, string username, string? avatarUrl = null);
     string GenerateRefreshToken(Guid userId);
     Guid? ValidateRefreshToken(string token);
 }
@@ -31,18 +31,23 @@ public class JwtService : IJwtService
         _refreshExpirationDays = int.Parse(GetEnvOrThrow("JWT_REFRESH_EXPIRATION_DAYS"));
     }
 
-    public string GenerateAccessToken(Guid userId, string name, string email, string username)
+    public string GenerateAccessToken(Guid userId, string name, string email, string username, string? avatarUrl = null)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_accessSecret));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        var claims = new[]
+        var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
             new Claim("name", name),
             new Claim("email", email),
             new Claim("username", username)
         };
+
+        if (!string.IsNullOrWhiteSpace(avatarUrl))
+        {
+            claims.Add(new Claim("avatarUrl", avatarUrl));
+        }
 
         var token = new JwtSecurityToken(
             issuer: _issuer,

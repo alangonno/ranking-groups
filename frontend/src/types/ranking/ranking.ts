@@ -20,10 +20,12 @@ export interface FeedItem {
   createdAt: string;
   createdByUserId: string;
   createdByUserName: string;
+  createdByUserAvatarUrl?: string;
 
   // event-specific
   affectedUserId?: string;
   affectedUserName?: string;
+  affectedUserAvatarUrl?: string;
   eventStatus?: string;
   eventType?: string;
   scoreBalance?: number;

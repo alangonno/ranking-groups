@@ -16,6 +16,7 @@ public class RegisterHandlerTests
     private readonly IUserRepository _userRepository = Substitute.For<IUserRepository>();
     private readonly IPasswordHasher _passwordHasher = Substitute.For<IPasswordHasher>();
     private readonly IJwtService _jwtService = Substitute.For<IJwtService>();
+    private readonly ISupabaseStorageService _storageService = Substitute.For<ISupabaseStorageService>();
     private readonly AppDbContext _context = Substitute.For<AppDbContext>(new DbContextOptions<AppDbContext>());
     private readonly IRegisterHandler _handler;
 
@@ -25,6 +26,7 @@ public class RegisterHandlerTests
             _userRepository,
             _passwordHasher,
             _jwtService,
+            _storageService,
             _context
         );
     }
@@ -43,7 +45,7 @@ public class RegisterHandlerTests
         _userRepository.ExistsEmailAsync(request.Email).Returns(false);
         _userRepository.ExistsUsernameAsync(request.Username).Returns(false);
         _passwordHasher.Hash(request.Password).Returns("hashed_password");
-        _jwtService.GenerateAccessToken(Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>()).Returns("jwt_token");
+        _jwtService.GenerateAccessToken(Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>()).Returns("jwt_token");
 
         var result = await _handler.HandleAsync(request, CancellationToken.None);
 

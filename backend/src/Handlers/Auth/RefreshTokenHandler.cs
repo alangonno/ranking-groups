@@ -27,13 +27,16 @@ public class RefreshTokenHandler : IRefreshTokenHandler
 {
     private readonly IJwtService _jwtService;
     private readonly IUserRepository _userRepository;
+    private readonly ISupabaseStorageService _storageService;
 
     public RefreshTokenHandler(
         IJwtService jwtService,
-        IUserRepository userRepository)
+        IUserRepository userRepository,
+        ISupabaseStorageService storageService)
     {
         _jwtService = jwtService;
         _userRepository = userRepository;
+        _storageService = storageService;
     }
 
     public async Task<RefreshTokenResponse> HandleAsync(RefreshTokenRequest request, CancellationToken ct)
@@ -52,7 +55,7 @@ public class RefreshTokenHandler : IRefreshTokenHandler
             throw new BusinessRuleException("invalid_refresh_token", "Refresh token inválido ou expirado.");
         }
 
-        var accessToken = _jwtService.GenerateAccessToken(user.Id, user.Name, user.Email, user.Username);
+        var accessToken = _jwtService.GenerateAccessToken(user.Id, user.Name, user.Email, user.Username, _storageService.GetPublicUrlFromPath(user.AvatarUrl));
 
         return new RefreshTokenResponse
         {

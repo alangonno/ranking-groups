@@ -42,6 +42,7 @@ public class CreateSharedEventHandler : ICreateSharedEventHandler
     private readonly ICurrentUserService _currentUserService;
     private readonly IAuditLogRepository _auditLogRepository;
     private readonly INotificationRepository _notificationRepository;
+    private readonly ISupabaseStorageService _storageService;
     private readonly AppDbContext _context;
 
     public CreateSharedEventHandler(
@@ -51,6 +52,7 @@ public class CreateSharedEventHandler : ICreateSharedEventHandler
         ICurrentUserService currentUserService,
         IAuditLogRepository auditLogRepository,
         INotificationRepository notificationRepository,
+        ISupabaseStorageService storageService,
         AppDbContext context)
     {
         _sharedEventRepository = sharedEventRepository;
@@ -59,6 +61,7 @@ public class CreateSharedEventHandler : ICreateSharedEventHandler
         _currentUserService = currentUserService;
         _auditLogRepository = auditLogRepository;
         _notificationRepository = notificationRepository;
+        _storageService = storageService;
         _context = context;
     }
 
@@ -111,7 +114,7 @@ public class CreateSharedEventHandler : ICreateSharedEventHandler
             Points = sharedEvent.Points,
             IsClosed = sharedEvent.IsClosed,
             CreatedAt = sharedEvent.CreatedAt,
-            ImageUrl = sharedEvent.ImageUrl
+            ImageUrl = _storageService.GetPublicUrlFromPath(sharedEvent.ImageUrl)
         };
     }
 }

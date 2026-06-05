@@ -24,6 +24,7 @@ export function CreateEventModal({ isOpen, onClose, groupId }: CreateEventModalP
   const [type, setType] = useState<string>("" + EventType.Positive);
   const [affectedUserId, setAffectedUserId] = useState("");
   const [eventImageUrl, setEventImageUrl] = useState<string | undefined>(undefined);
+  const [eventImagePublicUrl, setEventImagePublicUrl] = useState<string | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -82,6 +83,7 @@ export function CreateEventModal({ isOpen, onClose, groupId }: CreateEventModalP
     try {
       const result = await uploadImage(file, "event-images");
       setEventImageUrl(result.path);
+      setEventImagePublicUrl(result.publicUrl);
     } catch {
       // error handled by hook
     }
@@ -183,16 +185,19 @@ export function CreateEventModal({ isOpen, onClose, groupId }: CreateEventModalP
               onChange={handleImageSelect}
               className="hidden"
             />
-            {eventImageUrl ? (
+            {eventImagePublicUrl ? (
               <div className="relative w-full h-32 rounded-lg overflow-hidden">
                 <img
-                  src={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/${eventImageUrl}`}
+                  src={eventImagePublicUrl}
                   alt="Preview"
                   className="w-full h-full object-cover"
                 />
                 <button
                   type="button"
-                  onClick={() => setEventImageUrl(undefined)}
+                  onClick={() => {
+                    setEventImageUrl(undefined);
+                    setEventImagePublicUrl(undefined);
+                  }}
                   className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1 hover:bg-black/70 transition-colors"
                 >
                   <X size={14} />
