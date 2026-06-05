@@ -20,8 +20,17 @@ export function useMembers(groupId: string) {
           role: string;
           currentScore: number;
         }>;
+        ranking: Array<{
+          userId: string;
+          position: number;
+        }>;
       }>(`/api/groups/${groupId}`);
-      return (data.members || []).map((m, _index) => ({
+
+      const positionMap = new Map(
+        (data.ranking || []).map((r) => [r.userId, r.position])
+      );
+
+      return (data.members || []).map((m) => ({
         userId: m.userId,
         name: m.name,
         username: "",
@@ -29,7 +38,7 @@ export function useMembers(groupId: string) {
         avatar: m.name.charAt(0).toUpperCase(),
         role: ROLE_MAP[m.role] ?? 3,
         currentScore: m.currentScore,
-        rankPosition: 0,
+        rankPosition: positionMap.get(m.userId) ?? 0,
       }));
     },
     enabled: !!groupId,

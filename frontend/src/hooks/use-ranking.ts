@@ -27,7 +27,10 @@ export function useFeed(groupId: string, limit?: number) {
         `/api/rankings/group/${groupId}/feed`,
         { limit } as Record<string, unknown>
       );
-      return response.items || [];
+      return (response.items || []).map((item) => ({
+        ...item,
+        commentCount: item.commentCount ?? 0,
+      }));
     },
     enabled: !!groupId,
   });

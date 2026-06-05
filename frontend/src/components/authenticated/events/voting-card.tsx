@@ -1,10 +1,13 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { AppSpinner } from "../../ui/app-spinner";
-import { ArrowDown, ClipboardList, Trash2, Clock } from "lucide-react";
+import { ArrowDown, ClipboardList, Trash2, Clock, MessageCircle } from "lucide-react";
 import type { Event, EventVoteType } from "../../../types/event/event";
 import { useVoteEvent } from "../../../hooks/use-events";
 import { getUserIdFromToken } from "../../../lib/auth-token";
 import { authStore } from "../../../store/auth-store";
+import { CommentsSection } from "./comments-section";
+import { useEventComments, useCreateEventComment } from "../../../hooks/use-comments";
+import { useCurrentGroupId } from "../../../lib/use-group-context";
 
 interface VotingCardProps {
   event: Event;
@@ -13,6 +16,13 @@ interface VotingCardProps {
 
 export function VotingCard({ event, compact = false }: VotingCardProps) {
   const vote = useVoteEvent(event.id, event.groupId);
+  const [showComments, setShowComments] = useState(false);
+  const groupId = useCurrentGroupId();
+
+  const { data: comments, isLoading } = useEventComments(
+    showComments ? event.id : ""
+  );
+  const createComment = useCreateEventComment(event.id, groupId || undefined);
 
   const isRemovalVote = event.isPendingRemoval === true;
 
@@ -234,6 +244,30 @@ export function VotingCard({ event, compact = false }: VotingCardProps) {
               )}
             </div>
           </div>
+
+          {/* Comment Section */}
+          <div className="mt-3 flex items-center gap-4 text-secondary">
+            <button
+              type="button"
+              onClick={() => setShowComments(!showComments)}
+              className="flex items-center gap-1 text-caption font-caption hover:text-primary transition-colors"
+            >
+              <MessageCircle size={16} />
+              <span>{event.commentCount ?? 0}</span>
+            </button>
+          </div>
+
+          {showComments && (
+            <CommentsSection
+              comments={comments || []}
+              onSubmit={(content, parentId) =>
+                createComment.mutate({ content, parentCommentId: parentId })
+              }
+              isLoading={isLoading}
+              isSubmitting={createComment.isPending}
+              commentCount={event.commentCount ?? 0}
+            />
+          )}
         </div>
       </div>
     </div>

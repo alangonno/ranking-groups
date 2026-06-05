@@ -1,6 +1,7 @@
 using backend.src.Data;
 using backend.src.Extensions;
 using backend.src.Handlers.Auth;
+using backend.src.Handlers.Comments;
 using backend.src.Handlers.Events;
 using backend.src.Handlers.Groups;
 using backend.src.Handlers.Rankings;
@@ -39,6 +40,7 @@ builder.Services.AddScoped<ISharedEventRepository, SharedEventRepository>();
 builder.Services.AddScoped<ISharedEventParticipantRepository, SharedEventParticipantRepository>();
 builder.Services.AddScoped<ISharedEventParticipantRemovalVoteRepository, SharedEventParticipantRemovalVoteRepository>();
 builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 
 // Handlers
 builder.Services.AddScoped<IRegisterHandler, RegisterHandler>();
@@ -72,6 +74,11 @@ builder.Services.AddScoped<ICloseSharedEventHandler, CloseSharedEventHandler>();
 builder.Services.AddScoped<IDeleteSharedEventHandler, DeleteSharedEventHandler>();
 builder.Services.AddScoped<IRequestSharedEventParticipantRemovalHandler, RequestSharedEventParticipantRemovalHandler>();
 builder.Services.AddScoped<IVoteSharedEventParticipantRemovalHandler, VoteSharedEventParticipantRemovalHandler>();
+
+// Comment Handlers
+builder.Services.AddScoped<ICreateCommentHandler, CreateCommentHandler>();
+builder.Services.AddScoped<IGetEventCommentsHandler, GetEventCommentsHandler>();
+builder.Services.AddScoped<IGetSharedEventCommentsHandler, GetSharedEventCommentsHandler>();
 
 // Ranking and Feed Handlers
 builder.Services.AddScoped<IGetGroupRankingHandler, GetGroupRankingHandler>();

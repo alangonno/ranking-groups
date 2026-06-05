@@ -328,4 +328,25 @@ public static class AuditLogBuilder
             NewValues = newValues
         };
     }
+
+    public static AuditLog CommentCreated(Comment comment, Guid performedByUserId)
+    {
+        var newValues = JsonSerializer.Serialize(new
+        {
+            content = comment.Content,
+            eventId = comment.EventId,
+            sharedEventId = comment.SharedEventId,
+            parentCommentId = comment.ParentCommentId,
+            performedBy = comment.User?.Name ?? string.Empty
+        });
+
+        return new AuditLog
+        {
+            Action = "comment_created",
+            EntityName = "Comment",
+            EntityId = comment.Id,
+            PerformedByUserId = performedByUserId,
+            NewValues = newValues
+        };
+    }
 }

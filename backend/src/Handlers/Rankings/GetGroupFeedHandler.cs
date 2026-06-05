@@ -38,6 +38,7 @@ public class FeedItemDto
     public int? ParticipantCount { get; set; }
     public bool? IsClosed { get; set; }
     public bool? HasCurrentUserJoined { get; set; }
+    public int? CommentCount { get; set; }
 }
 
 public interface IGetGroupFeedHandler
@@ -51,17 +52,20 @@ public class GetGroupFeedHandler : IGetGroupFeedHandler
     private readonly ISharedEventRepository _sharedEventRepository;
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly ICommentRepository _commentRepository;
 
     public GetGroupFeedHandler(
         IEventRepository eventRepository,
         ISharedEventRepository sharedEventRepository,
         IGroupMemberRepository groupMemberRepository,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        ICommentRepository commentRepository)
     {
         _eventRepository = eventRepository;
         _sharedEventRepository = sharedEventRepository;
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
+        _commentRepository = commentRepository;
     }
 
     public async Task<GetGroupFeedResponse> HandleAsync(GetGroupFeedRequest request, CancellationToken ct)
@@ -77,39 +81,51 @@ public class GetGroupFeedHandler : IGetGroupFeedHandler
         var events = await _eventRepository.GetByGroupAsync(request.GroupId);
         var sharedEvents = await _sharedEventRepository.GetByGroupAsync(request.GroupId);
 
-        var eventItems = events.Select(e => new FeedItemDto
+        var eventItems = new List<FeedItemDto>();
+        foreach (var e in events)
         {
-            Id = e.Id,
-            FeedItemType = "event",
-            Title = e.Title,
-            Description = e.Description,
-            Points = e.Points,
-            CreatedAt = e.CreatedAt,
-            CreatedByUserId = e.CreatedByUserId,
-            CreatedByUserName = e.CreatedByUser?.Name ?? string.Empty,
-            AffectedUserId = e.AffectedUserId,
-            AffectedUserName = e.AffectedUser?.Name ?? string.Empty,
-            EventStatus = e.Status.ToString(),
-            EventType = e.Type.ToString(),
-            ScoreBalance = e.Status == EventStatus.Approved
-                ? (e.Type == EventType.Negative ? -e.Points : e.Points)
-                : 0
-        });
+            var commentCount = await _commentRepository.GetCommentCountByEventAsync(e.Id);
+            eventItems.Add(new FeedItemDto
+            {
+                Id = e.Id,
+                FeedItemType = "event",
+                Title = e.Title,
+                Description = e.Description,
+                Points = e.Points,
+                CreatedAt = e.CreatedAt,
+                CreatedByUserId = e.CreatedByUserId,
+                CreatedByUserName = e.CreatedByUser?.Name ?? string.Empty,
+                AffectedUserId = e.AffectedUserId,
+                AffectedUserName = e.AffectedUser?.Name ?? string.Empty,
+                EventStatus = e.Status.ToString(),
+                EventType = e.Type.ToString(),
+                ScoreBalance = e.Status == EventStatus.Approved
+                    ? (e.Type == EventType.Negative ? -e.Points : e.Points)
+                    : 0,
+                CommentCount = commentCount
+            });
+        }
 
-        var sharedItems = sharedEvents.Select(se => new FeedItemDto
+        var sharedItems = new List<FeedItemDto>();
+        foreach (var se in sharedEvents)
         {
-            Id = se.Id,
-            FeedItemType = "shared_event",
-            Title = se.Title,
-            Description = se.Description,
-            Points = se.Points,
-            CreatedAt = se.CreatedAt,
-            CreatedByUserId = se.CreatedByUserId,
-            CreatedByUserName = se.CreatedByUser?.Name ?? string.Empty,
-            ParticipantCount = se.Participants.Count,
-            IsClosed = se.IsClosed,
-            HasCurrentUserJoined = se.Participants.Any(p => p.UserId == userId)
-        });
+            var commentCount = await _commentRepository.GetCommentCountBySharedEventAsync(se.Id);
+            sharedItems.Add(new FeedItemDto
+            {
+                Id = se.Id,
+                FeedItemType = "shared_event",
+                Title = se.Title,
+                Description = se.Description,
+                Points = se.Points,
+                CreatedAt = se.CreatedAt,
+                CreatedByUserId = se.CreatedByUserId,
+                CreatedByUserName = se.CreatedByUser?.Name ?? string.Empty,
+                ParticipantCount = se.Participants.Count,
+                IsClosed = se.IsClosed,
+                HasCurrentUserJoined = se.Participants.Any(p => p.UserId == userId),
+                CommentCount = commentCount
+            });
+        }
 
         var allItems = eventItems
             .Concat(sharedItems)

@@ -26,17 +26,18 @@ function mapEventFromBackend(e: {
   affectedUserId: string;
   affectedUserName: string;
   approvalCount?: number;
-  isPendingRemoval?: boolean;
-  removalVoteDeadline?: string | null;
-  quorumRequired?: number;
-  removeCount?: number;
-  keepCount?: number;
-  approvals?: Array<{
-    userId: string;
-    userName: string;
-    voteType: string;
-    createdAt: string;
-  }>;
+    isPendingRemoval?: boolean;
+    removalVoteDeadline?: string | null;
+    quorumRequired?: number;
+    removeCount?: number;
+    keepCount?: number;
+    commentCount?: number;
+    approvals?: Array<{
+      userId: string;
+      userName: string;
+      voteType: string;
+      createdAt: string;
+    }>;
 }): Event {
   const voteTypeMap: Record<string, number> = {
     Approve: 1,
@@ -58,10 +59,11 @@ function mapEventFromBackend(e: {
     createdAt: e.createdAt,
     createdByUser: { id: e.createdByUserId, name: e.createdByUserName, username: "", email: "", createdAt: "", updatedAt: "" },
     affectedUser: { id: e.affectedUserId, name: e.affectedUserName, username: "", email: "", createdAt: "", updatedAt: "" },
-    isPendingRemoval: e.isPendingRemoval ?? false,
-    removalVoteDeadline: e.removalVoteDeadline ?? undefined,
-    quorumRequired: e.quorumRequired,
-    approvals: e.approvals?.map(a => ({
+        isPendingRemoval: e.isPendingRemoval ?? false,
+        removalVoteDeadline: e.removalVoteDeadline ?? undefined,
+        quorumRequired: e.quorumRequired,
+        commentCount: e.commentCount ?? 0,
+        approvals: e.approvals?.map(a => ({
       id: "", // não usado na listagem
       eventId: e.eventId,
       userId: a.userId,

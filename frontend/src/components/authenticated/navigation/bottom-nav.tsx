@@ -68,10 +68,7 @@ export function BottomNav() {
         const isActive =
           item.isLogout
             ? false
-            : item.path !== "/groups"
-              ? location.pathname === item.path ||
-                (item.path !== "/" && location.pathname.startsWith(item.path))
-              : location.pathname === "/groups";
+            : location.pathname === item.path;
 
         if (item.isLogout) {
           return (

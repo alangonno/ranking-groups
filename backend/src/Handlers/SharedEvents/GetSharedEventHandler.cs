@@ -23,6 +23,7 @@ public class GetSharedEventResponse
     public Guid CreatedByUserId { get; set; }
     public string CreatedByUserName { get; set; } = string.Empty;
     public List<SharedEventParticipantDto> Participants { get; set; } = new();
+    public int CommentCount { get; set; }
 }
 
 public class SharedEventParticipantDto
@@ -42,15 +43,18 @@ public class GetSharedEventHandler : IGetSharedEventHandler
     private readonly ISharedEventRepository _sharedEventRepository;
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly ICommentRepository _commentRepository;
 
     public GetSharedEventHandler(
         ISharedEventRepository sharedEventRepository,
         IGroupMemberRepository groupMemberRepository,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        ICommentRepository commentRepository)
     {
         _sharedEventRepository = sharedEventRepository;
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
+        _commentRepository = commentRepository;
     }
 
     public async Task<GetSharedEventResponse> HandleAsync(GetSharedEventRequest request, CancellationToken ct)
@@ -67,6 +71,8 @@ public class GetSharedEventHandler : IGetSharedEventHandler
         var members = await _groupMemberRepository.GetMembersByGroupAsync(sharedEvent.GroupId);
         GroupPermissionRules.ValidateUserCanInteract(userId, sharedEvent.GroupId, members);
 
+        var commentCount = await _commentRepository.GetCommentCountBySharedEventAsync(sharedEvent.Id);
+
         return new GetSharedEventResponse
         {
             SharedEventId = sharedEvent.Id,
@@ -78,6 +84,7 @@ public class GetSharedEventHandler : IGetSharedEventHandler
             CreatedAt = sharedEvent.CreatedAt,
             CreatedByUserId = sharedEvent.CreatedByUserId,
             CreatedByUserName = sharedEvent.CreatedByUser?.Name ?? string.Empty,
+            CommentCount = commentCount,
             Participants = sharedEvent.Participants.Select(p => new SharedEventParticipantDto
             {
                 UserId = p.UserId,

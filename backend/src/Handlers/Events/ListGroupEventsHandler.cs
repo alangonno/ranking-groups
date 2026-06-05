@@ -38,6 +38,7 @@ public class EventSummaryDto
     public int QuorumRequired { get; set; }
     public int RemoveCount { get; set; }
     public int KeepCount { get; set; }
+    public int CommentCount { get; set; }
     public List<EventApprovalSummaryDto> Approvals { get; set; } = new();
 }
 
@@ -59,17 +60,20 @@ public class ListGroupEventsHandler : IListGroupEventsHandler
     private readonly IEventRepository _eventRepository;
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly ICommentRepository _commentRepository;
     private readonly AppDbContext _context;
 
     public ListGroupEventsHandler(
         IEventRepository eventRepository,
         IGroupMemberRepository groupMemberRepository,
         ICurrentUserService currentUserService,
+        ICommentRepository commentRepository,
         AppDbContext context)
     {
         _eventRepository = eventRepository;
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
+        _commentRepository = commentRepository;
         _context = context;
     }
 
@@ -93,33 +97,39 @@ public class ListGroupEventsHandler : IListGroupEventsHandler
         }
         await _context.SaveChangesAsync(ct);
 
-        var dtos = events.Select(e => new EventSummaryDto
+        var dtos = new List<EventSummaryDto>();
+        foreach (var e in events)
         {
-            EventId = e.Id,
-            Title = e.Title,
-            Description = e.Description,
-            Points = e.Points,
-            Type = e.Type.ToString(),
-            Status = e.Status.ToString(),
-            CreatedAt = e.CreatedAt,
-            CreatedByUserId = e.CreatedByUserId,
-            CreatedByUserName = e.CreatedByUser?.Name ?? string.Empty,
-            AffectedUserId = e.AffectedUserId,
-            AffectedUserName = e.AffectedUser?.Name ?? string.Empty,
-            ApprovalCount = e.Approvals.Count(a => a.VoteType == EventVoteType.Approve),
-            IsPendingRemoval = e.IsPendingRemoval,
-            RemovalVoteDeadline = e.RemovalVoteDeadline,
-            QuorumRequired = quorum,
-            RemoveCount = e.Approvals.Count(a => a.VoteType == EventVoteType.Remove),
-            KeepCount = e.Approvals.Count(a => a.VoteType == EventVoteType.Keep),
-            Approvals = e.Approvals.Select(a => new EventApprovalSummaryDto
+            var commentCount = await _commentRepository.GetCommentCountByEventAsync(e.Id);
+            dtos.Add(new EventSummaryDto
             {
-                UserId = a.UserId,
-                UserName = a.User?.Name ?? string.Empty,
-                VoteType = a.VoteType.ToString(),
-                CreatedAt = a.CreatedAt
-            }).ToList()
-        }).ToList();
+                EventId = e.Id,
+                Title = e.Title,
+                Description = e.Description,
+                Points = e.Points,
+                Type = e.Type.ToString(),
+                Status = e.Status.ToString(),
+                CreatedAt = e.CreatedAt,
+                CreatedByUserId = e.CreatedByUserId,
+                CreatedByUserName = e.CreatedByUser?.Name ?? string.Empty,
+                AffectedUserId = e.AffectedUserId,
+                AffectedUserName = e.AffectedUser?.Name ?? string.Empty,
+                ApprovalCount = e.Approvals.Count(a => a.VoteType == EventVoteType.Approve),
+                IsPendingRemoval = e.IsPendingRemoval,
+                RemovalVoteDeadline = e.RemovalVoteDeadline,
+                QuorumRequired = quorum,
+                RemoveCount = e.Approvals.Count(a => a.VoteType == EventVoteType.Remove),
+                KeepCount = e.Approvals.Count(a => a.VoteType == EventVoteType.Keep),
+                CommentCount = commentCount,
+                Approvals = e.Approvals.Select(a => new EventApprovalSummaryDto
+                {
+                    UserId = a.UserId,
+                    UserName = a.User?.Name ?? string.Empty,
+                    VoteType = a.VoteType.ToString(),
+                    CreatedAt = a.CreatedAt
+                }).ToList()
+            });
+        }
 
         return new ListGroupEventsResponse { Events = dtos };
     }

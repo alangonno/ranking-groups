@@ -33,6 +33,7 @@ public class GetEventResponse
     public int QuorumRequired { get; set; }
     public int RemoveCount { get; set; }
     public int KeepCount { get; set; }
+    public int CommentCount { get; set; }
     public List<EventApprovalDto> Approvals { get; set; } = new();
 }
 
@@ -56,6 +57,7 @@ public class GetEventHandler : IGetEventHandler
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
     private readonly IAuditLogRepository _auditLogRepository;
+    private readonly ICommentRepository _commentRepository;
     private readonly AppDbContext _context;
 
     public GetEventHandler(
@@ -64,6 +66,7 @@ public class GetEventHandler : IGetEventHandler
         IGroupMemberRepository groupMemberRepository,
         ICurrentUserService currentUserService,
         IAuditLogRepository auditLogRepository,
+        ICommentRepository commentRepository,
         AppDbContext context)
     {
         _eventRepository = eventRepository;
@@ -71,6 +74,7 @@ public class GetEventHandler : IGetEventHandler
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
         _auditLogRepository = auditLogRepository;
+        _commentRepository = commentRepository;
         _context = context;
     }
 
@@ -109,6 +113,7 @@ public class GetEventHandler : IGetEventHandler
         var keepCount = approvals.Count(a => a.VoteType == EventVoteType.Keep);
         var totalMembers = members.Count();
         var quorum = EventRemovalRules.CalculateQuorum(totalMembers);
+        var commentCount = await _commentRepository.GetCommentCountByEventAsync(request.EventId);
 
         return new GetEventResponse
         {
@@ -129,6 +134,7 @@ public class GetEventHandler : IGetEventHandler
             QuorumRequired = quorum,
             RemoveCount = removeCount,
             KeepCount = keepCount,
+            CommentCount = commentCount,
             Approvals = approvals.Select(a => new EventApprovalDto
             {
                 UserId = a.UserId,

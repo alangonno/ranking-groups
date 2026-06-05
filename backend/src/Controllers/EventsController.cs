@@ -1,4 +1,5 @@
 using backend.src.Common.Exceptions;
+using backend.src.Handlers.Comments;
 using backend.src.Handlers.Events;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +19,8 @@ public class EventsController : ControllerBase
     private readonly IDeleteEventHandler _deleteEventHandler;
     private readonly IVoteEventHandler _voteEventHandler;
     private readonly IRequestEventRemovalHandler _requestEventRemovalHandler;
+    private readonly ICreateCommentHandler _createCommentHandler;
+    private readonly IGetEventCommentsHandler _getEventCommentsHandler;
 
     public EventsController(
         ICreateEventHandler createEventHandler,
@@ -27,7 +30,9 @@ public class EventsController : ControllerBase
         IUpdateEventHandler updateEventHandler,
         IDeleteEventHandler deleteEventHandler,
         IVoteEventHandler voteEventHandler,
-        IRequestEventRemovalHandler requestEventRemovalHandler)
+        IRequestEventRemovalHandler requestEventRemovalHandler,
+        ICreateCommentHandler createCommentHandler,
+        IGetEventCommentsHandler getEventCommentsHandler)
     {
         _createEventHandler = createEventHandler;
         _getEventHandler = getEventHandler;
@@ -37,6 +42,8 @@ public class EventsController : ControllerBase
         _deleteEventHandler = deleteEventHandler;
         _voteEventHandler = voteEventHandler;
         _requestEventRemovalHandler = requestEventRemovalHandler;
+        _createCommentHandler = createCommentHandler;
+        _getEventCommentsHandler = getEventCommentsHandler;
     }
 
     [HttpPost]
@@ -99,6 +106,22 @@ public class EventsController : ControllerBase
     {
         var request = new RequestEventRemovalRequest { EventId = eventId };
         var response = await _requestEventRemovalHandler.HandleAsync(request, ct);
+        return Ok(response);
+    }
+
+    [HttpPost("{eventId:guid}/comments")]
+    public async Task<IActionResult> CreateComment(Guid eventId, [FromBody] CreateCommentRequest request, CancellationToken ct)
+    {
+        request.EventId = eventId;
+        var response = await _createCommentHandler.HandleAsync(request, ct);
+        return Ok(response);
+    }
+
+    [HttpGet("{eventId:guid}/comments")]
+    public async Task<IActionResult> GetComments(Guid eventId, CancellationToken ct)
+    {
+        var request = new GetEventCommentsRequest { EventId = eventId };
+        var response = await _getEventCommentsHandler.HandleAsync(request, ct);
         return Ok(response);
     }
 }

@@ -445,6 +445,25 @@ Toda implementação deve considerar:
 - score só altera após aprovação mínima
 - evento rejeitado por quorum é deletado e não impacta o ranking
 
+## Comentários
+
+### Criação
+- qualquer membro do grupo pode comentar em eventos e shared events
+- qualquer membro do grupo pode responder comentários
+- comentário deve ter conteúdo não vazio
+- comentário deve estar associado a exatamente um evento ou shared event
+- resposta deve pertencer ao mesmo post do comentário raiz
+
+### Exibição
+- todos os comentários retornam CommentCount agregado nos endpoints de listagem
+- backend retorna a árvore completa de comentários e respostas
+- frontend decide lógica de exibição (2 raiz iniciais, expandir, colapsar respostas)
+
+### Restrições
+- não há edição ou exclusão de comentários
+- deletar evento/shared event deleta comentários em cascata
+- comentários não afetam ranking
+
 ---
 
 # Eventos Compartilhados
@@ -559,6 +578,7 @@ Ações auditadas:
 - shared_event_joined, shared_event_left, shared_event_closed
 - shared_event_participant_removal_initiated, shared_event_participant_removed_by_vote, shared_event_participant_removal_cancelled
 - group_joined, group_left
+- comment_created
 
 Cada log contém: action, entityName, entityId, performedByUserId, newValues (JSON estrutura A)
 
@@ -586,6 +606,8 @@ Cada log contém: action, entityName, entityId, performedByUserId, newValues (JS
 - DELETE /api/events/{eventId}
 - POST /api/events/{eventId}/vote
 - POST /api/events/{eventId}/request-removal
+- GET /api/events/{eventId}/comments
+- POST /api/events/{eventId}/comments
 
 ## Shared Events
 - POST /api/shared-events
@@ -598,6 +620,8 @@ Cada log contém: action, entityName, entityId, performedByUserId, newValues (JS
 - POST /api/shared-events/{sharedEventId}/close
 - POST /api/shared-events/{sharedEventId}/participants/{participantId}/request-removal
 - POST /api/shared-events/{sharedEventId}/participants/{participantId}/vote
+- GET /api/shared-events/{sharedEventId}/comments
+- POST /api/shared-events/{sharedEventId}/comments
 
 ## Rankings
 - GET /api/rankings/group/{groupId}?fromDate=...&toDate=...

@@ -18,21 +18,22 @@ public class ListUserGroupEventsResponse
     public List<UserEventSummaryDto> Events { get; set; } = new();
 }
 
-public class UserEventSummaryDto
-{
-    public Guid EventId { get; set; }
-    public string Title { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
-    public int Points { get; set; }
-    public string Type { get; set; } = string.Empty;
-    public string Status { get; set; } = string.Empty;
-    public DateTime CreatedAt { get; set; }
-    public Guid CreatedByUserId { get; set; }
-    public string CreatedByUserName { get; set; } = string.Empty;
-    public Guid AffectedUserId { get; set; }
-    public string AffectedUserName { get; set; } = string.Empty;
-    public int ScoreBalance { get; set; }
-}
+    public class UserEventSummaryDto
+    {
+        public Guid EventId { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public int Points { get; set; }
+        public string Type { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
+        public Guid CreatedByUserId { get; set; }
+        public string CreatedByUserName { get; set; } = string.Empty;
+        public Guid AffectedUserId { get; set; }
+        public string AffectedUserName { get; set; } = string.Empty;
+        public int ScoreBalance { get; set; }
+        public int CommentCount { get; set; }
+    }
 
 public interface IListUserGroupEventsHandler
 {
@@ -44,15 +45,18 @@ public class ListUserGroupEventsHandler : IListUserGroupEventsHandler
     private readonly IEventRepository _eventRepository;
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly ICommentRepository _commentRepository;
 
     public ListUserGroupEventsHandler(
         IEventRepository eventRepository,
         IGroupMemberRepository groupMemberRepository,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        ICommentRepository commentRepository)
     {
         _eventRepository = eventRepository;
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
+        _commentRepository = commentRepository;
     }
 
     public async Task<ListUserGroupEventsResponse> HandleAsync(ListUserGroupEventsRequest request, CancellationToken ct)
@@ -80,6 +84,8 @@ public class ListUserGroupEventsHandler : IListUserGroupEventsHandler
                 ? (@event.Type == EventType.Negative ? -@event.Points : @event.Points)
                 : 0;
 
+            var commentCount = await _commentRepository.GetCommentCountByEventAsync(@event.Id);
+
             dtos.Add(new UserEventSummaryDto
             {
                 EventId = @event.Id,
@@ -93,7 +99,8 @@ public class ListUserGroupEventsHandler : IListUserGroupEventsHandler
                 CreatedByUserName = @event.CreatedByUser?.Name ?? string.Empty,
                 AffectedUserId = @event.AffectedUserId,
                 AffectedUserName = @event.AffectedUser?.Name ?? string.Empty,
-                ScoreBalance = runningBalance
+                ScoreBalance = runningBalance,
+                CommentCount = commentCount
             });
 
             runningBalance += impact;

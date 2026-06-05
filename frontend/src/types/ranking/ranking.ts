@@ -28,10 +28,11 @@ export interface FeedItem {
   eventType?: string;
   scoreBalance?: number;
 
-  // shared-event-specific
-  participantCount?: number;
-  isClosed?: boolean;
-  hasCurrentUserJoined?: boolean;
+    // shared-event-specific
+    participantCount?: number;
+    isClosed?: boolean;
+    hasCurrentUserJoined?: boolean;
+    commentCount?: number;
 }
 
 export type DashboardFeedEntry =

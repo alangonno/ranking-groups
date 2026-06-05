@@ -1,8 +1,12 @@
 import { useState } from "react";
-import { Users, ArrowUp, CheckCircle2, Clock, LogOut } from "lucide-react";
+import { Users, ArrowUp, CheckCircle2, Clock, LogOut, MessageCircle } from "lucide-react";
 import { AppButton } from "../../ui/app-button";
 import { AppSpinner } from "../../ui/app-spinner";
 import { useJoinSharedEvent, useLeaveSharedEvent } from "../../../hooks/use-shared-events";
+import { CommentsSection } from "./comments-section";
+import { useSharedEventComments, useCreateSharedEventComment } from "../../../hooks/use-comments";
+import { useCurrentGroupId } from "../../../lib/use-group-context";
+
 interface SharedEvent {
   id: string;
   title: string;
@@ -13,6 +17,7 @@ interface SharedEvent {
   hasCurrentUserJoined: boolean;
   closesAt?: string;
   image?: string;
+  commentCount?: number;
 }
 
 interface SharedEventCardProps {
@@ -22,8 +27,13 @@ interface SharedEventCardProps {
 export function SharedEventCard({ event }: SharedEventCardProps) {
   const joinEvent = useJoinSharedEvent(event.id);
   const leaveEvent = useLeaveSharedEvent(event.id);
-  const [hasJoined, setHasJoined] = useState(event.hasCurrentUserJoined);
-  const [hasLeft, setHasLeft] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const groupId = useCurrentGroupId();
+
+  const { data: comments, isLoading } = useSharedEventComments(
+    showComments ? event.id : ""
+  );
+  const createComment = useCreateSharedEventComment(event.id, groupId || undefined);
 
   function formatClosesAt(dateString: string) {
     const date = new Date(dateString);
@@ -36,20 +46,16 @@ export function SharedEventCard({ event }: SharedEventCardProps) {
   }
 
   function handleJoin() {
-    if (hasJoined || joinEvent.isPending) return;
-    joinEvent.mutate(undefined, {
-      onSuccess: () => setHasJoined(true),
-    });
+    if (event.hasCurrentUserJoined || joinEvent.isPending) return;
+    joinEvent.mutate();
   }
 
   function handleLeave() {
-    if (hasLeft || leaveEvent.isPending) return;
-    leaveEvent.mutate(undefined, {
-      onSuccess: () => setHasLeft(true),
-    });
+    if (!event.hasCurrentUserJoined || leaveEvent.isPending) return;
+    leaveEvent.mutate();
   }
 
-  const isActionDisabled = hasJoined || hasLeft || joinEvent.isPending || leaveEvent.isPending;
+  const isActionPending = joinEvent.isPending || leaveEvent.isPending;
 
   return (
     <div className="bg-surface-container-lowest shadow-sm rounded-2xl min-w-[260px] snap-start overflow-hidden border border-surface-container group cursor-pointer hover:border-outline-variant transition-colors">
@@ -90,18 +96,28 @@ export function SharedEventCard({ event }: SharedEventCardProps) {
         )}
 
         <div className="flex items-center justify-between mt-4 pt-4 border-t border-surface-container">
-          <div className="flex items-center gap-1 text-caption font-caption text-secondary">
-            <Users size={14} />
-            <span>{event.participantCount} confirmados</span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 text-caption font-caption text-secondary">
+              <Users size={14} />
+              <span>{event.participantCount} confirmados</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowComments(!showComments)}
+              className="flex items-center gap-1 text-caption font-caption text-secondary hover:text-primary transition-colors"
+            >
+              <MessageCircle size={14} />
+              <span>{event.commentCount ?? 0}</span>
+            </button>
           </div>
           <div className="flex gap-1.5">
-            {!event.isClosed && hasJoined && (
+            {!event.isClosed && event.hasCurrentUserJoined && (
               <AppButton
                 size="xs"
                 color="light"
-                className="text-xs px-3 py-1.5"
+                className="text-xs px-3 py-1.5 border-0"
                 onClick={handleLeave}
-                disabled={isActionDisabled}
+                disabled={isActionPending}
               >
                 {leaveEvent.isPending ? (
                   <AppSpinner size="xs" />
@@ -111,13 +127,13 @@ export function SharedEventCard({ event }: SharedEventCardProps) {
                 {leaveEvent.isPending ? "Saindo..." : "Sair"}
               </AppButton>
             )}
-            {!event.isClosed && !hasJoined && !hasLeft && (
+            {!event.isClosed && !event.hasCurrentUserJoined && (
               <AppButton
                 size="xs"
                 color="primary"
                 className="text-xs px-3 py-1.5"
                 onClick={handleJoin}
-                disabled={isActionDisabled}
+                disabled={isActionPending}
               >
                 {joinEvent.isPending ? (
                   <AppSpinner size="xs" />
@@ -126,11 +142,22 @@ export function SharedEventCard({ event }: SharedEventCardProps) {
                 )}
               </AppButton>
             )}
-            {hasLeft && (
-              <span className="text-xs text-secondary">Removido</span>
-            )}
           </div>
         </div>
+
+        {showComments && (
+          <div className="mt-3 pt-3 border-t border-surface-container">
+            <CommentsSection
+              comments={comments || []}
+              onSubmit={(content, parentId) =>
+                createComment.mutate({ content, parentCommentId: parentId })
+              }
+              isLoading={isLoading}
+              isSubmitting={createComment.isPending}
+              commentCount={event.commentCount ?? 0}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

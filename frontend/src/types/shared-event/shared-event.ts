@@ -17,11 +17,12 @@ export interface SharedEvent extends BaseEntity {
   createdByUserId: string;
   participantCount: number;
   hasCurrentUserJoined: boolean;
-  isPendingRemoval?: boolean;
-  removalVoteDeadline?: string;
-  quorumRequired?: number;
-  removeCount?: number;
-  keepCount?: number;
+    isPendingRemoval?: boolean;
+    removalVoteDeadline?: string;
+    quorumRequired?: number;
+    removeCount?: number;
+    keepCount?: number;
+    commentCount?: number;
 }
 
 export interface CreateSharedEventRequest {

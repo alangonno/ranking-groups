@@ -64,6 +64,7 @@ src/
  │    ├── use-members.ts              ← useMembers
  │    ├── use-user-profile.ts         ← useUserProfile
  │    ├── use-shared-events.ts        ← useGroupSharedEvents, useCreateSharedEvent, useJoinSharedEvent, etc.
+ │    ├── use-comments.ts             ← useEventComments, useSharedEventComments, useCreateEventComment, useCreateSharedEventComment
  │    └── use-ranking.ts              ← useRanking, useFeed
  │
  ├── lib/
@@ -170,7 +171,8 @@ components/authenticated/events/
  ├── voting-card.tsx
  ├── quick-action-card.tsx
  ├── shared-event-card.tsx
- └── shared-events-carousel.tsx
+ ├── shared-events-carousel.tsx
+ └── comments-section.tsx
 ```
 
 ---
@@ -442,6 +444,8 @@ Estrutura:
 types/
  ├── auth/
  │    └── user.ts          ← User, LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, etc.
+ ├── comment/
+ │    └── comment.ts       ← Comment, CreateCommentRequest, EventCommentsResponse, SharedEventCommentsResponse
  ├── event/
  │    └── event.ts         ← Event, EventStatus, EventType, EventVoteType, EventApproval, CreateEventRequest, etc.
  ├── group/

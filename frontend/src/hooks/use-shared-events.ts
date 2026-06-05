@@ -26,6 +26,7 @@ export function useGroupSharedEvents(groupId: string) {
           createdByUserName: string;
           participantCount: number;
           hasCurrentUserJoined: boolean;
+          commentCount?: number;
         }>;
       }>(`/api/shared-events/group/${groupId}`);
       return (response.sharedEvents || []).map((se) => ({
@@ -40,6 +41,7 @@ export function useGroupSharedEvents(groupId: string) {
         createdByUserId: se.createdByUserId,
         participantCount: se.participantCount,
         hasCurrentUserJoined: se.hasCurrentUserJoined,
+        commentCount: se.commentCount ?? 0,
       }));
     },
     enabled: !!groupId,

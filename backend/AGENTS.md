@@ -70,6 +70,7 @@ src/
  ├── Controllers/
  ├── Handlers/
  │    ├── Auth/
+ │    ├── Comments/
  │    ├── Events/
  │    ├── Groups/
  │    └── Rankings/
@@ -117,6 +118,7 @@ Exemplo:
 ```text
 Handlers/
  ├── Auth/
+ ├── Comments/
  ├── Events/
  ├── Groups/
  └── Rankings/

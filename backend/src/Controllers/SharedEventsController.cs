@@ -1,4 +1,5 @@
 using backend.src.Common.Exceptions;
+using backend.src.Handlers.Comments;
 using backend.src.Handlers.SharedEvents;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,6 +21,8 @@ public class SharedEventsController : ControllerBase
     private readonly ICloseSharedEventHandler _closeSharedEventHandler;
     private readonly IRequestSharedEventParticipantRemovalHandler _requestRemovalHandler;
     private readonly IVoteSharedEventParticipantRemovalHandler _voteRemovalHandler;
+    private readonly ICreateCommentHandler _createCommentHandler;
+    private readonly IGetSharedEventCommentsHandler _getSharedEventCommentsHandler;
 
     public SharedEventsController(
         ICreateSharedEventHandler createSharedEventHandler,
@@ -31,7 +34,9 @@ public class SharedEventsController : ControllerBase
         ILeaveSharedEventHandler leaveSharedEventHandler,
         ICloseSharedEventHandler closeSharedEventHandler,
         IRequestSharedEventParticipantRemovalHandler requestRemovalHandler,
-        IVoteSharedEventParticipantRemovalHandler voteRemovalHandler)
+        IVoteSharedEventParticipantRemovalHandler voteRemovalHandler,
+        ICreateCommentHandler createCommentHandler,
+        IGetSharedEventCommentsHandler getSharedEventCommentsHandler)
     {
         _createSharedEventHandler = createSharedEventHandler;
         _getSharedEventHandler = getSharedEventHandler;
@@ -43,6 +48,8 @@ public class SharedEventsController : ControllerBase
         _closeSharedEventHandler = closeSharedEventHandler;
         _requestRemovalHandler = requestRemovalHandler;
         _voteRemovalHandler = voteRemovalHandler;
+        _createCommentHandler = createCommentHandler;
+        _getSharedEventCommentsHandler = getSharedEventCommentsHandler;
     }
 
     [HttpPost]
@@ -126,6 +133,22 @@ public class SharedEventsController : ControllerBase
         request.SharedEventId = sharedEventId;
         request.ParticipantId = participantId;
         var response = await _voteRemovalHandler.HandleAsync(request, ct);
+        return Ok(response);
+    }
+
+    [HttpPost("{sharedEventId:guid}/comments")]
+    public async Task<IActionResult> CreateComment(Guid sharedEventId, [FromBody] CreateCommentRequest request, CancellationToken ct)
+    {
+        request.SharedEventId = sharedEventId;
+        var response = await _createCommentHandler.HandleAsync(request, ct);
+        return Ok(response);
+    }
+
+    [HttpGet("{sharedEventId:guid}/comments")]
+    public async Task<IActionResult> GetComments(Guid sharedEventId, CancellationToken ct)
+    {
+        var request = new GetSharedEventCommentsRequest { SharedEventId = sharedEventId };
+        var response = await _getSharedEventCommentsHandler.HandleAsync(request, ct);
         return Ok(response);
     }
 }
