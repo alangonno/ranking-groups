@@ -12,8 +12,8 @@ using backend.src.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260604235441_AddComments")]
-    partial class AddComments
+    [Migration("20260606132715_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -60,7 +60,7 @@ namespace backend.Migrations
                         .HasColumnType("text")
                         .HasColumnName("old_values");
 
-                    b.Property<Guid>("PerformedByUserId")
+                    b.Property<Guid?>("PerformedByUserId")
                         .HasColumnType("uuid")
                         .HasColumnName("performed_by_user_id");
 
@@ -138,6 +138,10 @@ namespace backend.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("affected_user_id");
 
+                    b.Property<DateTime?>("ApprovalDeadline")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("approval_deadline");
+
                     b.Property<DateTime?>("ApprovedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("approved_at");
@@ -163,6 +167,11 @@ namespace backend.Migrations
                     b.Property<Guid>("GroupId")
                         .HasColumnType("uuid")
                         .HasColumnName("group_id");
+
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("image_url");
 
                     b.Property<bool>("IsPendingRemoval")
                         .HasColumnType("boolean")
@@ -201,6 +210,8 @@ namespace backend.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AffectedUserId");
+
+                    b.HasIndex("ApprovalDeadline");
 
                     b.HasIndex("CreatedAt");
 
@@ -347,6 +358,12 @@ namespace backend.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("action");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -357,9 +374,17 @@ namespace backend.Migrations
                         .HasColumnType("character varying(1000)")
                         .HasColumnName("description");
 
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_read");
+                    b.Property<Guid?>("EventId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("event_id");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("group_id");
+
+                    b.Property<Guid?>("SharedEventId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("shared_event_id");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -376,6 +401,12 @@ namespace backend.Migrations
                         .HasColumnName("user_id");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EventId");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("SharedEventId");
 
                     b.HasIndex("UserId");
 
@@ -410,6 +441,11 @@ namespace backend.Migrations
                     b.Property<Guid>("GroupId")
                         .HasColumnType("uuid")
                         .HasColumnName("group_id");
+
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("image_url");
 
                     b.Property<bool>("IsClosed")
                         .HasColumnType("boolean")
@@ -587,8 +623,7 @@ namespace backend.Migrations
                     b.HasOne("backend.src.Entities.User", "PerformedByUser")
                         .WithMany("AuditLogs")
                         .HasForeignKey("PerformedByUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("PerformedByUser");
                 });

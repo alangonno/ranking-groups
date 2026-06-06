@@ -2,16 +2,26 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Home,
   Calendar,
+  Trophy,
   Plus,
   Users,
   Contact,
+  LogOut,
 } from "lucide-react";
 import { useCurrentGroupId } from "../../../lib/use-group-context";
+import { useLogout } from "../../../hooks/use-auth";
 
 export function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const groupId = useCurrentGroupId();
+  const logout = useLogout();
+
+  function handleLogout() {
+    logout.mutate(undefined, {
+      onSuccess: () => navigate("/login"),
+    });
+  }
   const isInGroup = !!groupId;
   const isGroupsPage = location.pathname === "/groups";
 
@@ -35,9 +45,11 @@ export function BottomNav() {
   const navItems = [
     { path: `/group/${groupId}`, label: "Início", icon: Home },
     { path: `/group/${groupId}/events`, label: "Eventos", icon: Calendar },
+    { path: `/group/${groupId}/ranking`, label: "Ranking", icon: Trophy },
     { path: `/group/${groupId}/events`, label: "Novo", icon: Plus, isFab: true },
     { path: `/group/${groupId}/members`, label: "Membros", icon: Contact },
     { path: "/groups", label: "Grupos", icon: Users },
+    { path: "#", label: "Sair", icon: LogOut, isLogout: true },
   ];
 
   return (
@@ -60,6 +72,20 @@ export function BottomNav() {
               <span className="text-[10px] font-label-bold text-primary mt-0.5">
                 {item.label}
               </span>
+            </button>
+          );
+        }
+
+        if (item.isLogout) {
+          return (
+            <button
+              key="logout"
+              type="button"
+              onClick={handleLogout}
+              className={`flex flex-col items-center justify-center gap-0.5 py-1 text-secondary`}
+            >
+              <LogOut size={22} strokeWidth={2} />
+              <span className="text-[10px] font-label-bold">{item.label}</span>
             </button>
           );
         }

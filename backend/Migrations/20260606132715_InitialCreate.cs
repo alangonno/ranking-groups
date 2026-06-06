@@ -37,7 +37,7 @@ namespace backend.Migrations
                     action = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     entity_name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     entity_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    performed_by_user_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    performed_by_user_id = table.Column<Guid>(type: "uuid", nullable: true),
                     old_values = table.Column<string>(type: "text", nullable: true),
                     new_values = table.Column<string>(type: "text", nullable: true),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -83,9 +83,12 @@ namespace backend.Migrations
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     user_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    group_id = table.Column<Guid>(type: "uuid", nullable: false),
                     title = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
-                    is_read = table.Column<bool>(type: "boolean", nullable: false),
+                    action = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    event_id = table.Column<Guid>(type: "uuid", nullable: true),
+                    shared_event_id = table.Column<Guid>(type: "uuid", nullable: true),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -94,29 +97,6 @@ namespace backend.Migrations
                     table.PrimaryKey("PK_notifications", x => x.id);
                     table.ForeignKey(
                         name: "FK_notifications_users_user_id",
-                        column: x => x.user_id,
-                        principalTable: "users",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "refresh_tokens",
-                columns: table => new
-                {
-                    id = table.Column<Guid>(type: "uuid", nullable: false),
-                    user_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    token = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
-                    expires_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    is_revoked = table.Column<bool>(type: "boolean", nullable: false),
-                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_refresh_tokens", x => x.id);
-                    table.ForeignKey(
-                        name: "FK_refresh_tokens_users_user_id",
                         column: x => x.user_id,
                         principalTable: "users",
                         principalColumn: "id",
@@ -139,6 +119,10 @@ namespace backend.Migrations
                     approved_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     rejected_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     cancelled_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    is_pending_removal = table.Column<bool>(type: "boolean", nullable: false),
+                    removal_vote_deadline = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    approval_deadline = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    image_url = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -205,6 +189,8 @@ namespace backend.Migrations
                     description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
                     points = table.Column<int>(type: "integer", nullable: false),
                     is_closed = table.Column<bool>(type: "boolean", nullable: false),
+                    closes_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    image_url = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -254,12 +240,56 @@ namespace backend.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "comments",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    user_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    event_id = table.Column<Guid>(type: "uuid", nullable: true),
+                    shared_event_id = table.Column<Guid>(type: "uuid", nullable: true),
+                    parent_comment_id = table.Column<Guid>(type: "uuid", nullable: true),
+                    content = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_comments", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_comments_comments_parent_comment_id",
+                        column: x => x.parent_comment_id,
+                        principalTable: "comments",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_comments_events_event_id",
+                        column: x => x.event_id,
+                        principalTable: "events",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_comments_shared_events_shared_event_id",
+                        column: x => x.shared_event_id,
+                        principalTable: "shared_events",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_comments_users_user_id",
+                        column: x => x.user_id,
+                        principalTable: "users",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "shared_event_participants",
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     shared_event_id = table.Column<Guid>(type: "uuid", nullable: false),
                     user_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    is_pending_removal = table.Column<bool>(type: "boolean", nullable: false),
+                    removal_vote_deadline = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -280,16 +310,75 @@ namespace backend.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "shared_event_participant_removal_votes",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    shared_event_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    participant_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    user_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    vote_type = table.Column<int>(type: "integer", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_shared_event_participant_removal_votes", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_shared_event_participant_removal_votes_shared_event_partici~",
+                        column: x => x.participant_id,
+                        principalTable: "shared_event_participants",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_shared_event_participant_removal_votes_shared_events_shared~",
+                        column: x => x.shared_event_id,
+                        principalTable: "shared_events",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_shared_event_participant_removal_votes_users_user_id",
+                        column: x => x.user_id,
+                        principalTable: "users",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_audit_logs_performed_by_user_id",
                 table: "audit_logs",
                 column: "performed_by_user_id");
 
             migrationBuilder.CreateIndex(
+                name: "IX_comments_created_at",
+                table: "comments",
+                column: "created_at");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_comments_event_id",
+                table: "comments",
+                column: "event_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_comments_parent_comment_id",
+                table: "comments",
+                column: "parent_comment_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_comments_shared_event_id",
+                table: "comments",
+                column: "shared_event_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_comments_user_id",
+                table: "comments",
+                column: "user_id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_event_approvals_event_id_user_id",
                 table: "event_approvals",
-                columns: new[] { "event_id", "user_id" },
-                unique: true);
+                columns: new[] { "event_id", "user_id" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_event_approvals_user_id",
@@ -300,6 +389,11 @@ namespace backend.Migrations
                 name: "IX_events_affected_user_id",
                 table: "events",
                 column: "affected_user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_events_approval_deadline",
+                table: "events",
+                column: "approval_deadline");
 
             migrationBuilder.CreateIndex(
                 name: "IX_events_created_at",
@@ -315,6 +409,11 @@ namespace backend.Migrations
                 name: "IX_events_group_id",
                 table: "events",
                 column: "group_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_events_is_pending_removal",
+                table: "events",
+                column: "is_pending_removal");
 
             migrationBuilder.CreateIndex(
                 name: "IX_events_status",
@@ -344,20 +443,45 @@ namespace backend.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_notifications_event_id",
+                table: "notifications",
+                column: "event_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_notifications_group_id",
+                table: "notifications",
+                column: "group_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_notifications_shared_event_id",
+                table: "notifications",
+                column: "shared_event_id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_notifications_user_id",
                 table: "notifications",
                 column: "user_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_refresh_tokens_token",
-                table: "refresh_tokens",
-                column: "token",
+                name: "IX_shared_event_participant_removal_votes_participant_id",
+                table: "shared_event_participant_removal_votes",
+                column: "participant_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_shared_event_participant_removal_votes_shared_event_id_part~",
+                table: "shared_event_participant_removal_votes",
+                columns: new[] { "shared_event_id", "participant_id", "user_id" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_refresh_tokens_user_id",
-                table: "refresh_tokens",
+                name: "IX_shared_event_participant_removal_votes_user_id",
+                table: "shared_event_participant_removal_votes",
                 column: "user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_shared_event_participants_is_pending_removal",
+                table: "shared_event_participants",
+                column: "is_pending_removal");
 
             migrationBuilder.CreateIndex(
                 name: "IX_shared_event_participants_shared_event_id_user_id",
@@ -410,6 +534,9 @@ namespace backend.Migrations
                 name: "audit_logs");
 
             migrationBuilder.DropTable(
+                name: "comments");
+
+            migrationBuilder.DropTable(
                 name: "event_approvals");
 
             migrationBuilder.DropTable(
@@ -419,13 +546,13 @@ namespace backend.Migrations
                 name: "notifications");
 
             migrationBuilder.DropTable(
-                name: "refresh_tokens");
-
-            migrationBuilder.DropTable(
-                name: "shared_event_participants");
+                name: "shared_event_participant_removal_votes");
 
             migrationBuilder.DropTable(
                 name: "events");
+
+            migrationBuilder.DropTable(
+                name: "shared_event_participants");
 
             migrationBuilder.DropTable(
                 name: "shared_events");

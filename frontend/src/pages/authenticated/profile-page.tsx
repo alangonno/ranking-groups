@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
-import { ArrowUp, Calendar, Trash2, ShieldAlert, Camera, Users } from "lucide-react";
+import { Calendar, Trash2, ShieldAlert, Camera, Users } from "lucide-react";
 import { useUserProfile } from "../../hooks/use-user-profile";
 import { useGroup } from "../../hooks/use-groups";
 import { useImageUpload } from "../../hooks/use-image-upload";
@@ -222,10 +222,6 @@ export function ProfilePage() {
           <p className="text-4xl font-bold mt-1">
             {member.currentScore.toLocaleString()}
           </p>
-          <div className="flex items-center gap-1 mt-2 text-sm opacity-90">
-            <ArrowUp size={16} />
-            <span>+450 this week</span>
-          </div>
         </div>
       </div>
 

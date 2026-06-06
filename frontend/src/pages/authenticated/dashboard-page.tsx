@@ -122,10 +122,6 @@ export function DashboardPage() {
             allFeedItems.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-text-secondary text-sm mb-4">Nenhum evento recente</p>
-                <AppButton color="red" size="sm" onClick={() => setShowCreateEvent(true)}>
-                  <Plus size={16} className="mr-1" />
-                  Criar primeiro evento
-                </AppButton>
               </div>
             ) : (
               allFeedItems.map((entry) =>
@@ -181,10 +177,6 @@ export function DashboardPage() {
               allFeedItems.length === 0 ? (
                 <div className="text-center py-16">
                   <p className="text-text-secondary mb-4">Este grupo está muito silencioso.</p>
-                  <AppButton color="red" size="sm" onClick={() => setShowCreateEvent(true)}>
-                    <Plus size={16} className="mr-1" />
-                    Criar primeiro evento
-                  </AppButton>
                 </div>
               ) : (
                 allFeedItems.map((entry) =>

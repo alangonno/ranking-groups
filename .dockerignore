@@ -44,3 +44,9 @@ docker-compose*
 # Documentation
 *.md
 docs/
+
+**/bin
+**/obj
+.env
+Dockerfile
+*.md

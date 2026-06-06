@@ -74,9 +74,6 @@ export function AppSidebar() {
               <p className="text-label-bold font-label-bold text-on-surface truncate">
                 {user?.name || "Usuário"}
               </p>
-              <p className="text-caption font-caption text-secondary truncate">
-                Membro ativo
-              </p>
             </div>
           </div>
           <NotificationDropdown />

@@ -3,7 +3,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: ranking-backend-dev
+    container_name: ranking-backend
     ports:
       - "8080:8080"
     env_file:
@@ -11,6 +11,19 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - JWT_ISSUER=${JWT_ISSUER}
+      - JWT_AUDIENCE=${JWT_AUDIENCE}
+      - JWT_ACCESS_EXPIRATION_MINUTES=${JWT_ACCESS_EXPIRATION_MINUTES}
+      - JWT_REFRESH_EXPIRATION_DAYS=${JWT_REFRESH_EXPIRATION_DAYS}
+      - FRONTEND_URL=${FRONTEND_URL}
+      - QUARTZ_CRON=${QUARTZ_CRON}
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
     volumes:
@@ -23,7 +36,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       target: dev
-    container_name: ranking-frontend-dev
+    container_name: ranking-frontend-
     ports:
       - "5173:5173"
     environment:
