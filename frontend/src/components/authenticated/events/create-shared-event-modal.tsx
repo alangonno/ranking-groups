@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { AppButton } from "../../ui/app-button";
 import { AppInput } from "../../ui/app-input";
 import { AppTextarea } from "../../ui/app-textarea";
+import { AppDateTimePicker } from "../../ui/app-datetime-picker";
 import { AppSpinner } from "../../ui/app-spinner";
 import { X, ImagePlus } from "lucide-react";
 import { useCreateSharedEvent } from "../../../hooks/use-shared-events";
@@ -156,14 +157,10 @@ export function CreateSharedEventModal({ isOpen, onClose, groupId }: CreateShare
                 <label htmlFor="shared-closes-at" className="block text-sm font-medium text-text-secondary mb-1.5">
                   Data de fechamento <span className="text-text-muted">(opcional)</span>
                 </label>
-                <AppInput
-                  id="shared-closes-at"
-                  type="datetime-local"
+                <AppDateTimePicker
                   value={closesAt}
-                  onChange={(e) => setClosesAt(e.target.value)}
+                  onChange={setClosesAt}
                   disabled={createSharedEvent.isPending}
-                  sizing="md"
-                  className="w-full"
                 />
               </div>
             </div>

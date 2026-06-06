@@ -53,7 +53,7 @@ public class CloseExpiredSharedEventsJobHandler : ICloseExpiredSharedEventsJobHa
                 .Where(p => p.SharedEventId == sharedEvent.Id)
                 .ToListAsync<SharedEventParticipant>(ct);
 
-            var auditLog = AuditLogBuilder.SharedEventClosed(sharedEvent, participants.Count, Guid.Empty);
+            var auditLog = AuditLogBuilder.SharedEventClosed(sharedEvent, participants.Count, null);
             _auditLogRepository.Add(auditLog);
             await _context.SaveChangesAsync(ct);
 

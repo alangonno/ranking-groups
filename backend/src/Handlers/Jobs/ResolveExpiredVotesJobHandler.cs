@@ -104,7 +104,7 @@ public class ResolveExpiredVotesJobHandler : IResolveExpiredVotesJobHandler
                 await _context.SaveChangesAsync(ct);
 
                 var appliedPoints = @event.Type == EventType.Negative ? -@event.Points : @event.Points;
-                var approvedLog = AuditLogBuilder.EventApproved(@event, Guid.Empty, appliedPoints);
+                var approvedLog = AuditLogBuilder.EventApproved(@event, null, appliedPoints);
                 _auditLogRepository.Add(approvedLog);
                 await _context.SaveChangesAsync(ct);
 
@@ -139,7 +139,7 @@ public class ResolveExpiredVotesJobHandler : IResolveExpiredVotesJobHandler
                 _eventRepository.Remove(@event);
                 await _context.SaveChangesAsync(ct);
 
-                var rejectedLog = AuditLogBuilder.EventRejectedDeleted(@event, Guid.Empty);
+                var rejectedLog = AuditLogBuilder.EventRejectedDeleted(@event, null);
                 _auditLogRepository.Add(rejectedLog);
                 await _context.SaveChangesAsync(ct);
 
@@ -192,7 +192,7 @@ public class ResolveExpiredVotesJobHandler : IResolveExpiredVotesJobHandler
                 var revertedPoints = @event.Status == EventStatus.Approved
                     ? (@event.Type == EventType.Negative ? -@event.Points : @event.Points)
                     : 0;
-                var removedLog = AuditLogBuilder.EventRemovedByVote(@event, Guid.Empty, revertedPoints);
+                var removedLog = AuditLogBuilder.EventRemovedByVote(@event, null, revertedPoints);
                 _auditLogRepository.Add(removedLog);
                 await _context.SaveChangesAsync(ct);
 
@@ -210,7 +210,7 @@ public class ResolveExpiredVotesJobHandler : IResolveExpiredVotesJobHandler
 
                 await _context.SaveChangesAsync(ct);
 
-                var cancelledLog = AuditLogBuilder.EventRemovalCancelled(@event, Guid.Empty);
+                var cancelledLog = AuditLogBuilder.EventRemovalCancelled(@event, null);
                 _auditLogRepository.Add(cancelledLog);
                 await _context.SaveChangesAsync(ct);
 

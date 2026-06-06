@@ -251,7 +251,7 @@ export function ProfilePage() {
                 {/* Vertical line */}
                 <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-border" />
                 <div className="space-y-6">
-                  {timeline.map((item) => {
+                  {[...timeline].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((item) => {
                     // Pending removal events -> show inline voting
                     if (item.isPendingRemoval && item.itemType === "event") {
                       const isAffected = item.affectedUserId === currentUserId;
@@ -366,7 +366,7 @@ export function ProfilePage() {
                                 {item.title}
                               </p>
                               <p className="text-xs text-text-muted mt-0.5">
-                                {item.createdAt}
+                                {formatDate(item.createdAt)}
                               </p>
                             </div>
                             <span

@@ -5,7 +5,7 @@ namespace backend.src.Common;
 
 public static class AuditLogBuilder
 {
-    public static AuditLog EventCreated(Event @event, Guid performedByUserId)
+    public static AuditLog EventCreated(Event @event, Guid? performedByUserId)
     {
         var newValues = JsonSerializer.Serialize(new
         {
@@ -26,7 +26,7 @@ public static class AuditLogBuilder
         };
     }
 
-    public static AuditLog EventUpdated(Event @event, int oldPoints, Guid performedByUserId)
+    public static AuditLog EventUpdated(Event @event, int oldPoints, Guid? performedByUserId)
     {
         var newValues = JsonSerializer.Serialize(new
         {
@@ -48,7 +48,7 @@ public static class AuditLogBuilder
         };
     }
 
-    public static AuditLog EventDeleted(Event @event, Guid performedByUserId, int revertedPoints)
+    public static AuditLog EventDeleted(Event @event, Guid? performedByUserId, int revertedPoints)
     {
         var newValues = JsonSerializer.Serialize(new
         {
@@ -70,7 +70,7 @@ public static class AuditLogBuilder
         };
     }
 
-    public static AuditLog EventApproved(Event @event, Guid performedByUserId, int appliedPoints)
+    public static AuditLog EventApproved(Event @event, Guid? performedByUserId, int appliedPoints)
     {
         var newValues = JsonSerializer.Serialize(new
         {
@@ -92,7 +92,7 @@ public static class AuditLogBuilder
         };
     }
 
-    public static AuditLog EventRejectedDeleted(Event @event, Guid performedByUserId)
+    public static AuditLog EventRejectedDeleted(Event @event, Guid? performedByUserId)
     {
         var newValues = JsonSerializer.Serialize(new
         {
@@ -111,7 +111,7 @@ public static class AuditLogBuilder
         };
     }
 
-    public static AuditLog SharedEventCreated(SharedEvent sharedEvent, Guid performedByUserId)
+    public static AuditLog SharedEventCreated(SharedEvent sharedEvent, Guid? performedByUserId)
     {
         var newValues = JsonSerializer.Serialize(new
         {
@@ -130,7 +130,7 @@ public static class AuditLogBuilder
         };
     }
 
-    public static AuditLog SharedEventUpdated(SharedEvent sharedEvent, int oldPoints, Guid performedByUserId)
+    public static AuditLog SharedEventUpdated(SharedEvent sharedEvent, int oldPoints, Guid? performedByUserId)
     {
         var newValues = JsonSerializer.Serialize(new
         {
@@ -150,7 +150,7 @@ public static class AuditLogBuilder
         };
     }
 
-    public static AuditLog SharedEventDeleted(SharedEvent sharedEvent, int participantsAffected, Guid performedByUserId)
+    public static AuditLog SharedEventDeleted(SharedEvent sharedEvent, int participantsAffected, Guid? performedByUserId)
     {
         var newValues = JsonSerializer.Serialize(new
         {
@@ -208,7 +208,7 @@ public static class AuditLogBuilder
         };
     }
 
-    public static AuditLog SharedEventClosed(SharedEvent sharedEvent, int participantCount, Guid performedByUserId)
+    public static AuditLog SharedEventClosed(SharedEvent sharedEvent, int participantCount, Guid? performedByUserId)
     {
         var newValues = JsonSerializer.Serialize(new
         {
@@ -228,7 +228,7 @@ public static class AuditLogBuilder
         };
     }
 
-    public static AuditLog EventRemovalInitiated(Event @event, Guid performedByUserId)
+    public static AuditLog EventRemovalInitiated(Event @event, Guid? performedByUserId)
     {
         var newValues = JsonSerializer.Serialize(new
         {
@@ -249,7 +249,7 @@ public static class AuditLogBuilder
         };
     }
 
-    public static AuditLog EventRemovedByVote(Event @event, Guid performedByUserId, int revertedPoints)
+    public static AuditLog EventRemovedByVote(Event @event, Guid? performedByUserId, int revertedPoints)
     {
         var newValues = JsonSerializer.Serialize(new
         {
@@ -271,7 +271,7 @@ public static class AuditLogBuilder
         };
     }
 
-    public static AuditLog EventRemovalCancelled(Event @event, Guid performedByUserId)
+    public static AuditLog EventRemovalCancelled(Event @event, Guid? performedByUserId)
     {
         var newValues = JsonSerializer.Serialize(new
         {
@@ -367,7 +367,7 @@ public static class AuditLogBuilder
         };
     }
 
-    public static AuditLog CommentCreated(Comment comment, Guid performedByUserId)
+    public static AuditLog CommentCreated(Comment comment, Guid? performedByUserId)
     {
         var newValues = JsonSerializer.Serialize(new
         {
