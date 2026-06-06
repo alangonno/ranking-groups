@@ -1,0 +1,25 @@
+name: Manutenção Preventiva (Keepalive)
+
+on:
+  schedule:
+    # Roda as 00:00 do dia 1 de cada mês
+    - cron: "0 0 1 * *"
+  workflow_dispatch: # Permite rodar manualmente
+
+jobs:
+  auto-commit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write #Dá permissão para o robô fazer commit
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Atualizar timestamp para evitar inatividade
+        run: |
+          date > last_activity.txt
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add last_activity.txt
+          git commit -m "chore: atividade mensal automatica para manter cron ativo"
+          git push

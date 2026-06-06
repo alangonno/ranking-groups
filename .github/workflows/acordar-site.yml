@@ -1,0 +1,22 @@
+name: Acordar Site Render
+
+on:
+  schedule:
+    # Roda a cada 14 min, das 10h as 23h UTC (07h as 20h Brasil)
+    - cron: '*/14 10-23 * * *'
+  workflow_dispatch: # Permite rodar manualmente para testar
+
+jobs:
+  wake_up:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Acordar Tudo
+        run: |
+          # 1. ACORDAR BACKEND
+          echo "Acordando Backend..."
+          curl -I -L -X GET "https://fourquase5-api.onrender.com/api/health" \
+          -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:146.0) Gecko/20100101 Firefox/146.0" \
+          -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" \
+          --retry 3 \
+          --retry-delay 5 \
+          --max-time 60
