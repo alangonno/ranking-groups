@@ -1,4 +1,4 @@
-import DatePicker from "react-datepicker";
+import DatePicker, { type ReactDatePickerCustomHeaderProps } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -36,7 +36,7 @@ export function AppDateTimePicker({ value, onChange, disabled }: AppDateTimePick
           className="w-full bg-transparent text-text-primary px-4 py-2.5 text-sm outline-none cursor-pointer"
           popperClassName="z-50"
           calendarClassName="!bg-surface-container-lowest !border !border-border !rounded-xl !shadow-lg !font-sans"
-          dayClassName={(d) => {
+          dayClassName={(d: Date) => {
             const today = new Date();
             const isToday =
               d.getDate() === today.getDate() &&
@@ -48,7 +48,7 @@ export function AppDateTimePicker({ value, onChange, disabled }: AppDateTimePick
             date,
             decreaseMonth,
             increaseMonth,
-          }) => (
+          }: ReactDatePickerCustomHeaderProps) => (
             <div className="flex items-center justify-between px-2 py-2">
               <button
                 type="button"
