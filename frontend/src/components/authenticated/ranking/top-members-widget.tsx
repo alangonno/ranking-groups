@@ -7,16 +7,17 @@ interface TopMember {
 
 interface TopMembersWidgetProps {
   members: TopMember[];
+  onSeeAll?: () => void;
 }
 
-export function TopMembersWidget({ members }: TopMembersWidgetProps) {
+export function TopMembersWidget({ members, onSeeAll }: TopMembersWidgetProps) {
   return (
     <div className="bg-surface-container-lowest rounded-xl p-5 shadow-sm border border-surface-container">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-headline-md font-headline-md text-on-surface">Top 5 Membros</h3>
-        <span className="text-caption font-caption text-primary cursor-pointer hover:underline">
+        <button type="button" onClick={onSeeAll} className="text-caption font-caption text-primary cursor-pointer hover:underline">
           Ver todos
-        </span>
+        </button>
       </div>
       <div className="space-y-3">
         {members.map((member) => (

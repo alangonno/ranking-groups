@@ -33,6 +33,7 @@ public class AuthController : ControllerBase
         var response = await _registerHandler.HandleAsync(request, ct);
         var refreshToken = _jwtService.GenerateRefreshToken(response.UserId);
         SetRefreshTokenCookie(refreshToken);
+        response.RefreshToken = refreshToken;
         return Ok(response);
     }
 
@@ -43,14 +44,20 @@ public class AuthController : ControllerBase
         var response = await _loginHandler.HandleAsync(request, ct);
         var refreshToken = _jwtService.GenerateRefreshToken(response.UserId);
         SetRefreshTokenCookie(refreshToken);
+        response.RefreshToken = refreshToken;
         return Ok(response);
     }
 
     [HttpPost("refresh-token")]
     [AllowAnonymous]
-    public async Task<IActionResult> RefreshToken(CancellationToken ct)
+    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest? bodyRequest, CancellationToken ct)
     {
-        var refreshToken = Request.Cookies["refresh_token"];
+        var refreshToken = bodyRequest?.RefreshToken;
+        if (string.IsNullOrWhiteSpace(refreshToken))
+        {
+            refreshToken = Request.Cookies["refresh_token"];
+        }
+
         if (string.IsNullOrWhiteSpace(refreshToken))
         {
             return Forbid();
@@ -58,6 +65,7 @@ public class AuthController : ControllerBase
 
         var request = new RefreshTokenRequest { RefreshToken = refreshToken };
         var response = await _refreshTokenHandler.HandleAsync(request, ct);
+        SetRefreshTokenCookie(response.RefreshToken);
         return Ok(response);
     }
 
@@ -71,8 +79,6 @@ public class AuthController : ControllerBase
 
     private void SetRefreshTokenCookie(string refreshToken)
     {
-        var isDevelopment = HttpContext.RequestServices.GetService<IHostEnvironment>()?.IsDevelopment() ?? false;
-
         Response.Cookies.Append("refresh_token", refreshToken, new CookieOptions
         {
             HttpOnly = true,

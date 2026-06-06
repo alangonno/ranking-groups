@@ -4,6 +4,7 @@ import { getUserIdFromToken } from "../lib/auth-token";
 import { authStore } from "../store/auth-store";
 import { queryClient } from "../lib/query-client";
 import { useAuthContext } from "../providers/auth-provider";
+import { setRefreshToken, removeRefreshToken } from "../lib/refresh-token-storage";
 import type { LoginRequest, LoginResponse } from "../types/auth/user";
 import type { RegisterRequest, RegisterResponse } from "../types/auth/user";
 import type { User } from "../types/auth/user";
@@ -30,6 +31,7 @@ export function useLogin() {
       postJson<LoginResponse>("/api/auth/login", payload),
     onSuccess: (data) => {
       authStore.setAccessToken(data.accessToken);
+      setRefreshToken(data.refreshToken);
       queryClient.setQueryData(AUTH_KEY, mapToUser(data));
       setUser({
         id: data.userId,
@@ -50,6 +52,7 @@ export function useRegister() {
       postJson<RegisterResponse>("/api/auth/register", payload),
     onSuccess: (data) => {
       authStore.setAccessToken(data.accessToken);
+      setRefreshToken(data.refreshToken);
       queryClient.setQueryData(AUTH_KEY, mapToUser(data));
       setUser({
         id: data.userId,
@@ -69,6 +72,7 @@ export function useLogout() {
     mutationFn: async () => {
       await postJson<unknown>("/api/auth/logout");
       authStore.clearAccessToken();
+      removeRefreshToken();
       queryClient.clear();
     },
     onSuccess: () => {

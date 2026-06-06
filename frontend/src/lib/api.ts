@@ -1,6 +1,7 @@
 import axios from "axios";
 import type { RefreshTokenResponse } from "../types/auth/user";
 import { authStore } from "../store/auth-store";
+import { getRefreshToken, setRefreshToken, removeRefreshToken } from "../lib/refresh-token-storage";
 
 export class ApiError extends Error {
   statusCode: number;
@@ -83,17 +84,25 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
+        const refreshToken = getRefreshToken();
+        if (!refreshToken) {
+          throw new Error("No refresh token available");
+        }
+
         const response = await apiClient.post<RefreshTokenResponse>(
-          "/api/auth/refresh-token"
+          "/api/auth/refresh-token",
+          { refreshToken }
         );
-        const { accessToken } = response.data;
+        const { accessToken, refreshToken: newRefreshToken } = response.data;
         authStore.setAccessToken(accessToken);
+        setRefreshToken(newRefreshToken);
         processQueue(null, accessToken);
         originalRequest.headers.set("Authorization", `Bearer ${accessToken}`);
         return apiClient(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
         authStore.clearAccessToken();
+        removeRefreshToken();
         window.location.href = "/login";
         return Promise.reject(refreshError);
       } finally {

@@ -14,6 +14,7 @@ public class RefreshTokenRequest
 public class RefreshTokenResponse
 {
     public string AccessToken { get; set; } = string.Empty;
+    public string RefreshToken { get; set; } = string.Empty;
 }
 
 // 3. Interface
@@ -56,10 +57,12 @@ public class RefreshTokenHandler : IRefreshTokenHandler
         }
 
         var accessToken = _jwtService.GenerateAccessToken(user.Id, user.Name, user.Email, user.Username, _storageService.GetPublicUrlFromPath(user.AvatarUrl));
+        var refreshToken = _jwtService.GenerateRefreshToken(user.Id);
 
         return new RefreshTokenResponse
         {
-            AccessToken = accessToken
+            AccessToken = accessToken,
+            RefreshToken = refreshToken
         };
     }
 }

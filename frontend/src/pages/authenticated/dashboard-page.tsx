@@ -159,7 +159,10 @@ export function DashboardPage() {
           )}
         </div>
         <div className="pt-4 space-y-4">
-          <TopMembersWidget members={topMembers} />
+          <TopMembersWidget
+            members={topMembers}
+            onSeeAll={() => navigate(`/group/${groupId}/ranking`)}
+          />
         </div>
       </div>
 
@@ -227,7 +230,10 @@ export function DashboardPage() {
               <span className="text-caption font-caption text-secondary">Membros Ativos</span>
             </div>
           </div>
-          <TopMembersWidget members={topMembers} />
+          <TopMembersWidget
+            members={topMembers}
+            onSeeAll={() => navigate(`/group/${groupId}/ranking`)}
+          />
         </div>
       </div>
 

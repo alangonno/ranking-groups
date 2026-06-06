@@ -3,6 +3,7 @@ import { getUserFromToken } from "../lib/auth-token";
 import { authStore } from "../store/auth-store";
 import { postJson } from "../lib/api";
 import type { RefreshTokenResponse } from "../types/auth/user";
+import { getRefreshToken, setRefreshToken, removeRefreshToken } from "../lib/refresh-token-storage";
 
 export interface AuthUser {
   id: string;
@@ -39,8 +40,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        const data = await postJson<RefreshTokenResponse>("/api/auth/refresh-token");
+        const refreshToken = getRefreshToken();
+        if (!refreshToken) {
+          setIsLoading(false);
+          return;
+        }
+
+        const data = await postJson<RefreshTokenResponse>(
+          "/api/auth/refresh-token",
+          { refreshToken }
+        );
         authStore.setAccessToken(data.accessToken);
+        setRefreshToken(data.refreshToken);
         const refreshedUser = getUserFromToken(data.accessToken);
         if (refreshedUser) {
           setUserState(refreshedUser);
@@ -62,6 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const clearUser = () => {
     setUserState(null);
     authStore.clearAccessToken();
+    removeRefreshToken();
   };
 
   return (
