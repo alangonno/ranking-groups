@@ -117,6 +117,43 @@ public class SharedEventRulesTests
     }
 
     [Fact]
+    public void ValidateParticipantsBelongToGroup_AllSelectedUsersAreMembers_ShouldNotThrow()
+    {
+        var group = EntityFixtures.CreateGroup();
+        var firstMember = EntityFixtures.CreateUser("First Member");
+        var secondMember = EntityFixtures.CreateUser("Second Member");
+        var groupMembers = new List<GroupMember>
+        {
+            EntityFixtures.CreateGroupMember(group, firstMember),
+            EntityFixtures.CreateGroupMember(group, secondMember)
+        };
+
+        var act = () => SharedEventRules.ValidateParticipantsBelongToGroup(
+            new[] { firstMember.Id, secondMember.Id },
+            groupMembers);
+
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void ValidateParticipantsBelongToGroup_WhenAnySelectedUserIsNotMember_ShouldThrowBusinessRuleException()
+    {
+        var group = EntityFixtures.CreateGroup();
+        var member = EntityFixtures.CreateUser("Member");
+        var outsider = EntityFixtures.CreateUser("Outsider");
+        var groupMembers = new List<GroupMember>
+        {
+            EntityFixtures.CreateGroupMember(group, member)
+        };
+
+        var act = () => SharedEventRules.ValidateParticipantsBelongToGroup(
+            new[] { member.Id, outsider.Id },
+            groupMembers);
+
+        act.Should().Throw<BusinessRuleException>();
+    }
+
+    [Fact]
     public void ValidateCanClose_OpenEvent_ShouldNotThrow()
     {
         var act = () => SharedEventRules.ValidateCanClose(false);

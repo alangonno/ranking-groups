@@ -16,6 +16,7 @@ public class CreateSharedEventRequest
     public int Points { get; set; }
     public DateTime? ClosesAt { get; set; }
     public string? ImageUrl { get; set; }
+    public List<Guid> ParticipantUserIds { get; set; } = new();
 }
 
 public class CreateSharedEventResponse
@@ -37,6 +38,7 @@ public interface ICreateSharedEventHandler
 public class CreateSharedEventHandler : ICreateSharedEventHandler
 {
     private readonly ISharedEventRepository _sharedEventRepository;
+    private readonly ISharedEventParticipantRepository _participantRepository;
     private readonly IGroupRepository _groupRepository;
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
@@ -47,6 +49,7 @@ public class CreateSharedEventHandler : ICreateSharedEventHandler
 
     public CreateSharedEventHandler(
         ISharedEventRepository sharedEventRepository,
+        ISharedEventParticipantRepository participantRepository,
         IGroupRepository groupRepository,
         IGroupMemberRepository groupMemberRepository,
         ICurrentUserService currentUserService,
@@ -56,6 +59,7 @@ public class CreateSharedEventHandler : ICreateSharedEventHandler
         AppDbContext context)
     {
         _sharedEventRepository = sharedEventRepository;
+        _participantRepository = participantRepository;
         _groupRepository = groupRepository;
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
@@ -83,6 +87,9 @@ public class CreateSharedEventHandler : ICreateSharedEventHandler
         var members = await _groupMemberRepository.GetMembersByGroupAsync(request.GroupId);
         GroupPermissionRules.ValidateUserCanInteract(userId, request.GroupId, members);
 
+        var participantUserIds = NormalizeParticipantUserIds(request.ParticipantUserIds);
+        SharedEventRules.ValidateParticipantsBelongToGroup(participantUserIds, members);
+
         var sharedEvent = new SharedEvent
         {
             GroupId = request.GroupId,
@@ -96,6 +103,24 @@ public class CreateSharedEventHandler : ICreateSharedEventHandler
         };
 
         _sharedEventRepository.Add(sharedEvent);
+        await _context.SaveChangesAsync(ct);
+
+        foreach (var participantUserId in participantUserIds)
+        {
+            _participantRepository.Add(new SharedEventParticipant
+            {
+                SharedEventId = sharedEvent.Id,
+                UserId = participantUserId
+            });
+
+            var member = members.FirstOrDefault(m => m.UserId == participantUserId);
+            if (member != null)
+            {
+                member.CurrentScore += sharedEvent.Points;
+                _groupMemberRepository.Update(member);
+            }
+        }
+
         await _context.SaveChangesAsync(ct);
 
         var auditLog = AuditLogBuilder.SharedEventCreated(sharedEvent, userId);
@@ -117,6 +142,15 @@ public class CreateSharedEventHandler : ICreateSharedEventHandler
             ImageUrl = _storageService.GetPublicUrlFromPath(sharedEvent.ImageUrl)
         };
     }
+
+    private static List<Guid> NormalizeParticipantUserIds(IEnumerable<Guid>? participantUserIds)
+    {
+        return participantUserIds?
+            .Where(userId => userId != Guid.Empty)
+            .Distinct()
+            .ToList()
+            ?? new List<Guid>();
+    }
 }
 
 public static class CreateSharedEventRequestValidator
@@ -133,4 +167,5 @@ public static class CreateSharedEventRequestValidator
             throw new BusinessRuleException("group_id_required", "O ID do grupo é obrigatório.");
         }
     }
+
 }

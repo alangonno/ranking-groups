@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { ImageModal } from "../../ui/image-modal";
-import { Users, ArrowUp, CheckCircle2, Clock, LogOut, MessageCircle } from "lucide-react";
+import { Users, ArrowUp, CheckCircle2, Clock, LogOut, MessageCircle, Pencil } from "lucide-react";
 import { AppButton } from "../../ui/app-button";
 import { AppSpinner } from "../../ui/app-spinner";
 import { useJoinSharedEvent, useLeaveSharedEvent } from "../../../hooks/use-shared-events";
 import { CommentsSection } from "./comments-section";
 import { useSharedEventComments, useCreateSharedEventComment } from "../../../hooks/use-comments";
 import { useCurrentGroupId } from "../../../lib/use-group-context";
+import { useAuthContext } from "../../../providers/auth-provider";
+import { CreateSharedEventModal } from "./create-shared-event-modal";
 
 interface SharedEvent {
   id: string;
@@ -30,7 +32,9 @@ export function SharedEventCard({ event }: SharedEventCardProps) {
   const joinEvent = useJoinSharedEvent(event.id);
   const leaveEvent = useLeaveSharedEvent(event.id);
   const [showComments, setShowComments] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const groupId = useCurrentGroupId();
+  const { user } = useAuthContext();
 
   const {
     data: commentsData,
@@ -65,6 +69,7 @@ export function SharedEventCard({ event }: SharedEventCardProps) {
 
   const isActionPending = joinEvent.isPending || leaveEvent.isPending;
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const canEdit = !event.isClosed && user?.id === event.createdByUserId;
 
   return (
     <div className="bg-surface-container-lowest shadow-sm rounded-2xl min-w-[260px] snap-start overflow-hidden border border-surface-container group cursor-pointer hover:border-outline-variant transition-colors">
@@ -134,6 +139,19 @@ export function SharedEventCard({ event }: SharedEventCardProps) {
             </button>
           </div>
           <div className="flex gap-1.5">
+            {canEdit && groupId ? (
+              <AppButton
+                size="xs"
+                color="light"
+                className="text-xs px-3 py-1.5 border-0"
+                onClick={() => setShowEditModal(true)}
+                disabled={isActionPending}
+              >
+                <Pencil size={12} />
+                Editar
+              </AppButton>
+            ) : null}
+
             {!event.isClosed && event.hasCurrentUserJoined && (
               <AppButton
                 size="xs"
@@ -193,6 +211,15 @@ export function SharedEventCard({ event }: SharedEventCardProps) {
           onClose={() => setPreviewImage(null)}
         />
       )}
+
+      {groupId ? (
+        <CreateSharedEventModal
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          groupId={groupId}
+          sharedEventId={event.id}
+        />
+      ) : null}
     </div>
   );
 }

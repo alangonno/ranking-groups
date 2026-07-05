@@ -6,52 +6,129 @@ import type {
   CreateSharedEventRequest,
   CreateSharedEventResponse,
   SharedEvent,
+  SharedEventParticipant,
   UpdateSharedEventRequest,
   UpdateSharedEventResponse,
 } from "../types/shared-event/shared-event";
+
+type SharedEventSummaryBackendResponse = {
+  sharedEventId: string;
+  title: string;
+  description: string;
+  points: number;
+  isClosed: boolean;
+  closesAt: string | null;
+  createdAt: string;
+  groupId: string;
+  createdByUserId: string;
+  createdByUserName: string;
+  participantCount: number;
+  hasCurrentUserJoined: boolean;
+  commentCount?: number;
+  imageUrl?: string;
+  createdByUserAvatarUrl?: string;
+};
+
+type SharedEventDetailsBackendResponse = {
+  sharedEventId: string;
+  groupId: string;
+  title: string;
+  description: string;
+  points: number;
+  isClosed: boolean;
+  createdAt: string;
+  createdByUserId: string;
+  createdByUserName: string;
+  createdByUserAvatarUrl?: string;
+  commentCount: number;
+  imageUrl?: string;
+  participants: Array<{
+    userId: string;
+    userName: string;
+    joinedAt: string;
+  }>;
+};
+
+function mapParticipantsFromBackend(
+  participants: SharedEventDetailsBackendResponse["participants"] = []
+): SharedEventParticipant[] {
+  return participants.map((participant) => ({
+    id: `${participant.userId}-${participant.joinedAt}`,
+    sharedEventId: "",
+    userId: participant.userId,
+    userName: participant.userName,
+    joinedAt: participant.joinedAt,
+    createdAt: participant.joinedAt,
+    updatedAt: participant.joinedAt,
+    user: {
+      id: participant.userId,
+      name: participant.userName,
+      username: "",
+      email: "",
+      createdAt: "",
+      updatedAt: "",
+    },
+  }));
+}
+
+function mapSharedEventSummaryFromBackend(se: SharedEventSummaryBackendResponse): SharedEvent {
+  return {
+    id: se.sharedEventId,
+    title: se.title,
+    description: se.description,
+    points: se.points,
+    isClosed: se.isClosed,
+    closesAt: se.closesAt ?? undefined,
+    createdAt: se.createdAt,
+    updatedAt: se.createdAt,
+    groupId: se.groupId,
+    createdByUserId: se.createdByUserId,
+    createdByUserName: se.createdByUserName,
+    participantCount: se.participantCount,
+    hasCurrentUserJoined: se.hasCurrentUserJoined,
+    commentCount: se.commentCount ?? 0,
+    imageUrl: se.imageUrl,
+    createdByUserAvatarUrl: se.createdByUserAvatarUrl,
+  };
+}
+
+function mapSharedEventDetailsFromBackend(se: SharedEventDetailsBackendResponse): SharedEvent {
+  const participants = mapParticipantsFromBackend(se.participants);
+
+  return {
+    id: se.sharedEventId,
+    title: se.title,
+    description: se.description,
+    points: se.points,
+    isClosed: se.isClosed,
+    createdAt: se.createdAt,
+    updatedAt: se.createdAt,
+    groupId: se.groupId,
+    createdByUserId: se.createdByUserId,
+    createdByUserName: se.createdByUserName,
+    participantCount: participants.length,
+    hasCurrentUserJoined: participants.some((participant) => participant.userId === se.createdByUserId),
+    participants: participants.map((participant) => ({
+      ...participant,
+      sharedEventId: se.sharedEventId,
+    })),
+    commentCount: se.commentCount ?? 0,
+    imageUrl: se.imageUrl,
+    createdByUserAvatarUrl: se.createdByUserAvatarUrl,
+  };
+}
 
 export function useGroupSharedEvents(groupId: string) {
   return useInfiniteQuery({
     queryKey: ["shared-events", "group", groupId],
     queryFn: async ({ pageParam }) => {
       const response = await getJson<{
-        sharedEvents: Array<{
-          sharedEventId: string;
-          title: string;
-          description: string;
-          points: number;
-          isClosed: boolean;
-          closesAt: string | null;
-          createdAt: string;
-          groupId: string;
-          createdByUserId: string;
-          createdByUserName: string;
-          participantCount: number;
-          hasCurrentUserJoined: boolean;
-          commentCount?: number;
-          imageUrl?: string;
-          createdByUserAvatarUrl?: string;
-        }>;
+        sharedEvents: SharedEventSummaryBackendResponse[];
         hasMore: boolean;
         nextCursor: string | null;
       }>(`/api/shared-events/group/${groupId}`, { cursor: pageParam });
       return {
-        items: (response.sharedEvents || []).map((se) => ({
-          id: se.sharedEventId,
-          title: se.title,
-          description: se.description,
-          points: se.points,
-          isClosed: se.isClosed,
-          closesAt: se.closesAt ?? undefined,
-          createdAt: se.createdAt,
-          groupId: se.groupId,
-          createdByUserId: se.createdByUserId,
-          participantCount: se.participantCount,
-          hasCurrentUserJoined: se.hasCurrentUserJoined,
-          commentCount: se.commentCount ?? 0,
-          imageUrl: se.imageUrl,
-          createdByUserAvatarUrl: se.createdByUserAvatarUrl,
-        })),
+        items: (response.sharedEvents || []).map(mapSharedEventSummaryFromBackend),
         hasMore: response.hasMore,
         nextCursor: response.nextCursor,
       };
@@ -69,7 +146,10 @@ export function useGroupSharedEvents(groupId: string) {
 export function useSharedEvent(id: string) {
   return useQuery<SharedEvent>({
     queryKey: ["shared-events", id],
-    queryFn: () => getJson<SharedEvent>(`/api/shared-events/${id}`),
+    queryFn: async () => {
+      const response = await getJson<SharedEventDetailsBackendResponse>(`/api/shared-events/${id}`);
+      return mapSharedEventDetailsFromBackend(response);
+    },
     enabled: !!id,
   });
 }

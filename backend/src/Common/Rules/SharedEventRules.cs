@@ -63,6 +63,22 @@ public static class SharedEventRules
         }
     }
 
+    public static void ValidateParticipantsBelongToGroup(IEnumerable<Guid> participantUserIds, IEnumerable<GroupMember> groupMembers)
+    {
+        var groupMemberIds = groupMembers
+            .Select(gm => gm.UserId)
+            .ToHashSet();
+
+        var invalidParticipantId = participantUserIds.FirstOrDefault(userId => !groupMemberIds.Contains(userId));
+        if (invalidParticipantId != Guid.Empty)
+        {
+            throw new BusinessRuleException(
+                "shared_event_participant_not_in_group",
+                "Todos os participantes adicionados ao evento compartilhado devem ser membros do grupo."
+            );
+        }
+    }
+
     public static void ValidateCanClose(bool isClosed)
     {
         if (isClosed)

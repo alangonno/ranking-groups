@@ -14,6 +14,7 @@ public class UpdateSharedEventRequest
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public int Points { get; set; }
+    public List<Guid> ParticipantUserIds { get; set; } = new();
 }
 
 public class UpdateSharedEventResponse
@@ -34,6 +35,7 @@ public interface IUpdateSharedEventHandler
 public class UpdateSharedEventHandler : IUpdateSharedEventHandler
 {
     private readonly ISharedEventRepository _sharedEventRepository;
+    private readonly ISharedEventParticipantRepository _participantRepository;
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly ICurrentUserService _currentUserService;
     private readonly IAuditLogRepository _auditLogRepository;
@@ -42,6 +44,7 @@ public class UpdateSharedEventHandler : IUpdateSharedEventHandler
 
     public UpdateSharedEventHandler(
         ISharedEventRepository sharedEventRepository,
+        ISharedEventParticipantRepository participantRepository,
         IGroupMemberRepository groupMemberRepository,
         ICurrentUserService currentUserService,
         IAuditLogRepository auditLogRepository,
@@ -49,6 +52,7 @@ public class UpdateSharedEventHandler : IUpdateSharedEventHandler
         AppDbContext context)
     {
         _sharedEventRepository = sharedEventRepository;
+        _participantRepository = participantRepository;
         _groupMemberRepository = groupMemberRepository;
         _currentUserService = currentUserService;
         _auditLogRepository = auditLogRepository;
@@ -76,11 +80,64 @@ public class UpdateSharedEventHandler : IUpdateSharedEventHandler
         SharedEventRules.ValidateUserCanEditSharedEvent(userId, sharedEvent.CreatedByUserId, members);
         SharedEventRules.ValidatePoints(request.Points);
 
+        var participantUserIds = NormalizeParticipantUserIds(request.ParticipantUserIds);
+        SharedEventRules.ValidateParticipantsBelongToGroup(participantUserIds, members);
+
+        var oldPoints = sharedEvent.Points;
+        var currentParticipantUserIds = sharedEvent.Participants
+            .Select(participant => participant.UserId)
+            .ToHashSet();
+        var requestedParticipantUserIds = participantUserIds.ToHashSet();
+
         sharedEvent.Title = request.Title;
         sharedEvent.Description = request.Description;
         sharedEvent.Points = request.Points;
 
-        var oldPoints = sharedEvent.Points;
+        var removedParticipants = sharedEvent.Participants
+            .Where(participant => !requestedParticipantUserIds.Contains(participant.UserId))
+            .ToList();
+
+        foreach (var participant in removedParticipants)
+        {
+            _participantRepository.Remove(participant);
+
+            var member = members.FirstOrDefault(m => m.UserId == participant.UserId);
+            if (member != null)
+            {
+                member.CurrentScore -= oldPoints;
+                _groupMemberRepository.Update(member);
+            }
+        }
+
+        foreach (var participantUserId in participantUserIds.Where(requestedId => !currentParticipantUserIds.Contains(requestedId)))
+        {
+            _participantRepository.Add(new SharedEventParticipant
+            {
+                SharedEventId = sharedEvent.Id,
+                UserId = participantUserId
+            });
+
+            var member = members.FirstOrDefault(m => m.UserId == participantUserId);
+            if (member != null)
+            {
+                member.CurrentScore += request.Points;
+                _groupMemberRepository.Update(member);
+            }
+        }
+
+        var delta = request.Points - oldPoints;
+        if (delta != 0)
+        {
+            foreach (var participantUserId in participantUserIds.Where(requestedId => currentParticipantUserIds.Contains(requestedId)))
+            {
+                var member = members.FirstOrDefault(m => m.UserId == participantUserId);
+                if (member != null)
+                {
+                    member.CurrentScore += delta;
+                    _groupMemberRepository.Update(member);
+                }
+            }
+        }
 
         _sharedEventRepository.Update(sharedEvent);
         await _context.SaveChangesAsync(ct);
@@ -102,6 +159,15 @@ public class UpdateSharedEventHandler : IUpdateSharedEventHandler
             IsClosed = sharedEvent.IsClosed,
             UpdatedAt = sharedEvent.UpdatedAt
         };
+    }
+
+    private static List<Guid> NormalizeParticipantUserIds(IEnumerable<Guid>? participantUserIds)
+    {
+        return participantUserIds?
+            .Where(userId => userId != Guid.Empty)
+            .Distinct()
+            .ToList()
+            ?? new List<Guid>();
     }
 }
 

@@ -5,6 +5,8 @@ export interface SharedEventParticipant extends BaseEntity {
   sharedEventId: string;
   userId: string;
   user?: User;
+  userName?: string;
+  joinedAt?: string;
 }
 
 export interface SharedEvent extends BaseEntity {
@@ -15,8 +17,10 @@ export interface SharedEvent extends BaseEntity {
   isClosed: boolean;
   closesAt?: string;
   createdByUserId: string;
+  createdByUserName?: string;
   participantCount: number;
   hasCurrentUserJoined: boolean;
+  participants?: SharedEventParticipant[];
     isPendingRemoval?: boolean;
     removalVoteDeadline?: string;
     quorumRequired?: number;
@@ -34,6 +38,7 @@ export interface CreateSharedEventRequest {
   points: number;
   closesAt?: string;
   imageUrl?: string;
+  participantUserIds?: string[];
 }
 
 export type CreateSharedEventResponse = SharedEvent;
@@ -42,6 +47,7 @@ export interface UpdateSharedEventRequest {
   title?: string;
   description?: string;
   points?: number;
+  participantUserIds?: string[];
 }
 
 export type UpdateSharedEventResponse = SharedEvent;
