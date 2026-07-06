@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ArrowUp, ArrowDown, MessageCircle } from "lucide-react";
 import { EventType } from "../../../types/event/event";
 import type { Event } from "../../../types/event/event";
@@ -13,6 +14,7 @@ interface EventCardProps {
 }
 
 export function EventCard({ event }: EventCardProps) {
+  const navigate = useNavigate();
   const isPositive = event.type === EventType.Positive;
   const affected = event.affectedUser;
   const creator = event.createdByUser;
@@ -30,6 +32,11 @@ export function EventCard({ event }: EventCardProps) {
   const createComment = useCreateEventComment(event.id, groupId || undefined);
 
   const comments = commentsData?.flattened ?? [];
+
+  function navigateToProfile(userId?: string) {
+    if (!groupId || !userId) return;
+    navigate(`/group/${groupId}/profile/${userId}`);
+  }
 
   return (
     <div className="bg-surface-container-lowest rounded-xl p-5 shadow-sm border border-surface-container hover:scale-[0.99] transition-transform duration-200">
@@ -50,9 +57,10 @@ export function EventCard({ event }: EventCardProps) {
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <div
+                <button
+                  type="button"
                   className="w-8 h-8 rounded-full overflow-hidden bg-surface-container flex-shrink-0 cursor-pointer"
-                  onClick={() => affected?.avatarUrl && setPreviewImage(affected.avatarUrl)}
+                  onClick={() => navigateToProfile(affected?.id)}
                 >
                   {affected?.avatarUrl ? (
                     <img src={affected.avatarUrl} alt={affected.name} className="w-full h-full object-cover" />
@@ -61,15 +69,16 @@ export function EventCard({ event }: EventCardProps) {
                       {affected?.name?.charAt(0).toUpperCase() || "U"}
                     </div>
                   )}
-                </div>
+                </button>
                 <p className="text-body-md font-body-md font-semibold text-on-surface">
                   {affected?.name || "Usuário"}
                 </p>
               </div>
               <div className="flex items-center gap-1.5 mt-1">
-                <div
+                <button
+                  type="button"
                   className="w-5 h-5 rounded-full overflow-hidden bg-surface-container flex-shrink-0 cursor-pointer"
-                  onClick={() => creator?.avatarUrl && setPreviewImage(creator.avatarUrl)}
+                  onClick={() => navigateToProfile(creator?.id)}
                 >
                   {creator?.avatarUrl ? (
                     <img src={creator.avatarUrl} alt={creator.name} className="w-full h-full object-cover" />
@@ -78,7 +87,7 @@ export function EventCard({ event }: EventCardProps) {
                       {creator?.name?.charAt(0).toUpperCase() || "U"}
                     </div>
                   )}
-                </div>
+                </button>
                 <p className="text-caption font-caption text-secondary">
                   registrado por {creator?.name} • {formatRelativeTime(event.createdAt)}
                 </p>

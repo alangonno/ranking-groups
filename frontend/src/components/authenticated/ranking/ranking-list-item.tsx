@@ -6,6 +6,7 @@ interface RankingListItemProps {
   avatarUrl?: string;
   maxPoints: number;
   isCurrentUser?: boolean;
+  onClick?: () => void;
 }
 
 export function RankingListItem({
@@ -16,12 +17,14 @@ export function RankingListItem({
   avatarUrl,
   maxPoints,
   isCurrentUser = false,
+  onClick,
 }: RankingListItemProps) {
   const fallbackAvatar = name.charAt(0).toUpperCase();
   const progress = Math.round((points / maxPoints) * 100);
 
   return (
     <div
+      onClick={onClick}
       className={`bg-surface-container-lowest rounded-xl p-4 shadow-sm border flex items-center gap-4 transition-transform duration-200 hover:scale-[0.99] cursor-pointer ${
         isCurrentUser
           ? "border-primary/30 bg-primary-container/5"

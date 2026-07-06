@@ -74,6 +74,10 @@ export function RankingPage() {
 
   const maxPoints = filteredRanking[0]?.score || 1;
 
+  function navigateToProfile(userId: string) {
+    navigate(`/group/${groupId}/profile/${userId}`);
+  }
+
   return (
     <div className="p-4 lg:p-8 max-w-5xl mx-auto">
       {/* Header Mobile */}
@@ -134,6 +138,7 @@ export function RankingPage() {
             points={top1.score}
             avatarUrl={top1.user.avatarUrl}
             weeklyScore={top1.weeklyScore}
+            onClick={() => navigateToProfile(top1.user.id)}
           />
         )}
         {top2 && (
@@ -143,6 +148,7 @@ export function RankingPage() {
             points={top2.score}
             avatarUrl={top2.user.avatarUrl}
             weeklyScore={top2.weeklyScore}
+            onClick={() => navigateToProfile(top2.user.id)}
           />
         )}
       </div>
@@ -159,6 +165,7 @@ export function RankingPage() {
             avatarUrl={member.user.avatarUrl}
             maxPoints={maxPoints}
             isCurrentUser={member.user.id === currentUserId}
+            onClick={() => navigateToProfile(member.user.id)}
           />
         ))}
       </div>
@@ -174,7 +181,10 @@ export function RankingPage() {
 
       {/* Sticky User Row - Mobile */}
       {currentUserData && currentUserPosition >= 5 && (
-        <div className="lg:hidden fixed bottom-20 left-4 right-4 bg-surface-container-lowest dark:bg-surface rounded-xl shadow-lg border border-border p-3 z-40">
+        <div
+          className="lg:hidden fixed bottom-20 left-4 right-4 bg-surface-container-lowest dark:bg-surface rounded-xl shadow-lg border border-border p-3 z-40 cursor-pointer"
+          onClick={() => navigateToProfile(currentUserData.user.id)}
+        >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-sm font-bold text-primary">

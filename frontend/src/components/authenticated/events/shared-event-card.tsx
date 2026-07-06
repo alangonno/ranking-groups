@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { ImageModal } from "../../ui/image-modal";
+import { useState, type SyntheticEvent } from "react";
 import { Users, ArrowUp, CheckCircle2, Clock, LogOut, MessageCircle, Pencil } from "lucide-react";
 import { AppButton } from "../../ui/app-button";
 import { AppSpinner } from "../../ui/app-spinner";
@@ -26,9 +25,15 @@ interface SharedEvent {
 
 interface SharedEventCardProps {
   event: SharedEvent;
+  onOpenDetails?: (eventId: string) => void;
+  layout?: "default" | "carousel";
 }
 
-export function SharedEventCard({ event }: SharedEventCardProps) {
+export function SharedEventCard({
+  event,
+  onOpenDetails,
+  layout = "default",
+}: SharedEventCardProps) {
   const joinEvent = useJoinSharedEvent(event.id);
   const leaveEvent = useLeaveSharedEvent(event.id);
   const [showComments, setShowComments] = useState(false);
@@ -46,6 +51,10 @@ export function SharedEventCard({ event }: SharedEventCardProps) {
   const createComment = useCreateSharedEventComment(event.id, groupId || undefined);
 
   const comments = commentsData?.flattened ?? [];
+
+  function stopPropagation(e: SyntheticEvent) {
+    e.stopPropagation();
+  }
 
   function formatClosesAt(dateString: string) {
     const date = new Date(dateString);
@@ -68,18 +77,21 @@ export function SharedEventCard({ event }: SharedEventCardProps) {
   }
 
   const isActionPending = joinEvent.isPending || leaveEvent.isPending;
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const canEdit = !event.isClosed && user?.id === event.createdByUserId;
 
   return (
-    <div className="bg-surface-container-lowest shadow-sm rounded-2xl min-w-[260px] snap-start overflow-hidden border border-surface-container group cursor-pointer hover:border-outline-variant transition-colors">
+    <div
+      className={`bg-surface-container-lowest shadow-sm rounded-2xl min-w-[260px] snap-start overflow-hidden border border-surface-container group transition-colors ${
+        onOpenDetails ? "cursor-pointer hover:border-outline-variant" : ""
+      } ${layout === "carousel" ? "h-full" : ""}`}
+      onClick={onOpenDetails ? () => onOpenDetails(event.id) : undefined}
+    >
       {event.imageUrl ? (
         <div className="h-24 relative">
           <img
             src={event.imageUrl}
             alt={event.title}
-            className="w-full h-full object-cover cursor-pointer"
-            onClick={() => setPreviewImage(event.imageUrl!)}
+            className="w-full h-full object-cover"
           />
           <span className="absolute top-2 left-2 bg-surface/90 backdrop-blur-sm text-on-surface text-[10px] font-bold px-2 py-1 rounded-full">
             Em breve
@@ -115,12 +127,12 @@ export function SharedEventCard({ event }: SharedEventCardProps) {
           </p>
         )}
 
-        <div className="flex items-center justify-between mt-4 pt-4 border-t border-surface-container">
-          <div className="flex items-center gap-3">
+        <div className="mt-4 pt-4 border-t border-surface-container space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
             {event.createdByUserAvatarUrl && (
               <div
-                className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 cursor-pointer"
-                onClick={() => setPreviewImage(event.createdByUserAvatarUrl!)}
+                className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0"
               >
                 <img src={event.createdByUserAvatarUrl} alt="Criador" className="w-full h-full object-cover" />
               </div>
@@ -129,65 +141,83 @@ export function SharedEventCard({ event }: SharedEventCardProps) {
               <Users size={14} />
               <span>{event.participantCount} confirmados</span>
             </div>
+            </div>
             <button
               type="button"
-              onClick={() => setShowComments(!showComments)}
+              onClick={(e) => {
+                stopPropagation(e);
+                setShowComments(!showComments);
+              }}
               className="flex items-center gap-1 text-caption font-caption text-secondary hover:text-primary transition-colors"
             >
               <MessageCircle size={14} />
               <span>{event.commentCount ?? 0}</span>
             </button>
           </div>
-          <div className="flex gap-1.5">
-            {canEdit && groupId ? (
-              <AppButton
-                size="xs"
-                color="light"
-                className="text-xs px-3 py-1.5 border-0"
-                onClick={() => setShowEditModal(true)}
-                disabled={isActionPending}
-              >
-                <Pencil size={12} />
-                Editar
-              </AppButton>
-            ) : null}
+          {(canEdit || (!event.isClosed && event.hasCurrentUserJoined) || (!event.isClosed && !event.hasCurrentUserJoined)) ? (
+            <div className="flex flex-wrap gap-2">
+              {canEdit && groupId ? (
+                <AppButton
+                  size="xs"
+                  color="light"
+                  className="text-xs px-3 py-1.5 border-0"
+                  onClick={(e) => {
+                    stopPropagation(e);
+                    setShowEditModal(true);
+                  }}
+                  disabled={isActionPending}
+                >
+                  <Pencil size={12} />
+                  Editar
+                </AppButton>
+              ) : null}
 
-            {!event.isClosed && event.hasCurrentUserJoined && (
-              <AppButton
-                size="xs"
-                color="light"
-                className="text-xs px-3 py-1.5 border-0"
-                onClick={handleLeave}
-                disabled={isActionPending}
-              >
-                {leaveEvent.isPending ? (
-                  <AppSpinner size="xs" />
-                ) : (
-                  <LogOut size={12} />
-                )}
-                {leaveEvent.isPending ? "Saindo..." : "Sair"}
-              </AppButton>
-            )}
-            {!event.isClosed && !event.hasCurrentUserJoined && (
-              <AppButton
-                size="xs"
-                color="primary"
-                className="text-xs px-3 py-1.5"
-                onClick={handleJoin}
-                disabled={isActionPending}
-              >
-                {joinEvent.isPending ? (
-                  <AppSpinner size="xs" />
-                ) : (
-                  "Participar"
-                )}
-              </AppButton>
-            )}
-          </div>
+              {!event.isClosed && event.hasCurrentUserJoined && (
+                <AppButton
+                  size="xs"
+                  color="light"
+                  className="text-xs px-3 py-1.5 border-0"
+                  onClick={(e) => {
+                    stopPropagation(e);
+                    handleLeave();
+                  }}
+                  disabled={isActionPending}
+                >
+                  {leaveEvent.isPending ? (
+                    <AppSpinner size="xs" />
+                  ) : (
+                    <LogOut size={12} />
+                  )}
+                  {leaveEvent.isPending ? "Saindo..." : "Sair"}
+                </AppButton>
+              )}
+              {!event.isClosed && !event.hasCurrentUserJoined && (
+                <AppButton
+                  size="xs"
+                  color="primary"
+                  className="text-xs px-3 py-1.5"
+                  onClick={(e) => {
+                    stopPropagation(e);
+                    handleJoin();
+                  }}
+                  disabled={isActionPending}
+                >
+                  {joinEvent.isPending ? (
+                    <AppSpinner size="xs" />
+                  ) : (
+                    "Participar"
+                  )}
+                </AppButton>
+              )}
+            </div>
+          ) : null}
         </div>
 
         {showComments && (
-          <div className="mt-3 pt-3 border-t border-surface-container">
+          <div
+            className="mt-3 pt-3 border-t border-surface-container"
+            onClick={stopPropagation}
+          >
             <CommentsSection
               comments={comments || []}
               onSubmit={(content, parentId) =>
@@ -203,14 +233,6 @@ export function SharedEventCard({ event }: SharedEventCardProps) {
           </div>
         )}
       </div>
-
-      {previewImage && (
-        <ImageModal
-          imageUrl={previewImage}
-          alt={event.title}
-          onClose={() => setPreviewImage(null)}
-        />
-      )}
 
       {groupId ? (
         <CreateSharedEventModal

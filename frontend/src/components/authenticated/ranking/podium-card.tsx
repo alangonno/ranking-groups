@@ -5,6 +5,7 @@ interface PodiumCardProps {
   avatarUrl?: string;
   weeklyScore?: number;
   badges?: string[];
+  onClick?: () => void;
 }
 
 export function PodiumCard({
@@ -14,13 +15,17 @@ export function PodiumCard({
   avatarUrl,
   weeklyScore,
   badges = [],
+  onClick,
 }: PodiumCardProps) {
   const fallbackAvatar = name.charAt(0).toUpperCase();
   const isFirst = position === 1;
 
   if (isFirst) {
     return (
-      <div className="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-surface-container flex flex-col md:flex-row items-center gap-6 relative overflow-hidden transition-transform duration-200 hover:scale-[0.99] cursor-pointer md:col-span-8">
+      <div
+        onClick={onClick}
+        className="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-surface-container flex flex-col md:flex-row items-center gap-6 relative overflow-hidden transition-transform duration-200 hover:scale-[0.99] cursor-pointer md:col-span-8"
+      >
         {/* Trophy decoration */}
         <div className="absolute -right-10 -top-10 text-primary/5 pointer-events-none">
           <span className="text-[200px] font-display">🏆</span>
@@ -79,7 +84,10 @@ export function PodiumCard({
   }
 
   return (
-    <div className="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-surface-container flex flex-col items-center text-center transition-transform duration-200 hover:scale-[0.98] cursor-pointer md:col-span-4">
+    <div
+      onClick={onClick}
+      className="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-surface-container flex flex-col items-center text-center transition-transform duration-200 hover:scale-[0.98] cursor-pointer md:col-span-4"
+    >
       <div className="relative mb-4">
         <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-gray-300 to-gray-500 p-1">
           {avatarUrl ? (

@@ -34,8 +34,10 @@ public class EventSummaryDto
     public DateTime CreatedAt { get; set; }
     public Guid CreatedByUserId { get; set; }
     public string CreatedByUserName { get; set; } = string.Empty;
+    public string? CreatedByUserAvatarUrl { get; set; }
     public Guid AffectedUserId { get; set; }
     public string AffectedUserName { get; set; } = string.Empty;
+    public string? AffectedUserAvatarUrl { get; set; }
     public int ApprovalCount { get; set; }
     public bool IsPendingRemoval { get; set; }
     public DateTime? RemovalVoteDeadline { get; set; }
@@ -122,8 +124,14 @@ public class ListGroupEventsHandler : IListGroupEventsHandler
                 CreatedAt = e.CreatedAt,
                 CreatedByUserId = e.CreatedByUserId,
                 CreatedByUserName = e.CreatedByUser?.Name ?? string.Empty,
+                CreatedByUserAvatarUrl = !string.IsNullOrWhiteSpace(e.CreatedByUser?.AvatarUrl)
+                    ? _storageService.GetPublicUrlFromPath(e.CreatedByUser!.AvatarUrl)
+                    : null,
                 AffectedUserId = e.AffectedUserId,
                 AffectedUserName = e.AffectedUser?.Name ?? string.Empty,
+                AffectedUserAvatarUrl = !string.IsNullOrWhiteSpace(e.AffectedUser?.AvatarUrl)
+                    ? _storageService.GetPublicUrlFromPath(e.AffectedUser!.AvatarUrl)
+                    : null,
                 ApprovalCount = e.Approvals.Count(a => a.VoteType == EventVoteType.Approve),
                 IsPendingRemoval = e.IsPendingRemoval,
                 RemovalVoteDeadline = e.RemovalVoteDeadline,

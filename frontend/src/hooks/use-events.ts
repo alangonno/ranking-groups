@@ -24,8 +24,10 @@ function mapEventFromBackend(e: {
   createdAt: string;
   createdByUserId: string;
   createdByUserName: string;
+  createdByUserAvatarUrl?: string;
   affectedUserId: string;
   affectedUserName: string;
+  affectedUserAvatarUrl?: string;
   approvalCount?: number;
     isPendingRemoval?: boolean;
     removalVoteDeadline?: string | null;
@@ -59,8 +61,24 @@ function mapEventFromBackend(e: {
     type: mapStringToEventType(e.type),
     status: mapStringToEventStatus(e.status),
     createdAt: e.createdAt,
-    createdByUser: { id: e.createdByUserId, name: e.createdByUserName, username: "", email: "", createdAt: "", updatedAt: "" },
-    affectedUser: { id: e.affectedUserId, name: e.affectedUserName, username: "", email: "", createdAt: "", updatedAt: "" },
+    createdByUser: {
+      id: e.createdByUserId,
+      name: e.createdByUserName,
+      username: "",
+      email: "",
+      avatarUrl: e.createdByUserAvatarUrl,
+      createdAt: "",
+      updatedAt: "",
+    },
+    affectedUser: {
+      id: e.affectedUserId,
+      name: e.affectedUserName,
+      username: "",
+      email: "",
+      avatarUrl: e.affectedUserAvatarUrl,
+      createdAt: "",
+      updatedAt: "",
+    },
         isPendingRemoval: e.isPendingRemoval ?? false,
         removalVoteDeadline: e.removalVoteDeadline ?? undefined,
         quorumRequired: e.quorumRequired,

@@ -3,10 +3,12 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { QuickActionCards } from "../../components/authenticated/events/quick-action-card";
 import { SharedEventsCarousel } from "../../components/authenticated/events/shared-events-carousel";
+import { SharedEventCard } from "../../components/authenticated/events/shared-event-card";
 import { EventCard } from "../../components/authenticated/events/event-card";
 import { VotingCard } from "../../components/authenticated/events/voting-card";
 import { CreateEventModal } from "../../components/authenticated/events/create-event-modal";
 import { CreateSharedEventModal } from "../../components/authenticated/events/create-shared-event-modal";
+import { SharedEventViewModal } from "../../components/authenticated/events/shared-event-view-modal";
 import { NotificationDropdown } from "../../components/authenticated/notifications/notification-dropdown";
 import { EventStatus } from "../../types/event/event";
 import type { Event } from "../../types/event/event";
@@ -20,10 +22,11 @@ export function EventsPage() {
   const { groupId } = useParams<{ groupId: string }>();
   const location = useLocation();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"all" | "my" | "voting">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "my" | "voting" | "shared">("all");
   const { user } = useAuthContext();
   const [showCreateEvent, setShowCreateEvent] = useState(false);
   const [showCreateSharedEvent, setShowCreateSharedEvent] = useState(false);
+  const [selectedSharedEventId, setSelectedSharedEventId] = useState<string | null>(null);
 
   const [userAvatarError, setUserAvatarError] = useState(false);
 
@@ -37,19 +40,32 @@ export function EventsPage() {
   const { data: group } = useGroup(groupId || "");
   const {
     data: eventsData,
-    hasNextPage,
-    fetchNextPage,
-    isFetchingNextPage,
+    hasNextPage: hasNextEventsPage,
+    fetchNextPage: fetchNextEventsPage,
+    isFetchingNextPage: isFetchingNextEventsPage,
   } = useGroupEvents(groupId || "");
-  const { data: sharedEventsData } = useGroupSharedEvents(groupId || "");
+  const {
+    data: sharedEventsData,
+    hasNextPage: hasNextSharedEventsPage,
+    fetchNextPage: fetchNextSharedEventsPage,
+    isFetchingNextPage: isFetchingNextSharedEventsPage,
+  } = useGroupSharedEvents(groupId || "");
 
   const allEvents = eventsData?.flattened ?? [];
   const sharedEvents = sharedEventsData?.flattened ?? [];
+  const isSharedTab = activeTab === "shared";
 
   const { sentinelRef } = useInfiniteScroll({
-    onIntersect: () => fetchNextPage(),
-    hasMore: !!hasNextPage,
-    isLoading: isFetchingNextPage,
+    onIntersect: () => {
+      if (isSharedTab) {
+        fetchNextSharedEventsPage();
+        return;
+      }
+
+      fetchNextEventsPage();
+    },
+    hasMore: isSharedTab ? !!hasNextSharedEventsPage : !!hasNextEventsPage,
+    isLoading: isSharedTab ? isFetchingNextSharedEventsPage : isFetchingNextEventsPage,
   });
 
   const isPendingEvent = (e: Event) =>
@@ -62,7 +78,9 @@ export function EventsPage() {
   const votingEvents = allEvents.filter(isPendingEvent);
 
   const sourceEvents =
-    activeTab === "voting"
+    activeTab === "shared"
+      ? []
+      : activeTab === "voting"
       ? votingEvents
       : activeTab === "my"
         ? myEvents.filter((e) => !isPendingEvent(e))
@@ -74,20 +92,23 @@ export function EventsPage() {
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
 
-  const sharedEventsForCarousel = sharedEvents
-    .filter((se) => !se.isClosed)
-    .map((se) => ({
-    id: se.id,
-    title: se.title,
-    points: se.points,
-    participantCount: se.participantCount,
-    isClosed: se.isClosed,
-    createdByUserId: se.createdByUserId,
-    createdByUserAvatarUrl: se.createdByUserAvatarUrl,
-    hasCurrentUserJoined: se.hasCurrentUserJoined,
-    closesAt: se.closesAt,
-    imageUrl: se.imageUrl,
-  }));
+  const sharedEventsForCarousel = sharedEvents.filter((se) => !se.isClosed);
+
+  const displaySharedEvents = [...sharedEvents].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+
+  function openSharedEventDetails(eventId: string) {
+    setSelectedSharedEventId(eventId);
+  }
+
+  const isEmptyState = isSharedTab
+    ? displaySharedEvents.length === 0
+    : displayEvents.length === 0;
+
+  const isFetchingMore = isSharedTab
+    ? isFetchingNextSharedEventsPage
+    : isFetchingNextEventsPage;
 
   return (
     <div className="p-4 lg:p-8 max-w-5xl mx-auto">
@@ -150,7 +171,10 @@ export function EventsPage() {
 
       {/* Shared Events Carousel */}
       <div className="mb-6">
-        <SharedEventsCarousel events={sharedEventsForCarousel} />
+        <SharedEventsCarousel
+          events={sharedEventsForCarousel}
+          onOpenDetails={openSharedEventDetails}
+        />
       </div>
 
       {/* Tabs */}
@@ -160,6 +184,7 @@ export function EventsPage() {
             { key: "all" as const, label: "Todos" },
             { key: "my" as const, label: "Seus Eventos" },
             { key: "voting" as const, label: "Votação" },
+            { key: "shared" as const, label: "Compartilhados" },
           ].map((tab) => (
           <button
             key={tab.key}
@@ -184,7 +209,14 @@ export function EventsPage() {
 
       {/* Feed */}
       <div className="space-y-3">
-        {displayEvents.length === 0 ? (
+        {isEmptyState ? (
+          isSharedTab ? (
+            <div className="text-center py-12">
+              <p className="text-text-secondary text-sm mb-4">
+                Nenhum evento compartilhado neste grupo
+              </p>
+            </div>
+          ) : (
           <div className="text-center py-12">
             <p className="text-text-secondary text-sm mb-4">
               {activeTab === "voting"
@@ -192,6 +224,15 @@ export function EventsPage() {
                 : "Nenhum evento nesta categoria"}
             </p>
           </div>
+          )
+        ) : isSharedTab ? (
+          displaySharedEvents.map((event) => (
+            <SharedEventCard
+              key={event.id}
+              event={event}
+              onOpenDetails={openSharedEventDetails}
+            />
+          ))
         ) : (
           displayEvents.map((event) =>
             activeTab === "voting" ? (
@@ -205,7 +246,7 @@ export function EventsPage() {
 
       {/* Infinite scroll sentinel */}
       <div ref={sentinelRef} className="py-4 flex justify-center">
-        {isFetchingNextPage && (
+        {isFetchingMore && (
           <span className="text-sm text-text-secondary">Carregando mais...</span>
         )}
       </div>
@@ -219,6 +260,12 @@ export function EventsPage() {
       <CreateSharedEventModal
         isOpen={showCreateSharedEvent}
         onClose={() => setShowCreateSharedEvent(false)}
+        groupId={groupId || ""}
+      />
+      <SharedEventViewModal
+        isOpen={!!selectedSharedEventId}
+        onClose={() => setSelectedSharedEventId(null)}
+        sharedEventId={selectedSharedEventId}
         groupId={groupId || ""}
       />
     </div>

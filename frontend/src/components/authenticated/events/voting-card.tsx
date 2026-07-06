@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ImageModal } from "../../ui/image-modal";
+import { useNavigate } from "react-router-dom";
 import { AppSpinner } from "../../ui/app-spinner";
 import { ArrowDown, ClipboardList, Trash2, Clock, MessageCircle } from "lucide-react";
 import type { Event, EventVoteType } from "../../../types/event/event";
@@ -16,6 +16,7 @@ interface VotingCardProps {
 }
 
 export function VotingCard({ event, compact = false }: VotingCardProps) {
+  const navigate = useNavigate();
   const vote = useVoteEvent(event.id, event.groupId);
   const [showComments, setShowComments] = useState(false);
   const groupId = useCurrentGroupId();
@@ -44,6 +45,11 @@ export function VotingCard({ event, compact = false }: VotingCardProps) {
   }, [event.approvals, currentUserId]);
 
   const canVote = !isAffected && !hasVoted;
+
+  function navigateToProfile(userId?: string) {
+    if (!groupId || !userId) return;
+    navigate(`/group/${groupId}/profile/${userId}`);
+  }
 
   // Contagens reais do backend
   const removeCount = event.approvals?.filter(a => a.voteType === 3).length ?? 0;
@@ -74,8 +80,6 @@ export function VotingCard({ event, compact = false }: VotingCardProps) {
     vote.mutate({ voteType });
   }
 
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
-
   const initials = affectedUser?.name
     ? affectedUser.name
         .split(" ")
@@ -92,7 +96,7 @@ export function VotingCard({ event, compact = false }: VotingCardProps) {
           <div className="flex items-start gap-2">
             <div
               className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-secondary font-bold text-xs flex-shrink-0 overflow-hidden cursor-pointer"
-              onClick={() => affectedUser?.avatarUrl && setPreviewImage(affectedUser.avatarUrl)}
+              onClick={() => navigateToProfile(affectedUser?.id)}
             >
               {isRemovalVote ? (
                 <Trash2 size={14} />
@@ -152,13 +156,6 @@ export function VotingCard({ event, compact = false }: VotingCardProps) {
           </div>
         </div>
 
-        {previewImage && (
-          <ImageModal
-            imageUrl={previewImage}
-            alt={event.title}
-            onClose={() => setPreviewImage(null)}
-          />
-        )}
       </>
     );
   }
@@ -184,9 +181,10 @@ export function VotingCard({ event, compact = false }: VotingCardProps) {
           <div className="flex items-start justify-between gap-2">
             <div>
               <div className="flex items-center gap-2">
-                <div
+                <button
+                  type="button"
                   className="w-8 h-8 rounded-full overflow-hidden bg-surface-container flex-shrink-0 cursor-pointer"
-                  onClick={() => affectedUser?.avatarUrl && setPreviewImage(affectedUser.avatarUrl)}
+                  onClick={() => navigateToProfile(affectedUser?.id)}
                 >
                   {affectedUser?.avatarUrl ? (
                     <img src={affectedUser.avatarUrl} alt={affectedUser.name} className="w-full h-full object-cover" />
@@ -195,15 +193,16 @@ export function VotingCard({ event, compact = false }: VotingCardProps) {
                       {affectedUser?.name?.charAt(0).toUpperCase() || "U"}
                     </div>
                   )}
-                </div>
+                </button>
                 <p className="text-body-md font-body-md text-on-surface">
                   <span className="font-semibold">{isRemovalVote ? "Remoção de" : null} {affectedUser?.name}</span>
                 </p>
               </div>
               <div className="flex items-center gap-1.5 mt-1">
-                <div
+                <button
+                  type="button"
                   className="w-5 h-5 rounded-full overflow-hidden bg-surface-container flex-shrink-0 cursor-pointer"
-                  onClick={() => creator?.avatarUrl && setPreviewImage(creator.avatarUrl)}
+                  onClick={() => navigateToProfile(creator?.id)}
                 >
                   {creator?.avatarUrl ? (
                     <img src={creator.avatarUrl} alt={creator.name} className="w-full h-full object-cover" />
@@ -212,7 +211,7 @@ export function VotingCard({ event, compact = false }: VotingCardProps) {
                       {creator?.name?.charAt(0).toUpperCase() || "U"}
                     </div>
                   )}
-                </div>
+                </button>
                 <p className="text-caption font-caption text-secondary mt-0.5">
                   {isRemovalVote ? `iniciado por ${creator?.name}` : `registrado por ${creator?.name}`}
                 </p>
@@ -329,14 +328,6 @@ export function VotingCard({ event, compact = false }: VotingCardProps) {
           )}
         </div>
       </div>
-
-      {previewImage && (
-        <ImageModal
-          imageUrl={previewImage}
-          alt={event.title}
-          onClose={() => setPreviewImage(null)}
-        />
-      )}
     </div>
   );
 }
